@@ -3,6 +3,11 @@
         "esModuleInterop": true,
         "lib": [
             "es2023"
-        ]
+        ],
+        "target": "ES6",
+        "moduleResolution": "NodeNext",
+        "module": "NodeNext",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true
     }
 }
