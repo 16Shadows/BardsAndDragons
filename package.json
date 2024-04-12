@@ -1,0 +1,35 @@
+{
+  "dependencies": {
+    "@types/koa": "^2.15.0",
+    "@types/koa-router": "^7.4.8",
+    "@types/koa-static": "^4.0.4",
+    "koa": "^2.15.3",
+    "koa-router": "^12.0.1",
+    "koa-static": "^5.0.0",
+    "typescript": "^5.4.5"
+  },
+  "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "del-cli": "^5.1.0",
+    "ts-node": "^10.9.2"
+  },
+  "name": "bardsanddragons",
+  "version": "1.0.0",
+  "description": "-",
+  "scripts": {
+    "dev": "ts-node src/app.ts",
+    "build": "npm run clear && npx tsc && npx copyfiles -u 1 ./src/**/*.js dist/ && del-cli --force ./src/**/*.js",
+    "prod": "node dist/app.js",
+    "clear": "del-cli --force dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/16Shadows/BardsAndDragons.git"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/16Shadows/BardsAndDragons/issues"
+  },
+  "homepage": "https://github.com/16Shadows/BardsAndDragons#readme"
+}
