@@ -1,7 +1,7 @@
 import Koa from 'koa';
 import { IncomingMessage, ServerResponse } from "http";
 import { Http2ServerRequest, Http2ServerResponse } from "http2";
-import { ControllerBase, DiscoveredControllers } from './controller';
+import { ControllerBase, isController } from './controller';
 import { DependencyContainer, container } from 'tsyringe';
 import { constructor } from 'tsyringe/dist/typings/types';
 import path from 'path';
@@ -76,7 +76,7 @@ class CoreApp<
             for (var entry in modulesList) {
                 if (typeof modulesList[entry] == 'object')
                     yield* recursiveDiscovery(modulesList[entry]);
-                else if (typeof modulesList[entry] == 'function' && DiscoveredControllers.isController(modulesList[entry]))
+                else if (typeof modulesList[entry] == 'function' && isController(modulesList[entry]))
                     yield modulesList[entry];
             }
         }  

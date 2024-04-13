@@ -1,39 +1,19 @@
 import { injectable } from "tsyringe"
 import { constructor } from "tsyringe/dist/typings/types";
+import { Route } from "./routing";
+import { Metadata_Prefix } from "./constants";
 
-interface IControllersList extends Iterable<constructor<ControllerBase>> {
-    isController(type: constructor<ControllerBase>) : boolean;
-}
-
-class ControllersDatabase implements IControllersList {
-    protected _ControllerTypes : Set<constructor<ControllerBase>>;
-
-    constructor() {
-        this._ControllerTypes = new Set<constructor<ControllerBase>>;
-    }
-
-    isController(type: constructor<ControllerBase>): boolean {
-        return this._ControllerTypes.has(type);
-    }
-    
-    [Symbol.iterator](): Iterator<constructor<ControllerBase>, any, undefined> {
-        return this._ControllerTypes[Symbol.iterator]();
-    }
-
-    register(controllerType : constructor<ControllerBase>) {
-        this._ControllerTypes.add(controllerType);
-    }
-}
-
-const ControllersDB : ControllersDatabase = new ControllersDatabase();
+const Metadata_IsController : string = `${Metadata_Prefix}IsController`;
 
 export function Controller<T extends ControllerBase> (route: string = '') {
     return (target: constructor<T>) => {
-        ControllersDB.register(target)
+        Reflect.defineMetadata(Metadata_IsController, true, target);
         injectable()(target);
     }
 };
 
-export class ControllerBase {}
+export function isController(target: any) {
+    return Reflect.hasMetadata(Metadata_IsController, target);
+}
 
-export const DiscoveredControllers : IControllersList = ControllersDB;
+export class ControllerBase {}
