@@ -1,8 +1,9 @@
-import { Controller, ControllerBase } from "../modules/core/controller";
+import { Controller } from "../modules/core/controllers/controller";
+import { GET } from "../modules/core/routing/decorators";
 import { ExampleService } from "../services/ExampleService";
 
-@Controller()
-export class TestController extends ControllerBase
+@Controller('api/v1/test')
+export class TestController extends Object
 {
     constructor(service: ExampleService) {
         super();
@@ -10,8 +11,15 @@ export class TestController extends ControllerBase
         console.log(service.getValue());
     }
 
-    //Doesn't work yet, needs routing
+    @GET('index')
     async index() {
+        console.log('index');
         return 'Hello, world!';
+    }
+
+    @GET('list')
+    async list() {
+        console.log('list');
+        return [1, 2, 3];
     }
 };

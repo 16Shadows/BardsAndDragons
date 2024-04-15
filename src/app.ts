@@ -1,11 +1,11 @@
-import 'reflect-metadata';
-import CoreApp from './modules/core/core';
+import KoaCoreApp from './modules/integration/koa/app';
 import Router from 'koa-router';
 import serve from 'koa-static';
 import { ExampleService } from './services/ExampleService';
+import { discoverControllers } from './modules/core/controllers/controller';
 
 (async () => {
-    const app = new CoreApp();
+    const app = new KoaCoreApp();
 
     app.useSingleton(ExampleService);
 
@@ -14,16 +14,7 @@ import { ExampleService } from './services/ExampleService';
     //UPD: Looking through its sources, it gives priority to other middleware first. Is this desired behaviour?
     app.use(serve('./public'))
 
-    const router = new Router();
+    app.useControllers( discoverControllers('./controllers', __dirname) );
 
-    router.get("/:id", (ctx, next) => {
-        console.log(ctx.params.id);
-        console.log(typeof ctx.params.id);
-        ctx.body = `Hello, world of ${ctx.params.id}!`;
-    });
-
-    app.use(router.routes());
-
-    app.useControllers('./controllers', __dirname);
     app.listen(3000);
 })();
