@@ -44,6 +44,17 @@ module ControllersStorage {
                     registry.registerRoute(route.method, route.route, controller[route.handlerName]);
             }
         }
+
+        unregisterRoutes(registry: IRouteRegistry) {
+            for (var controller of this)
+            {
+                var routes = getRoutesList(controller.constructor as constructor<Object>);
+                if (routes == undefined)
+                    continue;
+                for (var route of routes)
+                    registry.unregisterRoute(route.method, route.route, controller[route.handlerName]);
+            }
+        }
     }
 }
 

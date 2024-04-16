@@ -3,6 +3,7 @@ import Router from 'koa-router';
 import serve from 'koa-static';
 import { ExampleService } from './services/ExampleService';
 import { discoverControllers } from './modules/core/controllers/controller';
+import { getDefaultConverters } from './modules/core/converters/default';
 
 (async () => {
     const app = new KoaCoreApp();
@@ -15,6 +16,7 @@ import { discoverControllers } from './modules/core/controllers/controller';
     app.use(serve('./public'))
 
     app.useControllers( discoverControllers('./controllers', __dirname) );
+    app.useTypeConverters( getDefaultConverters() );
 
     app.listen(3000);
 })();

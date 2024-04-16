@@ -4,19 +4,20 @@ import { IncomingMessage, ServerResponse } from "http";
 import { Http2ServerRequest, Http2ServerResponse } from "http2";
 import { DependencyContainer, container } from 'tsyringe';
 import { constructor } from '../../core/types';
-import { IRouteRegistry, RouteEndpoint } from '../../core/routing/core';
+import { IRouter } from '../../core/routing/core';
 import { createDefaultRouteRegistry } from '../../core/routing/defaults';
 import { isController } from '../../core/controllers/controller';
-import { getHttpMethodFromString } from '../../core/constants';
-import { ConvertersProvider, ITypeConverter } from '../../core/converter';
+import { ConvertersProvider, ITypeConverter } from '../../core/converters/converter';
 import { ControllersStorage } from '../../core/controllers/storage';
+import { Router } from '../../core/routing/router';
+import { getHttpMethodFromString } from '../../core/constants';
 
 class KoaCoreApp<
     StateT = Koa.DefaultState,
     ContextT = Koa.DefaultContext,
 > extends Koa<StateT, ContextT> {
     protected _DIContainer : DependencyContainer;
-    protected _RouterRegistry : IRouteRegistry;
+    protected _Router: IRouter;
     protected _ConvertersProvider: ConvertersProvider;
     protected _ControllerStorage: ControllersStorage;
     protected _Initialized: boolean;
@@ -33,19 +34,19 @@ class KoaCoreApp<
         proxyIpHeader?: string | undefined;
         maxIpsCount?: number | undefined;
         asyncLocalStorage?: boolean | undefined;
-        routeRegistry?: IRouteRegistry | undefined;
+        router?: IRouter | undefined;
     }) {
         options = options ?? {};
         super(options);
 
         this._DIContainer = container.createChildContainer();
         
-        this._RouterRegistry = options.routeRegistry ?? createDefaultRouteRegistry();
-        
         this._Initialized = false;
 
         this._ControllerStorage = new ControllersStorage(this._DIContainer);
         this._ConvertersProvider = new ConvertersProvider(this._DIContainer);
+
+        this._Router = options.router ?? new Router(createDefaultRouteRegistry());
     }
 
     /**
@@ -83,20 +84,35 @@ class KoaCoreApp<
         return this;
     }
 
+    useTypeConverters(converterTypes: Iterable<constructor<ITypeConverter>>): KoaCoreApp<StateT, ContextT> {
+        for (var item of converterTypes)
+            this.useTypeConverter(item);
+        return this;
+    }
+
     callback(): (req: IncomingMessage | Http2ServerRequest, res: Http2ServerResponse | ServerResponse<IncomingMessage>) => Promise<void> {
+        this._ControllerStorage.unregisterRoutes(this._Router.registry);
         this._ControllerStorage.rebuild();
-        this._ControllerStorage.registerRoutes(this._RouterRegistry);
+        this._ControllerStorage.registerRoutes(this._Router.registry);
 
         if (!this._Initialized)
         {
-            //THIS IS A STUB. IT SHOULD BE PROPERLY EXPORTED INTO A ROUTER CLASS WHICH WILL MANAGE ALL COMPLEX STUFF LIKE ARGUMENT BINDING AND RESPONSE HANDLING
             this.use(async (ctx, next) => {
-                var r: RouteEndpoint | undefined = this._RouterRegistry.match(getHttpMethodFromString(ctx.method), ctx.path, this._ConvertersProvider);
-                if (r != undefined)
-                    for (var handler of r.handlers)
-                        ctx.body = await handler();
-
+                var route = this._Router.resolve(getHttpMethodFromString(ctx.method), decodeURI(ctx.path), this._ConvertersProvider);
+                if (route == undefined)
+                    return await next();
+                var ctxInfo = {
+                    route: route.resolvedPattern,
+                    shouldEvaluate: true
+                };
+                ctx['route'] = ctxInfo;
                 await next();
+                if (ctxInfo.shouldEvaluate)
+                {
+                    var result = await route.execute();
+                    ctx.body = result.body;
+                    ctx.status = result.code;
+                }
             });
             this._Initialized = true;
         }

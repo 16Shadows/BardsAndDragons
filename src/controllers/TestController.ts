@@ -17,6 +17,16 @@ export class TestController extends Object
         return 'Hello, world!';
     }
 
+    @GET('echo/{text}')
+    async echo(text: string) {
+        return text;
+    }
+
+    @GET('sum/{a:int}/{b:int}')
+    async sum(a: number, b: number) {
+        return a + b;
+    }
+
     @GET('list')
     async list() {
         console.log('list');

@@ -1,4 +1,4 @@
-import { ITypeConverter } from "../../../../src/modules/core/converter";
+import { ITypeConverter } from "../../../../src/modules/core/converters/converter";
 import { HTTPMethod } from "../../../../src/modules/core/constants";
 import { RouteEndpoint } from "../../../../src/modules/core/routing/core";
 import { RoutingTree } from "../../../../src/modules/core/routing/routingTree";
@@ -13,8 +13,8 @@ test('RoutingTree: distinct routes plain match', () => {
     tree.registerRoute(HTTPMethod.GET, "api/v1/method2", handler2);
 
     //Positive tests
-    expect(tree.match(HTTPMethod.GET, "api/v1/method1", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: []});
-    expect(tree.match(HTTPMethod.GET, "api/v1/method2", undefined)).toEqual<RouteEndpoint>({handlers: [handler2], arguments: []});
+    expect(tree.match(HTTPMethod.GET, "api/v1/method1", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [], pattern: [ {pattern: 'api', isCaseSensitive: true}, {pattern: 'v1', isCaseSensitive: true}, {pattern: 'method1', isCaseSensitive: true} ]});
+    expect(tree.match(HTTPMethod.GET, "api/v1/method2", undefined)).toEqual<RouteEndpoint>({handlers: [handler2], arguments: [], pattern: [ {pattern: 'api', isCaseSensitive: true}, {pattern: 'v1', isCaseSensitive: true}, {pattern: 'method2', isCaseSensitive: true} ]});
     
     //Negative tests
     expect(tree.match(HTTPMethod.POST, "api/v1/method1", undefined)).toBeUndefined();
@@ -34,8 +34,8 @@ test('RoutingTree: overlapping plain match', () => {
     tree.registerRoute(HTTPMethod.GET, "api/v1", handler2);
 
     //Positive tests
-    expect(tree.match(HTTPMethod.GET, "api/v1/method1", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: []});
-    expect(tree.match(HTTPMethod.GET, "api/v1", undefined)).toEqual<RouteEndpoint>({handlers: [handler2], arguments: []});
+    expect(tree.match(HTTPMethod.GET, "api/v1/method1", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [], pattern: [ {pattern: 'api', isCaseSensitive: true}, {pattern: 'v1', isCaseSensitive: true}, {pattern: 'method1', isCaseSensitive: true} ]});
+    expect(tree.match(HTTPMethod.GET, "api/v1", undefined)).toEqual<RouteEndpoint>({handlers: [handler2], arguments: [], pattern: [ {pattern: 'api', isCaseSensitive: true}, {pattern: 'v1', isCaseSensitive: true} ]});
     
     //Negative tests
     expect(tree.match(HTTPMethod.GET, "api/v1/method3", undefined)).toBeUndefined();
@@ -53,10 +53,10 @@ test('RoutingTree: case-insensitive plain match', () => {
     tree.registerRoute(HTTPMethod.GET, "api/v1", handler2, false);
 
     //Positive tests
-    expect(tree.match(HTTPMethod.GET, "api/v1/method1", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: []});
-    expect(tree.match(HTTPMethod.GET, "aPi/V1/MeTHoD1", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: []});
-    expect(tree.match(HTTPMethod.GET, "apI/V1", undefined)).toEqual<RouteEndpoint>({handlers: [handler2], arguments: []});
-    expect(tree.match(HTTPMethod.GET, "aPi/v1", undefined)).toEqual<RouteEndpoint>({handlers: [handler2], arguments: []});
+    expect(tree.match(HTTPMethod.GET, "api/v1/method1", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [], pattern: [ {pattern: 'api', isCaseSensitive: false}, {pattern: 'v1', isCaseSensitive: false}, {pattern: 'method1', isCaseSensitive: false} ]});
+    expect(tree.match(HTTPMethod.GET, "aPi/V1/MeTHoD1", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [], pattern: [ {pattern: 'api', isCaseSensitive: false}, {pattern: 'v1', isCaseSensitive: false}, {pattern: 'method1', isCaseSensitive: false} ]});
+    expect(tree.match(HTTPMethod.GET, "apI/V1", undefined)).toEqual<RouteEndpoint>({handlers: [handler2], arguments: [], pattern: [ {pattern: 'api', isCaseSensitive: false}, {pattern: 'v1', isCaseSensitive: false} ]});
+    expect(tree.match(HTTPMethod.GET, "aPi/v1", undefined)).toEqual<RouteEndpoint>({handlers: [handler2], arguments: [], pattern: [ {pattern: 'api', isCaseSensitive: false}, {pattern: 'v1', isCaseSensitive: false} ]});
 
     //Negative tests
     expect(tree.match(HTTPMethod.GET, "api/v1/method3", undefined)).toBeUndefined();
@@ -72,8 +72,8 @@ test('RoutingTree: partial case-insensitive plain match', () => {
     tree.registerRoute(HTTPMethod.GET, [ {pattern:"api",isCaseSensitive:true}, {pattern:"v1/method1", isCaseSensitive: false} ], handler1);
 
     //Positive tests
-    expect(tree.match(HTTPMethod.GET, "api/v1/method1", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: []});
-    expect(tree.match(HTTPMethod.GET, "api/V1/MeTHoD1", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: []});
+    expect(tree.match(HTTPMethod.GET, "api/v1/method1", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [], pattern: [ {pattern: 'api', isCaseSensitive: true}, {pattern: 'v1', isCaseSensitive: false}, {pattern: 'method1', isCaseSensitive: false} ]});
+    expect(tree.match(HTTPMethod.GET, "api/V1/MeTHoD1", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [], pattern: [ {pattern: 'api', isCaseSensitive: true}, {pattern: 'v1', isCaseSensitive: false}, {pattern: 'method1', isCaseSensitive: false} ]});
 
     //Negative tests
     expect(tree.match(HTTPMethod.GET, "api/v1/method3", undefined)).toBeUndefined();
@@ -88,7 +88,7 @@ test('RoutingTree: untyped argument match', () => {
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1/{id}", handler1);
 
     //Positive tests
-    expect(tree.match(HTTPMethod.GET, "api/v1/method1/test", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name:"id", value: "test"} ]});
+    expect(tree.match(HTTPMethod.GET, "api/v1/method1/test", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name:"id", value: "test"} ], pattern: [ {pattern: 'api', isCaseSensitive: true}, {pattern: 'v1', isCaseSensitive: true}, {pattern: 'method1', isCaseSensitive: true}, {pattern: '{id}', isCaseSensitive: true} ]});
 
     //Negative tests
     expect(tree.match(HTTPMethod.GET, "api/v1/method1", undefined)).toBeUndefined();
@@ -114,7 +114,7 @@ test('RoutingTree: typed argument match', () => {
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1/{id:int}", handler1);
 
     //Positive tests
-    expect(tree.match(HTTPMethod.GET, "api/v1/method1/23", converters)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name:"id", value: 23} ]});
+    expect(tree.match(HTTPMethod.GET, "api/v1/method1/23", converters)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name:"id", value: 23} ], pattern: [ {pattern: 'api', isCaseSensitive: true}, {pattern: 'v1', isCaseSensitive: true}, {pattern: 'method1', isCaseSensitive: true}, {pattern: '{id:int}', isCaseSensitive: true} ]});
 
     //Negative tests
     expect(tree.match(HTTPMethod.GET, "api/v1/method1/test", converters)).toBeUndefined();
@@ -128,7 +128,7 @@ test('RoutingTree: minLength argument match', () => {
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1/{id::2}", handler1);
 
     //Positive tests
-    expect(tree.match(HTTPMethod.GET, "api/v1/method1/test", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name:"id", value: "test"} ]});
+    expect(tree.match(HTTPMethod.GET, "api/v1/method1/test", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name:"id", value: "test"} ], pattern: [ {pattern: 'api', isCaseSensitive: true}, {pattern: 'v1', isCaseSensitive: true}, {pattern: 'method1', isCaseSensitive: true}, {pattern: '{id::2}', isCaseSensitive: true} ]});
 
     //Negative tests
     expect(tree.match(HTTPMethod.GET, "api/v1/method1/t", undefined)).toBeUndefined();
@@ -142,7 +142,7 @@ test('RoutingTree: maxLength argument match', () => {
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1/{id:::5}", handler1);
 
     //Positive tests
-    expect(tree.match(HTTPMethod.GET, "api/v1/method1/test", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name:"id", value: "test"} ]});
+    expect(tree.match(HTTPMethod.GET, "api/v1/method1/test", undefined)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name:"id", value: "test"} ], pattern: [ {pattern: 'api', isCaseSensitive: true}, {pattern: 'v1', isCaseSensitive: true}, {pattern: 'method1', isCaseSensitive: true}, {pattern: '{id:::5}', isCaseSensitive: true} ]});
 
     //Negative tests
     expect(tree.match(HTTPMethod.GET, "api/v1/method1/helloworld", undefined)).toBeUndefined();
@@ -158,8 +158,8 @@ test('RoutingTree: multiple argument match', () => {
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1/id{id:int::4}{name}", handler1);
 
     //Positive tests
-    expect(tree.match(HTTPMethod.GET, "api/v1/method1/id1234test", converters)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name:"id", value: 1234}, {name:"name", value: "test"} ]});
-    expect(tree.match(HTTPMethod.GET, "api/v1/method1/id12", converters)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name:"id", value: 12}, {name:"name", value: ""} ]});
+    expect(tree.match(HTTPMethod.GET, "api/v1/method1/id1234test", converters)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name:"id", value: 1234}, {name:"name", value: "test"} ], pattern: [ {pattern: 'api', isCaseSensitive: true}, {pattern: 'v1', isCaseSensitive: true}, {pattern: 'method1', isCaseSensitive: true}, {pattern: 'id{id:int::4}{name}', isCaseSensitive: true} ]});
+    expect(tree.match(HTTPMethod.GET, "api/v1/method1/id12", converters)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name:"id", value: 12}, {name:"name", value: ""} ], pattern: [ {pattern: 'api', isCaseSensitive: true}, {pattern: 'v1', isCaseSensitive: true}, {pattern: 'method1', isCaseSensitive: true}, {pattern: 'id{id:int::4}{name}', isCaseSensitive: true} ]});
 
     //Negative tests
     expect(tree.match(HTTPMethod.GET, "api/v1/method1/id123test", converters)).toBeUndefined();
@@ -189,11 +189,11 @@ test('RoutingTree: route preference test', () => {
     tree.registerRoute(HTTPMethod.GET, "hello/world/i/am/here", handler7);
     tree.registerRoute(HTTPMethod.GET, "hello/world/i", handler6);
 
-    expect(tree.match(HTTPMethod.GET, "hello/world/i/am/here", converters)).toEqual<RouteEndpoint>({handlers: [handler7], arguments: []});
-    expect(tree.match(HTTPMethod.GET, "hello/world/i", converters)).toEqual<RouteEndpoint>({handlers: [handler6], arguments: []});
-    expect(tree.match(HTTPMethod.GET, "hello/world/id5", converters)).toEqual<RouteEndpoint>({handlers: [handler5], arguments: [ {name: "id", value: "5"} ]});
-    expect(tree.match(HTTPMethod.GET, "hello/world/i5", converters)).toEqual<RouteEndpoint>({handlers: [handler4], arguments: [ {name: "id", value: "5"} ]});
-    expect(tree.match(HTTPMethod.GET, "hello/world/1234d", converters)).toEqual<RouteEndpoint>({handlers: [handler3], arguments: [ {name: "id", value: 1234} ]});
-    expect(tree.match(HTTPMethod.GET, "hello/world/1234f", converters)).toEqual<RouteEndpoint>({handlers: [handler2], arguments: [ {name: "id", value: 1234}, {name: "code", value: "f"} ]});
-    expect(tree.match(HTTPMethod.GET, "hello/world/abacd", converters)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name: "id", value: "abacd"} ]});
+    expect(tree.match(HTTPMethod.GET, "hello/world/i/am/here", converters)).toEqual<RouteEndpoint>({handlers: [handler7], arguments: [], pattern: [ {pattern: 'hello', isCaseSensitive: true}, {pattern: 'world', isCaseSensitive: true}, {pattern: 'i', isCaseSensitive: true}, {pattern: 'am', isCaseSensitive: true}, {pattern: 'here', isCaseSensitive: true} ]});
+    expect(tree.match(HTTPMethod.GET, "hello/world/i", converters)).toEqual<RouteEndpoint>({handlers: [handler6], arguments: [], pattern: [ {pattern: 'hello', isCaseSensitive: true}, {pattern: 'world', isCaseSensitive: true}, {pattern: 'i', isCaseSensitive: true}]});
+    expect(tree.match(HTTPMethod.GET, "hello/world/id5", converters)).toEqual<RouteEndpoint>({handlers: [handler5], arguments: [ {name: "id", value: "5"} ], pattern: [ {pattern: 'hello', isCaseSensitive: true}, {pattern: 'world', isCaseSensitive: true}, {pattern: 'id{id}', isCaseSensitive: true}]});
+    expect(tree.match(HTTPMethod.GET, "hello/world/i5", converters)).toEqual<RouteEndpoint>({handlers: [handler4], arguments: [ {name: "id", value: "5"} ], pattern: [ {pattern: 'hello', isCaseSensitive: true}, {pattern: 'world', isCaseSensitive: true}, {pattern: 'i{id}', isCaseSensitive: true} ]});
+    expect(tree.match(HTTPMethod.GET, "hello/world/1234d", converters)).toEqual<RouteEndpoint>({handlers: [handler3], arguments: [ {name: "id", value: 1234} ], pattern: [ {pattern: 'hello', isCaseSensitive: true}, {pattern: 'world', isCaseSensitive: true}, {pattern: '{id:int::4}d', isCaseSensitive: true} ]});
+    expect(tree.match(HTTPMethod.GET, "hello/world/1234f", converters)).toEqual<RouteEndpoint>({handlers: [handler2], arguments: [ {name: "id", value: 1234}, {name: "code", value: "f"} ], pattern: [ {pattern: 'hello', isCaseSensitive: true}, {pattern: 'world', isCaseSensitive: true}, {pattern: '{id:int::4}{code}', isCaseSensitive: true}] });
+    expect(tree.match(HTTPMethod.GET, "hello/world/abacd", converters)).toEqual<RouteEndpoint>({handlers: [handler1], arguments: [ {name: "id", value: "abacd"} ], pattern: [ {pattern: 'hello', isCaseSensitive: true}, {pattern: 'world', isCaseSensitive: true}, {pattern: '{id}', isCaseSensitive: true} ]});
 });

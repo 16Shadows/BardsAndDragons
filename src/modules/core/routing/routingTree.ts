@@ -1,6 +1,6 @@
 import { HTTPMethod } from "../constants";
 import { IRouteRegistry, RouteArgument, RouteDefinitionPart, RouteEndpoint } from "./core";
-import { IConvertersProvider, ITypeConverter } from "../converter";
+import { IConvertersProvider, ITypeConverter } from "../converters/converter";
 import { ArrayView, getArrayView } from "../utils/arrayUtils";
 import { sanitizeRoute } from "./utils";
 
@@ -136,11 +136,11 @@ module RoutingTree {
 
     class RoutePartMatcher {
         protected _Components: (ArgumentMatcher | string)[];
-        protected _IsCaseSensitive: boolean;
         protected _HasArguments: boolean;
         protected _HasPlainText: boolean;
+        protected _Pattern: RouteDefinitionPart;
     
-        constructor(pattern: string, isCaseSensitive: boolean) {
+        constructor(pattern: RouteDefinitionPart) {
             /*
                 This regex is used to split the string into parts of plain text and parts of arguments (because JS includes capture-groups into output):
                     dev{id}hey{num::2:3} -> dev, {id}, hey, {num::2:3}
@@ -148,17 +148,17 @@ module RoutingTree {
                     \{hey{id:\}:2:5}}hey => {hey, {id:}:2:5}, }hey
                 Note: escaped characters are poorly handled as they only examine presence of the preceeding backslash, won't properly handle \\{ or \\}
             */
-            this._Components = pattern.split(/({[^{}]*})/).filter(x => x.length > 0).map<string | ArgumentMatcher>(x => {
+            this._Pattern = pattern;
+            this._Components = pattern.pattern.split(/({[^{}]*})/).filter(x => x.length > 0).map<string | ArgumentMatcher>(x => {
                 return x.startsWith('{') ? new ArgumentMatcher(x) :
-                       isCaseSensitive ? x : x.toLowerCase();
+                       pattern.isCaseSensitive == true ? x : x.toLowerCase();
             })
-            this._IsCaseSensitive = isCaseSensitive;
             this._HasArguments = this._Components.some(x => typeof x != 'string');
             this._HasPlainText = this._Components.some(x => typeof x == 'string');
         }
     
         get isCaseSensitive(): boolean {
-            return this._IsCaseSensitive;
+            return this._Pattern.isCaseSensitive;
         }
     
         get componentsCount(): number {
@@ -171,6 +171,10 @@ module RoutingTree {
     
         get hasPlainText(): boolean {
             return this._HasPlainText;
+        }
+
+        get pattern(): RouteDefinitionPart {
+            return this._Pattern;
         }
     
         /**
@@ -186,7 +190,11 @@ module RoutingTree {
         }
     
         patternMatches(pattern: RoutePartMatcher): boolean {
-            if (pattern.componentsCount != this.componentsCount)
+            if (pattern.componentsCount != this.componentsCount ||
+                pattern.isCaseSensitive != this.isCaseSensitive ||
+                pattern.hasArguments != this.hasArguments ||
+                pattern.hasPlainText != this.hasPlainText
+            )
                 return false;
             for (var i : number = 0; i < this.componentsCount; i++)
             {
@@ -201,7 +209,7 @@ module RoutingTree {
         match(routePart: PreprocessedRoutePart, converters: IConvertersProvider): RouteArgument[] | null | undefined {
             var out : RouteArgument[] | null = this.hasArguments ? [] : null;
     
-            var matchAgainst = this._IsCaseSensitive ? routePart.part : routePart.partLower;
+            var matchAgainst = this.isCaseSensitive ? routePart.part : routePart.partLower;
     
             var partIndex = 0;
             for (var i = 0; i < this._Components.length; i++) {
@@ -265,8 +273,7 @@ module RoutingTree {
                     /hello/world/{id:int::4}{code} - route contains 3 elements but the last one has no text so it will only match if the previous one doesn't
                     /hello/world/{code} - this route has less arguments that the previous one in the respective route part
             */
-            var routePart: string = route[0].pattern;        
-            var matcher: RoutePartMatcher = new RoutePartMatcher(routePart, route[0].isCaseSensitive ?? true);
+            var matcher: RoutePartMatcher = new RoutePartMatcher(route[0]);
     
             var entry: RoutingTreeNodeEntry;
             var i: number = 0;
@@ -288,8 +295,7 @@ module RoutingTree {
                         if (entry.handlers == undefined)
                             entry.handlers = [];
     
-                        if (!entry.handlers.includes((x: Function) => x == handler))
-                            entry.handlers.push(handler);
+                        entry.handlers.push(handler);
                     }
                     return;
                 }
@@ -327,6 +333,29 @@ module RoutingTree {
             return this;
         }
     
+        unregisterRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: Function): RoutingTreeNode {
+            var matcher: RoutePartMatcher = new RoutePartMatcher(route[0]);
+
+            var entry: RoutingTreeNodeEntry;
+            for (var i: number = 0; i < this._Entries.length; i++)
+            {
+                entry = this._Entries[i];
+                //Check for exact pattern match with this entry
+                if (entry.matcher.patternMatches(matcher))
+                {
+                    if (route.length > 1 && entry.node != undefined)
+                        entry.node.unregisterRoute(getArrayView(route, 1), handler);
+                    else if (route.length == 1 && entry.handlers != undefined)
+                    {
+                        var index = entry.handlers.indexOf(handler);
+                        if (index != -1)
+                            entry.handlers.splice(index, 1);
+                    }
+                    return;
+                }
+            }
+        }
+
         /**
          * Tries to match the route left-to-right 
          * @param route 
@@ -352,6 +381,7 @@ module RoutingTree {
                         for (var item of match)
                             result.arguments.push(item);
     
+                    result.pattern.push(entry.matcher.pattern);
                     result.handlers = entry.handlers;
                     return true;
                 }
@@ -370,6 +400,7 @@ module RoutingTree {
                         for (var item of match)
                             result.arguments.push(item);
     
+                    result.pattern.push(entry.matcher.pattern);
                     return entry.node.match(getArrayView(route, 1), result, converters)
                 }
             }
@@ -402,12 +433,36 @@ module RoutingTree {
                 return sanitizeRoute(x.pattern).split('/').filter(x => x.length > 0).map<RouteDefinitionPart>(y => {
                     return {
                         pattern: y,
-                        isCaseSensitive: x.isCaseSensitive
+                        isCaseSensitive: x.isCaseSensitive ?? true
                     };
                 });
             });
     
             node.registerRoute(route, handler);
+        }
+
+        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: Function): void;
+        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: Function): void;
+        unregisterRoute(method: HTTPMethod, route: string, handler: Function): void;
+        unregisterRoute(method: HTTPMethod, route: string, handler: Function, caseSensitive: boolean): void;
+        unregisterRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], handler: Function, caseSensitive?: boolean): void {
+            var node : RoutingTreeNode = this._RootNodes[method];
+    
+            if (typeof route == 'string')
+                route = [ { pattern: sanitizeRoute(route), isCaseSensitive: caseSensitive } ];
+            else if (!Array.isArray(route))
+                route = [route];
+    
+            route = route.flatMap<RouteDefinitionPart>(x => {
+                return sanitizeRoute(x.pattern).split('/').filter(x => x.length > 0).map<RouteDefinitionPart>(y => {
+                    return {
+                        pattern: y,
+                        isCaseSensitive: x.isCaseSensitive
+                    };
+                });
+            });
+    
+            node.unregisterRoute(route, handler);
         }
     
         match(method: HTTPMethod, route: string, converters: IConvertersProvider): RouteEndpoint | undefined {
@@ -415,7 +470,8 @@ module RoutingTree {
     
             var endpoint: RouteEndpoint = {
                 handlers: undefined,
-                arguments: []
+                arguments: [],
+                pattern: []
             };
             return node.match(sanitizeRoute(route).split('/').filter(x => x.length > 0).map(x => new PreprocessedRoutePart(x)), endpoint, converters) ? endpoint : undefined;
         }

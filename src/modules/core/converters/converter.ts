@@ -1,7 +1,9 @@
 import 'reflect-metadata';
-import { constructor } from './types';
-import { Metadata_Prefix } from './constants';
-import { DependencyContainer } from 'tsyringe';
+import { constructor } from '../types';
+import { Metadata_Prefix } from '../constants';
+import { DependencyContainer, injectable } from 'tsyringe';
+import requireDirectory from 'require-directory';
+import path from 'path';
 
 module Converter {
     const Metadata_ConverterTypeIds = `${Metadata_Prefix}ConverterTypeIds`;
@@ -15,7 +17,10 @@ module Converter {
         return (target: constructor<ITypeConverter>) => {
             var typeIds : Set<string> | undefined = Reflect.getMetadata(Metadata_ConverterTypeIds, target);
             if (typeIds == undefined)
+            {
                 Reflect.defineMetadata(Metadata_ConverterTypeIds, typeIds = new Set<string>(), target);
+                injectable()(target);
+            }
             typeIds.add(typeId);
         }
     };
@@ -24,8 +29,27 @@ module Converter {
         return Reflect.getMetadata(Metadata_ConverterTypeIds, converter) as Set<string> | undefined;
     }
 
-    export function IsConverter(converter: constructor<ITypeConverter> | ITypeConverter): boolean {
+    export function isConverter(converter: constructor<ITypeConverter> | ITypeConverter): boolean {
         return Reflect.getMetadata(Metadata_ConverterTypeIds, converter);
+    }
+
+    export type ConvertersDiscoveryOptions = {
+        extensions?: string[] | undefined;
+        include?: RegExp | requireDirectory.CheckPathFn | undefined;
+        exclude?: RegExp | requireDirectory.CheckPathFn | undefined;
+    }
+
+    export function discoverConverters(pathToFolder: string, relativeTo: string = process.cwd(), options: ConvertersDiscoveryOptions = { extensions: ['js', 'ts'] }) {
+        function* recursiveDiscovery(modulesList : any) : Generator<constructor<Object>> {
+            for (var entry in modulesList) {
+                if (typeof modulesList[entry] == 'object')
+                    yield* recursiveDiscovery(modulesList[entry]);
+                else if (typeof modulesList[entry] == 'function' && isConverter(modulesList[entry]))
+                    yield modulesList[entry];
+            }
+        }
+    
+        return recursiveDiscovery(requireDirectory(module, './' + path.relative(__dirname, path.resolve(relativeTo, pathToFolder)), options));
     }
 
     export interface IConvertersProvider {
