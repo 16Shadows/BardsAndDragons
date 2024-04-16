@@ -1,5 +1,4 @@
 import KoaCoreApp from './modules/integration/koa/app';
-import Router from 'koa-router';
 import serve from 'koa-static';
 import { ExampleService } from './services/ExampleService';
 import { discoverControllers } from './modules/core/controllers/controller';
@@ -14,6 +13,8 @@ import { getDefaultConverters } from './modules/core/converters/default';
     //May cause side effects, should find another package or implement it manually
     //UPD: Looking through its sources, it gives priority to other middleware first. Is this desired behaviour?
     app.use(serve('./public'))
+
+    //IMPORTANT: ALL ROUTES IN THE REACT APP MUST BE DEFINED ON THE SERVER AS WELL. THE SERVER SHOULD SERVER REACT APP'S BUNDLE WHEN THOSE ROUTES ARE REQUESTED
 
     app.useControllers( discoverControllers('./controllers', __dirname) );
     app.useTypeConverters( getDefaultConverters() );
