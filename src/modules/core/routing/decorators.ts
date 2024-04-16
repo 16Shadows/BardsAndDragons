@@ -53,11 +53,18 @@ module RoutingDecorators {
 
             for (var route of routes) {
                 if (route.pattern.startsWith('/'))
-                    routesList.addRoute(route.method, [ { pattern: sanitizeRoute(route.pattern), isCaseSensitive: route.isCaseSensitive } ], route.handlerName);
+                    routesList.addRoute(route.method, [ { pattern: route.pattern, isCaseSensitive: route.isCaseSensitive } ], route.handlerName);
                 else
                 {
                     for (var controllerRoute of getContollerRoutes(target))
-                        routesList.addRoute(route.method, [controllerRoute, { pattern: sanitizeRoute(route.pattern), isCaseSensitive: route.isCaseSensitive }], route.handlerName);
+                    {
+                        if (controllerRoute.pattern.length > 0 && route.pattern.length > 0)
+                            routesList.addRoute(route.method, [controllerRoute, { pattern: route.pattern, isCaseSensitive: route.isCaseSensitive }], route.handlerName);
+                        else if (controllerRoute.pattern.length > 0)
+                            routesList.addRoute(route.method, [controllerRoute], route.handlerName);
+                        else
+                            routesList.addRoute(route.method, [{ pattern: route.pattern, isCaseSensitive: route.isCaseSensitive }], route.handlerName);
+                    }
                 }
             }   
         }

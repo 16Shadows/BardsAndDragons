@@ -3,12 +3,18 @@ import { GET } from "../modules/core/routing/decorators";
 import { ExampleService } from "../services/ExampleService";
 
 @Controller('api/v1/test')
+@Controller()
 export class TestController extends Object
 {
     constructor(service: ExampleService) {
         super();
         console.log("Test constructed");
         console.log(service.getValue());
+    }
+
+    @GET()
+    async root() {
+        return 'root';
     }
 
     @GET('index')

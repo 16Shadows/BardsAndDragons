@@ -1,8 +1,8 @@
-import { trim } from "../utils/stringUtils";
+import { trimStart } from "../utils/stringUtils";
 
 module RoutingUtils {
     export function sanitizeRoute(route: string): string {
-        return trim(route.trim(), '/');
+        return trimStart(route, '/');
     }
 }
 

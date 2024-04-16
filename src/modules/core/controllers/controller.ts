@@ -28,7 +28,7 @@ module Controller {
     }
     
     export function getContollerRoutes(controller: constructor<Object>): Iterable<RouteDefinitionPart> | undefined {
-        return Reflect.getMetadata(Metadata_ControllerRoutes, controller.prototype) ?? [{pattern: '', isCaseSensitive: false}];
+        return Reflect.getMetadata(Metadata_ControllerRoutes, controller.prototype);
     }
     
     export type ControllerDiscoveryOptions = {

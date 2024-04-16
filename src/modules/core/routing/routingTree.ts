@@ -149,10 +149,15 @@ module RoutingTree {
                 Note: escaped characters are poorly handled as they only examine presence of the preceeding backslash, won't properly handle \\{ or \\}
             */
             this._Pattern = pattern;
-            this._Components = pattern.pattern.split(/({[^{}]*})/).filter(x => x.length > 0).map<string | ArgumentMatcher>(x => {
-                return x.startsWith('{') ? new ArgumentMatcher(x) :
-                       pattern.isCaseSensitive == true ? x : x.toLowerCase();
-            })
+
+            if (pattern.pattern.length == 0)
+                this._Components = [''];
+            else
+                this._Components = pattern.pattern.split(/({[^{}]*})/).filter(x => x.length > 0).map<string | ArgumentMatcher>(x => {
+                    return x.startsWith('{') ? new ArgumentMatcher(x) :
+                        pattern.isCaseSensitive == true ? x : x.toLowerCase();
+                });
+
             this._HasArguments = this._Components.some(x => typeof x != 'string');
             this._HasPlainText = this._Components.some(x => typeof x == 'string');
         }
@@ -299,6 +304,13 @@ module RoutingTree {
                     }
                     return;
                 }
+
+                /*
+                    We want to fall throught all plaintext rules first - either one will eventually match or we will start comparing with non-plaintext rules and win there.
+                    Without this condition a plaintext rule may get inserted incorrectly.
+                */
+                if (!entry.matcher.hasArguments) 
+                    continue;
     
                 if( entry.handlers !== undefined && route.length > 1 || //This conditions ensures than longer routes are preferred
                     entry.matcher.hasArguments && !matcher.hasArguments || //This condition ensures that routes without arguments are preferred
@@ -425,12 +437,16 @@ module RoutingTree {
             var node : RoutingTreeNode = this._RootNodes[method];
     
             if (typeof route == 'string')
-                route = [ { pattern: sanitizeRoute(route), isCaseSensitive: caseSensitive } ];
+                route = [ { pattern: route, isCaseSensitive: caseSensitive } ];
             else if (!Array.isArray(route))
                 route = [route];
+            else if (route.length == 0)
+                route = [ { pattern: '', isCaseSensitive: true } ];
     
+            route[0] = { pattern: sanitizeRoute(route[0].pattern), isCaseSensitive: route[0].isCaseSensitive };
+
             route = route.flatMap<RouteDefinitionPart>(x => {
-                return sanitizeRoute(x.pattern).split('/').filter(x => x.length > 0).map<RouteDefinitionPart>(y => {
+                return x.pattern.split('/').map<RouteDefinitionPart>(y => {
                     return {
                         pattern: y,
                         isCaseSensitive: x.isCaseSensitive ?? true
@@ -449,12 +465,16 @@ module RoutingTree {
             var node : RoutingTreeNode = this._RootNodes[method];
     
             if (typeof route == 'string')
-                route = [ { pattern: sanitizeRoute(route), isCaseSensitive: caseSensitive } ];
+                route = [ { pattern: route, isCaseSensitive: caseSensitive } ];
             else if (!Array.isArray(route))
                 route = [route];
+            else if (route.length == 0)
+                route = [ { pattern: '', isCaseSensitive: true } ];
     
+            route[0] = { pattern: sanitizeRoute(route[0].pattern), isCaseSensitive: route[0].isCaseSensitive };
+
             route = route.flatMap<RouteDefinitionPart>(x => {
-                return sanitizeRoute(x.pattern).split('/').filter(x => x.length > 0).map<RouteDefinitionPart>(y => {
+                return x.pattern.split('/').map<RouteDefinitionPart>(y => {
                     return {
                         pattern: y,
                         isCaseSensitive: x.isCaseSensitive
@@ -473,7 +493,7 @@ module RoutingTree {
                 arguments: [],
                 pattern: []
             };
-            return node.match(sanitizeRoute(route).split('/').filter(x => x.length > 0).map(x => new PreprocessedRoutePart(x)), endpoint, converters) ? endpoint : undefined;
+            return node.match(sanitizeRoute(route).split('/').map(x => new PreprocessedRoutePart(x)), endpoint, converters) ? endpoint : undefined;
         }
     }
 }
