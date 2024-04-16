@@ -1,6 +1,5 @@
 import { HTTPMethod } from "../constants";
 import { IConvertersProvider } from "../converters/converter";
-import { isOfClass } from "../types";
 import { HTTPResponse, IRouteRegistry, IRouter, ResolvedRoute, RouteEndpoint } from "./core";
 
 export class Router implements IRouter {
@@ -30,7 +29,7 @@ export class Router implements IRouter {
                     if (result != undefined)
                         finalResult = result;
                 }
-                if (isOfClass(result, HTTPResponse))
+                if (result instanceof HTTPResponse)
                     return result;
                 else
                     return {

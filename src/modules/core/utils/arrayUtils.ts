@@ -1,5 +1,3 @@
-import { isOfClass } from "../types";
-
 module ArrayUtils {
     export type ArrayView<T> = { [key: number]: T, readonly length: number, [Symbol.iterator](): Iterator<T>};
 
