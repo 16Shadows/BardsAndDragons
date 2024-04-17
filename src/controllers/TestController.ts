@@ -1,5 +1,5 @@
 import { Controller } from "../modules/core/controllers/controller";
-import { GET } from "../modules/core/routing/decorators";
+import { Accept, Return, GET } from "../modules/core/routing/decorators";
 import { ExampleService } from "../services/ExampleService";
 
 @Controller('api/v1/test')
@@ -34,6 +34,8 @@ export class TestController extends Object
     }
 
     @GET('list')
+    @Accept('application/json')
+    @Return('application/json')
     async list() {
         console.log('list');
         return [1, 2, 3];
