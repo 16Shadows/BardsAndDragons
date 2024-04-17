@@ -1,13 +1,22 @@
 import { ITypeConverter } from "../../../../src/modules/core/converters/converter";
 import { HTTPMethod } from "../../../../src/modules/core/constants";
-import { RouteEndpoint } from "../../../../src/modules/core/routing/core";
+import { RouteEndpoint, RouteHandler } from "../../../../src/modules/core/routing/core";
 import { RoutingTree } from "../../../../src/modules/core/routing/routingTree";
 
 test('RoutingTree: distinct routes plain match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function handler1() {}
-    function handler2() {}
+    function h1() {}
+    function h2() {}
+
+    var handler1: RouteHandler = {
+        handler: h1,
+        controller: undefined
+    };
+    var handler2: RouteHandler = {
+        handler: h2,
+        controller: undefined
+    }
 
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1", handler1);
     tree.registerRoute(HTTPMethod.GET, "api/v1/method2", handler2);
@@ -27,8 +36,17 @@ test('RoutingTree: distinct routes plain match', () => {
 test('RoutingTree: overlapping plain match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function handler1() {}
-    function handler2() {}
+    function h1() {}
+    function h2() {}
+
+    var handler1: RouteHandler = {
+        handler: h1,
+        controller: undefined
+    };
+    var handler2: RouteHandler = {
+        handler: h2,
+        controller: undefined
+    }
 
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1", handler1);
     tree.registerRoute(HTTPMethod.GET, "api/v1", handler2);
@@ -46,8 +64,17 @@ test('RoutingTree: overlapping plain match', () => {
 test('RoutingTree: case-insensitive plain match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function handler1() {}
-    function handler2() {}
+    function h1() {}
+    function h2() {}
+
+    var handler1: RouteHandler = {
+        handler: h1,
+        controller: undefined
+    };
+    var handler2: RouteHandler = {
+        handler: h2,
+        controller: undefined
+    }
 
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1", handler1, false);
     tree.registerRoute(HTTPMethod.GET, "api/v1", handler2, false);
@@ -66,8 +93,12 @@ test('RoutingTree: case-insensitive plain match', () => {
 test('RoutingTree: partial case-insensitive plain match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function handler1() {}
-    function handler2() {}
+    function h1() {}
+
+    var handler1: RouteHandler = {
+        handler: h1,
+        controller: undefined
+    };
 
     tree.registerRoute(HTTPMethod.GET, [ {pattern:"api",isCaseSensitive:true}, {pattern:"v1/method1", isCaseSensitive: false} ], handler1);
 
@@ -83,7 +114,12 @@ test('RoutingTree: partial case-insensitive plain match', () => {
 test('RoutingTree: untyped argument match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function handler1() {}
+    function h1() {}
+
+    var handler1: RouteHandler = {
+        handler: h1,
+        controller: undefined
+    };
 
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1/{id}", handler1);
 
@@ -109,7 +145,12 @@ test('RoutingTree: typed argument match', () => {
     var converters: Map<string, ITypeConverter> = new Map<string, ITypeConverter>();
     converters.set("int", new IntConverter());
 
-    function handler1() {}
+    function h1() {}
+
+    var handler1: RouteHandler = {
+        handler: h1,
+        controller: undefined
+    };
 
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1/{id:int}", handler1);
 
@@ -123,7 +164,12 @@ test('RoutingTree: typed argument match', () => {
 test('RoutingTree: minLength argument match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function handler1() {}
+    function h1() {}
+
+    var handler1: RouteHandler = {
+        handler: h1,
+        controller: undefined
+    };
 
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1/{id::2}", handler1);
 
@@ -137,7 +183,12 @@ test('RoutingTree: minLength argument match', () => {
 test('RoutingTree: maxLength argument match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function handler1() {}
+    function h1() {}
+
+    var handler1: RouteHandler = {
+        handler: h1,
+        controller: undefined
+    };
 
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1/{id:::5}", handler1);
 
@@ -153,7 +204,12 @@ test('RoutingTree: multiple argument match', () => {
     var converters: Map<string, ITypeConverter> = new Map<string, ITypeConverter>();
     converters.set("int", new IntConverter());
 
-    function handler1() {}
+    function h1() {}
+
+    var handler1: RouteHandler = {
+        handler: h1,
+        controller: undefined
+    };
 
     tree.registerRoute(HTTPMethod.GET, "api/v1/method1/id{id:int::4}{name}", handler1);
 
@@ -170,13 +226,42 @@ test('RoutingTree: route preference test', () => {
     var converters: Map<string, ITypeConverter> = new Map<string, ITypeConverter>();
     converters.set("int", new IntConverter());
     
-    function handler1() {}
-    function handler2() {}
-    function handler3() {}
-    function handler4() {}
-    function handler5() {}
-    function handler6() {}
-    function handler7() {}
+    function h1() {}
+    function h2() {}
+    function h3() {}
+    function h4() {}
+    function h5() {}
+    function h6() {}
+    function h7() {}
+
+    var handler1: RouteHandler = {
+        handler: h1,
+        controller: undefined
+    };
+    var handler2: RouteHandler = {
+        handler: h2,
+        controller: undefined
+    };
+    var handler3: RouteHandler = {
+        handler: h3,
+        controller: undefined
+    };
+    var handler4: RouteHandler = {
+        handler: h4,
+        controller: undefined
+    };
+    var handler5: RouteHandler = {
+        handler: h5,
+        controller: undefined
+    };
+    var handler6: RouteHandler = {
+        handler: h6,
+        controller: undefined
+    };
+    var handler7: RouteHandler = {
+        handler: h7,
+        controller: undefined
+    };
 
     var tree: RoutingTree = new RoutingTree();
 

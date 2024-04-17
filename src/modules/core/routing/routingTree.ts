@@ -1,5 +1,5 @@
 import { HTTPMethod } from "../constants";
-import { IRouteRegistry, RouteArgument, RouteDefinitionPart, RouteEndpoint } from "./core";
+import { IRouteRegistry, RouteArgument, RouteDefinitionPart, RouteEndpoint, RouteHandler } from "./core";
 import { IConvertersProvider, ITypeConverter } from "../converters/converter";
 import { ArrayView, getArrayView } from "../utils/arrayUtils";
 import { sanitizeRoute } from "./utils";
@@ -249,7 +249,7 @@ module RoutingTree {
         matcher: RoutePartMatcher;
     
         node?: RoutingTreeNode;
-        handlers?: Function[];
+        handlers?: RouteHandler[];
     };
 
     class RoutingTreeNode {
@@ -259,7 +259,7 @@ module RoutingTree {
             this._Entries = [];
         }
     
-        registerRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: Function): RoutingTreeNode {
+        registerRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: RouteHandler): RoutingTreeNode {
             /*
                 Route preference rules:
                     1. Longer routes are preferred to shorter routes.
@@ -345,7 +345,7 @@ module RoutingTree {
             return this;
         }
     
-        unregisterRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: Function): RoutingTreeNode {
+        unregisterRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: RouteHandler): RoutingTreeNode {
             var matcher: RoutePartMatcher = new RoutePartMatcher(route[0]);
 
             var entry: RoutingTreeNodeEntry;
@@ -359,7 +359,7 @@ module RoutingTree {
                         entry.node.unregisterRoute(getArrayView(route, 1), handler);
                     else if (route.length == 1 && entry.handlers != undefined)
                     {
-                        var index = entry.handlers.indexOf(handler);
+                        var index = entry.handlers.findIndex(x => x.handler == handler.handler && x.controller == handler.controller);
                         if (index != -1)
                             entry.handlers.splice(index, 1);
                     }
@@ -429,11 +429,11 @@ module RoutingTree {
                 this._RootNodes.push(new RoutingTreeNode());
         }
     
-        registerRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: Function): void;
-        registerRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: Function): void;
-        registerRoute(method: HTTPMethod, route: string, handler: Function): void;
-        registerRoute(method: HTTPMethod, route: string, handler: Function, caseSensitive: boolean): void;
-        registerRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], handler: Function, caseSensitive?: boolean): void {
+        registerRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: RouteHandler): void;
+        registerRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: RouteHandler): void;
+        registerRoute(method: HTTPMethod, route: string, handler: RouteHandler): void;
+        registerRoute(method: HTTPMethod, route: string, handler: RouteHandler, caseSensitive: boolean): void;
+        registerRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], handler: RouteHandler, caseSensitive?: boolean): void {
             var node : RoutingTreeNode = this._RootNodes[method];
     
             if (typeof route == 'string')
@@ -457,11 +457,11 @@ module RoutingTree {
             node.registerRoute(route, handler);
         }
 
-        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: Function): void;
-        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: Function): void;
-        unregisterRoute(method: HTTPMethod, route: string, handler: Function): void;
-        unregisterRoute(method: HTTPMethod, route: string, handler: Function, caseSensitive: boolean): void;
-        unregisterRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], handler: Function, caseSensitive?: boolean): void {
+        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: RouteHandler): void;
+        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: RouteHandler): void;
+        unregisterRoute(method: HTTPMethod, route: string, handler: RouteHandler): void;
+        unregisterRoute(method: HTTPMethod, route: string, handler: RouteHandler, caseSensitive: boolean): void;
+        unregisterRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], handler: RouteHandler, caseSensitive?: boolean): void {
             var node : RoutingTreeNode = this._RootNodes[method];
     
             if (typeof route == 'string')

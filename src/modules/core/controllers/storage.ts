@@ -41,7 +41,7 @@ module ControllersStorage {
                 if (routes == undefined)
                     continue;
                 for (var route of routes)
-                    registry.registerRoute(route.method, route.route, controller[route.handlerName]);
+                    registry.registerRoute(route.method, route.route, { handler: controller[route.handlerName], controller: controller });
             }
         }
 
@@ -52,7 +52,7 @@ module ControllersStorage {
                 if (routes == undefined)
                     continue;
                 for (var route of routes)
-                    registry.unregisterRoute(route.method, route.route, controller[route.handlerName]);
+                    registry.unregisterRoute(route.method, route.route, { handler: controller[route.handlerName], controller: controller });
             }
         }
     }

@@ -25,7 +25,7 @@ export class Router implements IRouter {
                 var args = endpoints.arguments.map(x => x.value);
                 for (var handler of endpoints.handlers)
                 {
-                    result = await handler(...args);
+                    result = await handler.handler.apply(handler.controller, args);
                     if (result != undefined)
                         finalResult = result;
                 }

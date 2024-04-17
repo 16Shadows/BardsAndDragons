@@ -12,11 +12,16 @@ module RoutingCore {
         value: any;
     };
 
+    export type RouteHandler = {
+        handler: Function;
+        controller: Object;
+    };
+
     export type RouteEndpoint = {
         /**
          * A function registered as the handler of this endpoint.
          */
-        handlers: Function[];
+        handlers: RouteHandler[];
         /**
          * A set of arguments extracted from the route left-to-right based on its pattern.
          */
@@ -43,15 +48,15 @@ module RoutingCore {
     };
 
     export interface IRouteRegistry {
-        registerRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: Function): void;
-        registerRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: Function): void;
-        registerRoute(method: HTTPMethod, route: string, handler: Function): void;
-        registerRoute(method: HTTPMethod, route: string, handler: Function, caseSensitive: boolean): void;
+        registerRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: RouteHandler): void;
+        registerRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: RouteHandler): void;
+        registerRoute(method: HTTPMethod, route: string, handler: RouteHandler): void;
+        registerRoute(method: HTTPMethod, route: string, handler: RouteHandler, caseSensitive: boolean): void;
     
-        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: Function): void;
-        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: Function): void;
-        unregisterRoute(method: HTTPMethod, route: string, handler: Function): void;
-        unregisterRoute(method: HTTPMethod, route: string, handler: Function, caseSensitive: boolean): void;
+        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: RouteHandler): void;
+        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: RouteHandler): void;
+        unregisterRoute(method: HTTPMethod, route: string, handler: RouteHandler): void;
+        unregisterRoute(method: HTTPMethod, route: string, handler: RouteHandler, caseSensitive: boolean): void;
 
         match(method: HTTPMethod, route: string, converters: IConvertersProvider): RouteEndpoint | undefined;
     }
