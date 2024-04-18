@@ -79,8 +79,8 @@ class KoaCoreApp<
         return this;
     }
 
-    useTypeConverter(converterType: constructor<ITypeConverter>, typeIds?: Iterable<string> | undefined): KoaCoreApp<StateT, ContextT> {
-        this._ConvertersProvider.register(converterType, typeIds);
+    useTypeConverter(converterType: constructor<ITypeConverter>): KoaCoreApp<StateT, ContextT> {
+        this._ConvertersProvider.register(converterType);
         return this;
     }
 

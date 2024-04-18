@@ -6,7 +6,7 @@ import requireDirectory from 'require-directory';
 import path from 'path';
 
 module Converter {
-    const Metadata_ConverterTypeIds = `${Metadata_Prefix}ConverterTypeIds`;
+    const Metadata_ConverterTypeId = `${Metadata_Prefix}ConverterTypeId`;
 
     export interface ITypeConverter {
         convertFromString(str: string): any | undefined;
@@ -15,22 +15,22 @@ module Converter {
 
     export function Converter(typeId: string) {
         return (target: constructor<ITypeConverter>) => {
-            var typeIds : Set<string> | undefined = Reflect.getMetadata(Metadata_ConverterTypeIds, target);
-            if (typeIds == undefined)
-            {
-                Reflect.defineMetadata(Metadata_ConverterTypeIds, typeIds = new Set<string>(), target);
-                injectable()(target);
-            }
-            typeIds.add(typeId);
+            var typeIds : string | undefined = Reflect.getMetadata(Metadata_ConverterTypeId, target);
+            
+            if (typeIds != undefined)
+                throw new Error('Only one @Converter decorator may be specified.');
+            
+            injectable()(target);
+            Reflect.defineMetadata(Metadata_ConverterTypeId, typeId, target);
         }
     };
     
-    export function getConverterTypes(converter: ITypeConverter | constructor<ITypeConverter>): Iterable<string> | undefined {
-        return Reflect.getMetadata(Metadata_ConverterTypeIds, converter) as Set<string> | undefined;
+    export function getConverterType(converter: ITypeConverter | constructor<ITypeConverter>): string | undefined {
+        return Reflect.getMetadata(Metadata_ConverterTypeId, converter) as string | undefined;
     }
 
     export function isConverter(converter: constructor<ITypeConverter> | ITypeConverter): boolean {
-        return Reflect.getMetadata(Metadata_ConverterTypeIds, converter);
+        return Reflect.hasMetadata(Metadata_ConverterTypeId, converter);
     }
 
     export type ConvertersDiscoveryOptions = {
@@ -65,11 +65,9 @@ module Converter {
             this._TypeMapping = new Map<string, constructor<ITypeConverter>>();
         }
 
-        register(converter: constructor<ITypeConverter>, typeIds?: Iterable<string> | undefined) {
-            typeIds = typeIds ?? getConverterTypes(converter);
-            if (typeIds != undefined)
-                for (var type of typeIds)
-                    this._TypeMapping.set(type, converter);
+        register(converter: constructor<ITypeConverter>) {
+            var typeId = getConverterType(converter);
+            this._TypeMapping.set(typeId, converter);
             this._DIContext.registerSingleton(converter);
         }
 
