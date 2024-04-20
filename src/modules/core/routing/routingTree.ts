@@ -1,6 +1,7 @@
 import { HTTPMethod } from "../constants";
 import { IRouteRegistry, RouteArgument, RouteDefinitionPart, RouteEndpoint, RouteHandler } from "./core";
-import { IConvertersProvider, ITypeConverter } from "../converters/converter";
+import { IConvertersProvider } from "../converters/storage";
+import { ITypeConverter } from "../converters/converter";
 import { ArrayView, getArrayView } from "../utils/arrayUtils";
 
 module RoutingTree {

@@ -1,5 +1,5 @@
 import { DependencyContainer } from "tsyringe";
-import { IConvertersProvider } from "../converters/converter";
+import { IConvertersProvider } from "../converters/storage";
 import { getAcceptContentTypes, getReturnContentTypes } from "../mimeType/decorators";
 import { IMimeTypeConverter, IMimeTypesProvider, MimeTypeParams } from "../mimeType/mimeTypeConverter";
 import { ExtendedReturn, HTTPRequest, HTTPResponse, IRouteRegistry, IRouter, ResolvedRoute, RouteEndpoint, RouteHandler } from "./core";

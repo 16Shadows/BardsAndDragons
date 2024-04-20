@@ -1,6 +1,5 @@
 import { HTTPMethod } from "../constants";
-import { IConvertersProvider } from "../converters/converter";
-import { IncomingHttpHeaders, OutgoingHttpHeaders } from "http2";
+import { IConvertersProvider } from "../converters/storage";
 import { IMimeTypesProvider } from "../mimeType/mimeTypeConverter";
 import { constructor } from "../types";
 import { DependencyContainer } from "tsyringe";
