@@ -8,22 +8,22 @@ module Converters {
 
     export function Converter(typeId: string) {
         return (target: constructor<ITypeConverter>) => {
-            var typeIds : string | undefined = Reflect.getMetadata(Metadata_ConverterTypeId, target);
+            var typeIds : string | undefined = Reflect.getMetadata(Metadata_ConverterTypeId, target.prototype);
             
             if (typeIds != undefined)
                 throw new Error('Only one @Converter decorator may be specified.');
             
             injectable()(target);
-            Reflect.defineMetadata(Metadata_ConverterTypeId, typeId, target);
+            Reflect.defineMetadata(Metadata_ConverterTypeId, typeId, target.prototype);
         }
     };
     
     export function getConverterType(converter: constructor<ITypeConverter>): string | undefined {
-        return Reflect.getMetadata(Metadata_ConverterTypeId, converter) as string | undefined;
+        return Reflect.getMetadata(Metadata_ConverterTypeId, converter.prototype) as string | undefined;
     }
 
     export function isConverter(converter: constructor<ITypeConverter>): boolean {
-        return Reflect.hasMetadata(Metadata_ConverterTypeId, converter);
+        return Reflect.hasMetadata(Metadata_ConverterTypeId, converter.prototype);
     }
 
     export interface ITypeConverter {

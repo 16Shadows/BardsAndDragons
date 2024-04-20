@@ -5,6 +5,8 @@ import { IMimeTypeConverter, IMimeTypesProvider, MimeTypeParams } from "../mimeT
 import { ExtendedReturn, HTTPRequest, HTTPResponse, IRouteRegistry, IRouter, ResolvedRoute, RouteEndpoint, RouteHandler } from "./core";
 import contentType from 'content-type';
 import { HTTPMethod } from "../constants";
+import { constructor } from "../types";
+import { IMiddleware, MiddlewareBag, MiddlewareContext, getControllerMiddleware, getHandlerMiddleware } from "../middleware/middleware";
 
 export class Router implements IRouter {
     protected _RouteRegistry : IRouteRegistry;
@@ -64,30 +66,81 @@ export class Router implements IRouter {
 
             if (body == undefined)
                 return new HTTPResponse(415);
-
-            //Add body as the last argument
-            args.push(body);
         }
         
         var results: HTTPResponse[] = [],
             result: HTTPResponse | undefined;
         for (var handler of handlers)
         {
-            result = await this.executeHandler(request, handler, args, mimeTypes, context);
+            result = await this.executeHandler(request, handler, args, body, mimeTypes, context);
             if (result != undefined)
                 results.push(result);
         }
         return results[0];
     }
 
-    async executeHandler(request: HTTPRequest, handler: RouteHandler, args: any[], mimeTypes: IMimeTypesProvider, context: DependencyContainer): Promise<HTTPResponse | undefined> {
+    async executeHandler(request: HTTPRequest, handler: RouteHandler, args: ReadonlyArray<any>, body:any, mimeTypes: IMimeTypesProvider, context: DependencyContainer): Promise<HTTPResponse | undefined> {
+
+        var middlewareBag: MiddlewareBag = {};
+
+        var controllerMiddleware: ReadonlyArray<constructor<IMiddleware>> = getControllerMiddleware(handler.controller);
+        var handlerMiddleware: ReadonlyArray<constructor<IMiddleware>> = getHandlerMiddleware(handler.controller, handler.handler);
+
+        var query = request.query;
+        var headers = request.headers;
+
+        if (controllerMiddleware?.length > 0 || handlerMiddleware?.length > 0)
+        {
+            var middlewareContext: MiddlewareContext = {
+                handler: handler,
+                body: body,
+                query: query,
+                headers: headers,
+                args: args
+            };
+
+            var middlewareInstance: IMiddleware;
+            var middlewareResult : HTTPResponse | MiddlewareContext | undefined;
+            if (controllerMiddleware?.length > 0)
+            {
+                for (var middleware of controllerMiddleware)
+                {
+                    middlewareInstance = context.resolve(middleware);
+                    middlewareResult = await middlewareInstance.run(middlewareContext, middlewareBag);
+                    if (middlewareResult instanceof HTTPResponse)
+                        return middlewareResult;
+                    else if (middlewareResult != undefined)
+                        middlewareContext = middlewareResult;
+                }
+            }
+
+            if (handlerMiddleware?.length > 0)
+            {
+                for (var middleware of handlerMiddleware)
+                {
+                    middlewareInstance = context.resolve(middleware);
+                    middlewareResult = await middlewareInstance.run(middlewareContext, middlewareBag);
+                    if (middlewareResult instanceof HTTPResponse)
+                        return middlewareResult;
+                    else if (middlewareResult != undefined)
+                        middlewareContext = middlewareResult;
+                }
+            }
+
+            handler = middlewareContext.handler;
+            body = middlewareContext.body;
+            headers = middlewareContext.headers;
+            query = middlewareContext.query;
+            args = middlewareContext.args;
+        }
+
 
         //Instantiate handler and find its method
-        var handlerInstance: Object = context.resolve(handler.controller);
-        var handlerMethod: Function = handlerInstance[handler.handler];
+        var controllerInstance: Object = context.resolve(handler.controller);
+        var handlerMethod: Function = controllerInstance[handler.handler];
     
         //Invoke the method
-        var result: any = await handlerMethod.apply(handlerInstance, args);
+        var result: any = await handlerMethod.call(controllerInstance, middlewareBag, ...args, body);
         //Return value is an already processed response, return as is.
         if (result instanceof HTTPResponse)
             return result;

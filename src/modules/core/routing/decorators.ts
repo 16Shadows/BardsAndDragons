@@ -3,11 +3,15 @@ import { HTTPMethod, Metadata_Prefix } from '../constants';
 import { RouteDefinitionPart } from './core';
 import { getContollerRoutes } from '../controllers/decorators';
 import { constructor } from '../types';
-import { Endpoint } from '../types';
+import { MiddlewareBag } from '../middleware/middleware';
 
 module RoutingDecorators {
     const Metadata_HandlerRoutes : string = `${Metadata_Prefix}HandlerRoutes`;
     const Metadata_Routes : string = `${Metadata_Prefix}Routes`;
+
+    export type Endpoint = {
+        (bag: MiddlewareBag, ...args: any[]): Promise<any>
+    };
 
     type HandlerRouteInfo = {
         handlerName: string;
@@ -71,7 +75,7 @@ module RoutingDecorators {
         return routesList;
     }
 
-    export function Route(method: HTTPMethod, route: string, caseSensitive: boolean = true) {
+    export function Route<TBag extends MiddlewareBag>(method: HTTPMethod, route: string, caseSensitive: boolean = true) {
         return (target : Object, name: string, prop: TypedPropertyDescriptor<Endpoint>) => {
             var routes : HandlerRouteInfo[] | undefined = Reflect.getMetadata(Metadata_HandlerRoutes, target);
             if (routes === undefined)
