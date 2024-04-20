@@ -37,12 +37,16 @@ module RoutingCore {
         pattern: RouteDefinitionPart[];
     };
 
-    export type Headers = {
+    export type HTTPHeaders = {
         [key: string]: string | string[]
+        'Content-Type'?: string;
     }
 
+    export type IncomingHttpHeaders = HTTPHeaders & {};
+    export type OutgoingHttpHeaders = HTTPHeaders & {};
+
     export type HTTPRequest = {
-        readonly headers: Headers;
+        readonly headers: IncomingHttpHeaders;
         readonly body: NodeJS.ReadableStream;
         readonly method: HTTPMethod;
         readonly path: string;
@@ -52,9 +56,9 @@ module RoutingCore {
     export class HTTPResponse {
         readonly body?: NodeJS.ReadableStream;
         readonly code: number;
-        readonly headers?: Headers;
+        readonly headers?: OutgoingHttpHeaders;
 
-        constructor(code: number, headers?: Headers, body?: NodeJS.ReadableStream) {
+        constructor(code: number, headers?: OutgoingHttpHeaders, body?: NodeJS.ReadableStream) {
             this.body = body;
             this.code = code;
             this.headers = headers ?? {};
@@ -63,11 +67,11 @@ module RoutingCore {
 
     export class ExtendedReturn {
         readonly code: number;
-        readonly headers?: Headers;
+        readonly headers?: OutgoingHttpHeaders;
         readonly body?: any;
         readonly bodyMimeType?: string;
 
-        constructor(code: number, headers?: Headers, body?: any, bodyMimeType?: string) {
+        constructor(code: number, headers?: OutgoingHttpHeaders, body?: any, bodyMimeType?: string) {
             this.code = code;
             this.headers = headers;
             this.body = body;

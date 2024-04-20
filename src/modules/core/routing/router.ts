@@ -140,6 +140,6 @@ export class Router implements IRouter {
         if (result instanceof ExtendedReturn)
             return new HTTPResponse(result.code, result.headers, await mimeTypeConverter.convertTo(result.body, mimeTypeParams));
         else
-            return new HTTPResponse(200, { 'content-type': mimeType }, await mimeTypeConverter.convertTo(result, mimeTypeParams));
+            return new HTTPResponse(200, { 'Content-Type': mimeType }, await mimeTypeConverter.convertTo(result, mimeTypeParams));
     }
 };
