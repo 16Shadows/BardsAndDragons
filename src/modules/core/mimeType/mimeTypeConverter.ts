@@ -74,7 +74,7 @@ module MimeTypeConverter {
             var typeIds = getMimeTypeConverterTypes(converter);
             for (var typeId of typeIds)
                 this._TypeMapping.set(typeId, converter);
-            this._DIContext.registerSingleton(converter);
+            this._DIContext.register(converter, {useClass: converter});
         }
 
         get(typeId: string): IMimeTypeConverter | undefined {

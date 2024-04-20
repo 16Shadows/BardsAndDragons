@@ -19,7 +19,7 @@ module ConvertersStorage {
         register(converter: constructor<ITypeConverter>) {
             var typeId = getConverterType(converter);
             this._TypeMapping.set(typeId, converter);
-            this._DIContext.registerSingleton(converter);
+            this._DIContext.register(converter, {useClass:converter});
         }
 
         get(typeId: string): ITypeConverter | undefined {
