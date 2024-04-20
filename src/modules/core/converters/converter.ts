@@ -9,8 +9,12 @@ module Converter {
     const Metadata_ConverterTypeId = `${Metadata_Prefix}ConverterTypeId`;
 
     export interface ITypeConverter {
+        //Used for route parsing
         convertFromString(str: string): any | undefined;
-        convertToString(item: any): string | undefined;
+
+        //Used for body conversion
+        convertFrom(decodedMimeType: any): any | undefined;
+        convertTo(value: any): any | undefined;
     };
 
     export function Converter(typeId: string) {
@@ -25,11 +29,11 @@ module Converter {
         }
     };
     
-    export function getConverterType(converter: ITypeConverter | constructor<ITypeConverter>): string | undefined {
+    export function getConverterType(converter: constructor<ITypeConverter>): string | undefined {
         return Reflect.getMetadata(Metadata_ConverterTypeId, converter) as string | undefined;
     }
 
-    export function isConverter(converter: constructor<ITypeConverter> | ITypeConverter): boolean {
+    export function isConverter(converter: constructor<ITypeConverter>): boolean {
         return Reflect.hasMetadata(Metadata_ConverterTypeId, converter);
     }
 
@@ -40,7 +44,7 @@ module Converter {
     }
 
     export function discoverConverters(pathToFolder: string, relativeTo: string = process.cwd(), options: ConvertersDiscoveryOptions = { extensions: ['js', 'ts'] }) {
-        function* recursiveDiscovery(modulesList : any) : Generator<constructor<Object>> {
+        function* recursiveDiscovery(modulesList : any) : Generator<constructor<ITypeConverter>> {
             for (var entry in modulesList) {
                 if (typeof modulesList[entry] == 'object')
                     yield* recursiveDiscovery(modulesList[entry]);

@@ -1,6 +1,8 @@
 import { Controller } from "../modules/core/controllers/controller";
-import { Accept, Return, GET } from "../modules/core/routing/decorators";
+import { GET, POST } from "../modules/core/routing/decorators";
 import { ExampleService } from "../services/ExampleService";
+import { Accept, Return } from "../modules/core/mimeType/decorators";
+import { ExtendedReturn } from "../modules/core/routing/core";
 
 @Controller('api/v1/test')
 @Controller()
@@ -33,11 +35,26 @@ export class TestController extends Object
         return a + b;
     }
 
-    @GET('list')
+    @POST('list')
     @Accept('application/json')
     @Return('application/json')
-    async list() {
-        console.log('list');
+    async list(body: Object) {
+        console.log(body);
         return [1, 2, 3];
+    }
+
+    @POST('list2')
+    @Accept('application/json')
+    async list2(body: Object) {
+        console.log(body);
+        return new ExtendedReturn(201, undefined, body, 'application/json');
+    }
+
+    @POST('list3')
+    @Accept('application/json')
+    @Return('application/json')
+    async list3(body: Object) {
+        console.log(body);
+        return new ExtendedReturn(201, undefined, body);
     }
 };

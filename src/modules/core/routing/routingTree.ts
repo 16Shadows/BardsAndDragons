@@ -2,7 +2,6 @@ import { HTTPMethod } from "../constants";
 import { IRouteRegistry, RouteArgument, RouteDefinitionPart, RouteEndpoint, RouteHandler } from "./core";
 import { IConvertersProvider, ITypeConverter } from "../converters/converter";
 import { ArrayView, getArrayView } from "../utils/arrayUtils";
-import { sanitizeRoute } from "./utils";
 
 module RoutingTree {
     class PreprocessedRoutePart {
@@ -443,7 +442,7 @@ module RoutingTree {
             else if (route.length == 0)
                 route = [ { pattern: '', isCaseSensitive: true } ];
     
-            route[0] = { pattern: sanitizeRoute(route[0].pattern), isCaseSensitive: route[0].isCaseSensitive };
+            route[0] = { pattern: route[0].pattern, isCaseSensitive: route[0].isCaseSensitive };
 
             route = route.flatMap<RouteDefinitionPart>(x => {
                 return x.pattern.split('/').map<RouteDefinitionPart>(y => {
@@ -471,7 +470,7 @@ module RoutingTree {
             else if (route.length == 0)
                 route = [ { pattern: '', isCaseSensitive: true } ];
     
-            route[0] = { pattern: sanitizeRoute(route[0].pattern), isCaseSensitive: route[0].isCaseSensitive };
+            route[0] = { pattern: route[0].pattern, isCaseSensitive: route[0].isCaseSensitive };
 
             route = route.flatMap<RouteDefinitionPart>(x => {
                 return x.pattern.split('/').map<RouteDefinitionPart>(y => {
@@ -493,7 +492,7 @@ module RoutingTree {
                 arguments: [],
                 pattern: []
             };
-            return node.match(sanitizeRoute(route).split('/').map(x => new PreprocessedRoutePart(x)), endpoint, converters) ? endpoint : undefined;
+            return node.match(route.split('/').map(x => new PreprocessedRoutePart(x)), endpoint, converters) ? endpoint : undefined;
         }
     }
 }

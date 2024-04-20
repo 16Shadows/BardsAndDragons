@@ -1,8 +1,6 @@
-import { trimStart } from "../utils/stringUtils";
-
 module RoutingUtils {
     export function sanitizeRoute(route: string): string {
-        return trimStart(route, '/');
+        return route.startsWith('/') ? route.substring(1) : route;
     }
 }
 

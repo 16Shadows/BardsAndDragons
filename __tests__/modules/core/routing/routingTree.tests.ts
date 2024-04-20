@@ -6,15 +6,12 @@ import { RoutingTree } from "../../../../src/modules/core/routing/routingTree";
 test('RoutingTree: distinct routes plain match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function h1() {}
-    function h2() {}
-
     var handler1: RouteHandler = {
-        handler: h1,
+        handler: 'h1',
         controller: undefined
     };
     var handler2: RouteHandler = {
-        handler: h2,
+        handler: 'h2',
         controller: undefined
     }
 
@@ -36,15 +33,12 @@ test('RoutingTree: distinct routes plain match', () => {
 test('RoutingTree: overlapping plain match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function h1() {}
-    function h2() {}
-
     var handler1: RouteHandler = {
-        handler: h1,
+        handler: 'h1',
         controller: undefined
     };
     var handler2: RouteHandler = {
-        handler: h2,
+        handler: 'h2',
         controller: undefined
     }
 
@@ -64,15 +58,12 @@ test('RoutingTree: overlapping plain match', () => {
 test('RoutingTree: case-insensitive plain match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function h1() {}
-    function h2() {}
-
     var handler1: RouteHandler = {
-        handler: h1,
+        handler: 'h1',
         controller: undefined
     };
     var handler2: RouteHandler = {
-        handler: h2,
+        handler: 'h2',
         controller: undefined
     }
 
@@ -93,10 +84,8 @@ test('RoutingTree: case-insensitive plain match', () => {
 test('RoutingTree: partial case-insensitive plain match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function h1() {}
-
     var handler1: RouteHandler = {
-        handler: h1,
+        handler: 'h1',
         controller: undefined
     };
 
@@ -114,10 +103,8 @@ test('RoutingTree: partial case-insensitive plain match', () => {
 test('RoutingTree: untyped argument match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function h1() {}
-
     var handler1: RouteHandler = {
-        handler: h1,
+        handler: 'h1',
         controller: undefined
     };
 
@@ -131,6 +118,13 @@ test('RoutingTree: untyped argument match', () => {
 });
 
 class IntConverter implements ITypeConverter {
+    convertFrom(decodedMimeType: any) {
+        throw new Error("Method not implemented.");
+    }
+    convertTo(value: any) {
+        throw new Error("Method not implemented.");
+    }
+
     convertFromString(str: string): number | undefined {
         var value = +str;
         return Number.isInteger(value) ? value : undefined;
@@ -145,10 +139,8 @@ test('RoutingTree: typed argument match', () => {
     var converters: Map<string, ITypeConverter> = new Map<string, ITypeConverter>();
     converters.set("int", new IntConverter());
 
-    function h1() {}
-
     var handler1: RouteHandler = {
-        handler: h1,
+        handler: 'h1',
         controller: undefined
     };
 
@@ -164,10 +156,8 @@ test('RoutingTree: typed argument match', () => {
 test('RoutingTree: minLength argument match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function h1() {}
-
     var handler1: RouteHandler = {
-        handler: h1,
+        handler: 'h1',
         controller: undefined
     };
 
@@ -183,10 +173,8 @@ test('RoutingTree: minLength argument match', () => {
 test('RoutingTree: maxLength argument match', () => {
     var tree: RoutingTree = new RoutingTree();
 
-    function h1() {}
-
     var handler1: RouteHandler = {
-        handler: h1,
+        handler: 'h1',
         controller: undefined
     };
 
@@ -204,10 +192,8 @@ test('RoutingTree: multiple argument match', () => {
     var converters: Map<string, ITypeConverter> = new Map<string, ITypeConverter>();
     converters.set("int", new IntConverter());
 
-    function h1() {}
-
     var handler1: RouteHandler = {
-        handler: h1,
+        handler: 'h1',
         controller: undefined
     };
 
@@ -225,41 +211,33 @@ test('RoutingTree: multiple argument match', () => {
 test('RoutingTree: route preference test', () => {
     var converters: Map<string, ITypeConverter> = new Map<string, ITypeConverter>();
     converters.set("int", new IntConverter());
-    
-    function h1() {}
-    function h2() {}
-    function h3() {}
-    function h4() {}
-    function h5() {}
-    function h6() {}
-    function h7() {}
 
     var handler1: RouteHandler = {
-        handler: h1,
+        handler: 'h1',
         controller: undefined
     };
     var handler2: RouteHandler = {
-        handler: h2,
+        handler: 'h2',
         controller: undefined
     };
     var handler3: RouteHandler = {
-        handler: h3,
+        handler: 'h3',
         controller: undefined
     };
     var handler4: RouteHandler = {
-        handler: h4,
+        handler: 'h4',
         controller: undefined
     };
     var handler5: RouteHandler = {
-        handler: h5,
+        handler: 'h5',
         controller: undefined
     };
     var handler6: RouteHandler = {
-        handler: h6,
+        handler: 'h6',
         controller: undefined
     };
     var handler7: RouteHandler = {
-        handler: h7,
+        handler: 'h7',
         controller: undefined
     };
 

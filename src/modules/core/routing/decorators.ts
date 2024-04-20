@@ -3,6 +3,7 @@ import { HTTPMethod, Metadata_Prefix } from '../constants';
 import { RouteDefinitionPart } from './core';
 import { getContollerRoutes } from '../controllers/controller';
 import { constructor } from '../types';
+import { Endpoint } from '../types';
 
 module RoutingDecorators {
     const Metadata_HandlerRoutes : string = `${Metadata_Prefix}HandlerRoutes`;
@@ -70,10 +71,6 @@ module RoutingDecorators {
         return routesList;
     }
 
-    export type Endpoint = {
-        (...args: any[]): Promise<any>
-    }
-
     export function Route(method: HTTPMethod, route: string, caseSensitive: boolean = true) {
         return (target : Object, name: string, prop: TypedPropertyDescriptor<Endpoint>) => {
             var routes : HandlerRouteInfo[] | undefined = Reflect.getMetadata(Metadata_HandlerRoutes, target);
@@ -106,57 +103,6 @@ module RoutingDecorators {
 
     export function HEAD(route: string = '', caseSensitive: boolean = false) {
         return Route(HTTPMethod.HEAD, route, caseSensitive);
-    }
-
-    const Metadata_Accept : string = `${Metadata_Prefix}Accept`;
-    const Metadata_ContentType : string = `${Metadata_Prefix}ContentType`;
-
-    export function mimeTypeToRegex(type: string): string {
-        return type.toLowerCase().replace('*', '[^\\]+');
-    }
-
-    export function getAcceptPatterns(target: constructor<Object>, handlerName: string): Iterable<string> | undefined {
-        var accept: Map<string, Set<string>> = Reflect.getMetadata(Metadata_Accept, target);
-        if (accept == undefined)
-            return undefined;
-        return accept.get(handlerName);
-    }
-
-    export function Accept(first: string, ...args: string[]) {
-        return (target : Object, name: string, prop: TypedPropertyDescriptor<Endpoint>) => {
-            var accept: Map<string, Set<string>> = Reflect.getMetadata(Metadata_Accept, target);
-            if (accept == undefined)
-                Reflect.defineMetadata(Metadata_Accept, accept = new Map<string, Set<string>>(), target);
-            
-            var functionAccept: Set<string> = accept.get(name);
-            if (functionAccept == undefined)
-                accept.set(name, functionAccept = new Set<string>());
-
-            for (var item of args)
-                functionAccept.add(mimeTypeToRegex(item));
-        };
-    }
-
-    export function getContentTypes(target: constructor<Object>, handlerName: string): Iterable<string> | undefined {
-        var accept: Map<string, Set<string>> = Reflect.getMetadata(Metadata_ContentType, target);
-        if (accept == undefined)
-            return undefined;
-        return accept.get(handlerName);
-    }
-
-    export function Return(first: string, ...args: string[]) {
-        return (target : Object, name: string, prop: TypedPropertyDescriptor<Endpoint>) => {
-            var accept: Map<string, Set<string>> = Reflect.getMetadata(Metadata_ContentType, target);
-            if (accept == undefined)
-                Reflect.defineMetadata(Metadata_Accept, accept = new Map<string, Set<string>>(), target);
-            
-            var functionAccept: Set<string> = accept.get(name);
-            if (functionAccept == undefined)
-                accept.set(name, functionAccept = new Set<string>());
-
-            for (var item of args)
-                functionAccept.add(item);
-        };
     }
 }
 

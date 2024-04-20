@@ -1,5 +1,10 @@
 import { HTTPMethod } from "../constants";
 import { IConvertersProvider } from "../converters/converter";
+import { IncomingHttpHeaders, OutgoingHttpHeaders } from "http2";
+import { IMimeTypesProvider } from "../mimeType/mimeTypeConverter";
+import { constructor } from "../types";
+import { DependencyContainer } from "tsyringe";
+import { ParsedUrlQuery } from 'querystring';
 
 module RoutingCore {
     export type RouteDefinitionPart = {
@@ -13,8 +18,8 @@ module RoutingCore {
     };
 
     export type RouteHandler = {
-        handler: Function;
-        controller: Object;
+        handler: string;
+        controller: constructor<Object>;
     };
 
     export type RouteEndpoint = {
@@ -32,18 +37,46 @@ module RoutingCore {
         pattern: RouteDefinitionPart[];
     };
 
-    export class HTTPResponse {
-        readonly body: string;
-        readonly code: number;
+    export type Headers = {
+        [key: string]: string | string[]
+    }
 
-        constructor(code: number, body: string) {
+    export type HTTPRequest = {
+        readonly headers: Headers;
+        readonly body: NodeJS.ReadableStream;
+        readonly method: HTTPMethod;
+        readonly path: string;
+        readonly query: ParsedUrlQuery;
+    };
+
+    export class HTTPResponse {
+        readonly body?: NodeJS.ReadableStream;
+        readonly code: number;
+        readonly headers?: Headers;
+
+        constructor(code: number, headers?: Headers, body?: NodeJS.ReadableStream) {
             this.body = body;
             this.code = code;
+            this.headers = headers ?? {};
+        }
+    };
+
+    export class ExtendedReturn {
+        readonly code: number;
+        readonly headers?: Headers;
+        readonly body?: any;
+        readonly bodyMimeType?: string;
+
+        constructor(code: number, headers?: Headers, body?: any, bodyMimeType?: string) {
+            this.code = code;
+            this.headers = headers;
+            this.body = body;
+            this.bodyMimeType = bodyMimeType;
         }
     };
     
     export type ResolvedRoute = {
-        execute(): Promise<HTTPResponse>;
+        execute(diContext: DependencyContainer): Promise<HTTPResponse | undefined>;
         resolvedPattern: RouteDefinitionPart[];
     };
 
@@ -63,7 +96,7 @@ module RoutingCore {
 
     export interface IRouter {
         get registry(): IRouteRegistry;
-        resolve(method: HTTPMethod, path: string, converters: IConvertersProvider): ResolvedRoute | undefined;
+        resolve(request: HTTPRequest, converters: IConvertersProvider, mimeTypes: IMimeTypesProvider): ResolvedRoute | undefined;
     }
 }
 
