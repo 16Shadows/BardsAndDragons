@@ -11,10 +11,6 @@ module Converter {
     export interface ITypeConverter {
         //Used for route parsing
         convertFromString(str: string): any | undefined;
-
-        //Used for body conversion
-        convertFrom(decodedMimeType: any): any | undefined;
-        convertTo(value: any): any | undefined;
     };
 
     export function Converter(typeId: string) {

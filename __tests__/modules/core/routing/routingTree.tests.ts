@@ -118,19 +118,9 @@ test('RoutingTree: untyped argument match', () => {
 });
 
 class IntConverter implements ITypeConverter {
-    convertFrom(decodedMimeType: any) {
-        throw new Error("Method not implemented.");
-    }
-    convertTo(value: any) {
-        throw new Error("Method not implemented.");
-    }
-
     convertFromString(str: string): number | undefined {
         var value = +str;
         return Number.isInteger(value) ? value : undefined;
-    }
-    convertToString(item: any): string | undefined {
-        return Number.isInteger(item) ? item.toString() : undefined;
     }
 }
 
