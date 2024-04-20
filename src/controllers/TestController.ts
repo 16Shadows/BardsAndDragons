@@ -1,4 +1,4 @@
-import { Controller } from "../modules/core/controllers/controller";
+import { Controller } from "../modules/core/controllers/decorators";
 import { GET, POST } from "../modules/core/routing/decorators";
 import { ExampleService } from "../services/ExampleService";
 import { Accept, Return } from "../modules/core/mimeType/decorators";

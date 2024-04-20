@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { HTTPMethod, Metadata_Prefix } from '../constants';
 import { RouteDefinitionPart } from './core';
-import { getContollerRoutes } from '../controllers/controller';
+import { getContollerRoutes } from '../controllers/decorators';
 import { constructor } from '../types';
 import { Endpoint } from '../types';
 

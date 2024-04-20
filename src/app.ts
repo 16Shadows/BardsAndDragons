@@ -1,7 +1,7 @@
 import KoaCoreApp from './modules/integration/koa/app';
 import serve from 'koa-static';
 import { ExampleService } from './services/ExampleService';
-import { discoverControllers } from './modules/core/controllers/controller';
+import { discoverControllers } from './modules/core/controllers/discovery';
 import { getDefaultConverters } from './modules/core/converters/default';
 import { getDefaultMimeTypes } from './modules/core/mimeType/default';
 

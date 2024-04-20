@@ -6,7 +6,7 @@ import { DependencyContainer, container } from 'tsyringe';
 import { constructor } from '../../core/types';
 import { HTTPRequest, IRouter } from '../../core/routing/core';
 import { createDefaultRouteRegistry } from '../../core/routing/defaults';
-import { isController } from '../../core/controllers/controller';
+import { isController } from '../../core/controllers/decorators';
 import { ConvertersProvider, ITypeConverter } from '../../core/converters/converter';
 import { ControllersStorage } from '../../core/controllers/storage';
 import { Router } from '../../core/routing/router';
