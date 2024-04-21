@@ -11,9 +11,11 @@
     "koa": "^2.15.3",
     "koa-router": "^12.0.1",
     "koa-static": "^5.0.0",
+    "pg": "^8.11.5",
     "reflect-metadata": "^0.2.2",
     "require-directory": "^2.1.1",
     "tsyringe": "^4.8.0",
+    "typeorm": "^0.3.20",
     "typescript": "^5.4.5"
   },
   "devDependencies": {
@@ -29,10 +31,10 @@
   "version": "1.0.0",
   "description": "-",
   "scripts": {
-    "dev": "ts-node src/app.ts",
+    "dev": "node -r ts-node/register --env-file=.env src/app.ts",
     "build": "npm run clear && npx tsc && npx copyfiles -u 1 ./src/**/*.js dist/ && del-cli --force ./src/**/*.js",
     "build-react": "cd client && npm run build",
-    "prod": "npm run build && npm run build-react && node dist/app.js",
+    "prod": "npm run build && npm run build-react && node dist/app.js --env-file=.env",
     "clear": "del-cli --force dist",
     "test": "npx jest",
     "dev:full": "concurrently \"npm run dev\" \"cd client && npm start\""

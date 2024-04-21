@@ -5,11 +5,15 @@ import { ExampleService } from './services/ExampleService';
 import { discoverControllers } from './modules/core/controllers/discovery';
 import { getDefaultConverters } from './modules/core/converters/default';
 import { getDefaultMimeTypes } from './modules/core/mimeType/default';
+import { ModelDataSource } from './model/dataSource';
 
 (async () => {
     const app = new KoaCoreApp();
 
+    var dataSource: ModelDataSource = await new ModelDataSource().initialize();
+
     app.useSingleton(ExampleService);
+    app.useSingleton(dataSource);
 
     //Note: looks like serve doesn't interrupt middleware chain even if it finds a file to serve
     //May cause side effects, should find another package or implement it manually

@@ -64,11 +64,14 @@ class KoaCoreApp<
 
     /**
      * Adds a singleton into this app's DI container.
-     * @param singletonType The singleton to add.
+     * @param singleton The singleton to add.
      * @returns This app
      */
-    useSingleton(singletonType: constructor<Object>) : KoaCoreApp<StateT, ContextT> {
-        this._DIContainer.registerSingleton(singletonType);
+    useSingleton(singleton: constructor<Object> | Object) : KoaCoreApp<StateT, ContextT> {
+        if (typeof singleton == 'function')
+            this._DIContainer.registerSingleton(singleton as constructor<Object>);
+        else
+            this._DIContainer.registerInstance(singleton.constructor as constructor<Object>, singleton);
         return this;
     }
 

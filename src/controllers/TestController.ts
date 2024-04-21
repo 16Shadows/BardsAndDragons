@@ -5,15 +5,37 @@ import { Accept, Return } from "../modules/core/mimeType/decorators";
 import { ExtendedReturn } from "../modules/core/routing/core";
 import { Middleware, MiddlewareBag } from "../modules/core/middleware/middleware";
 import { ExampleMiddleware, ExampleMiddlewareBag } from "../middleware/ExampleMiddleware";
+import { ModelDataSource } from "../model/dataSource";
+import { User } from "../model/user";
 
 @Controller('api/v1/test')
 @Controller()
 export class TestController extends Object
 {
-    constructor(service: ExampleService) {
+    protected readonly _dbContext: ModelDataSource;
+
+    constructor(service: ExampleService, dbContext: ModelDataSource) {
         super();
         console.log("Test constructed");
         console.log(service.getValue());
+        this._dbContext = dbContext;
+    }
+
+    @GET('adduser/{username}')
+    async adduser(bag: MiddlewareBag, username: string) {
+        var repo = this._dbContext.getRepository(User);
+
+        if (await repo.findOneBy({username: username}) != null)
+            return 'Duplicate username';
+
+        var user: User = new User();
+        user.username = username;
+        user.passwordHash = 'test';
+        user.email = 'unknown';
+
+        await repo.save(user);
+
+        return user.id;
     }
 
     @GET()
