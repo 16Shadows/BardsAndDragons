@@ -8,10 +8,6 @@ module DefaultConverters {
             var value = +str;
             return Number.isInteger(value) ? value : undefined;
         }
-
-        convertToString(item: any): string | undefined {
-            return Number.isInteger(item) ? item.toString() : undefined;
-        }
     }
 
     @Converter('float')
@@ -19,10 +15,6 @@ module DefaultConverters {
         convertFromString(str: string): number | undefined {
             var value = +str;
             return Number.isNaN(value) ? undefined : value;
-        }
-        
-        convertToString(item: any): string | undefined {
-            return item.toString();
         }
     }
 
