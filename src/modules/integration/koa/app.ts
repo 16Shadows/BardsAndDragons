@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import Koa from 'koa';
 import { IncomingMessage, ServerResponse } from "http";
 import { Http2ServerRequest, Http2ServerResponse } from "http2";
-import { DependencyContainer, container } from 'tsyringe';
+import { DependencyContainer, FactoryProvider, container } from 'tsyringe';
 import { constructor } from '../../core/types';
 import { HTTPRequest, IRouter } from '../../core/routing/core';
 import { createDefaultRouteRegistry } from '../../core/routing/defaults';
@@ -50,6 +50,16 @@ class KoaCoreApp<
         this._MimeTypeProviders = new MimeTypesProvider(this._DIContainer);
 
         this._Router = options.router ?? new Router(createDefaultRouteRegistry());
+    }
+
+    useFactory<T>(type: constructor<T>, factory: (container: DependencyContainer) => T): KoaCoreApp<StateT, ContextT> {
+        this._DIContainer.register(type, {useFactory: factory});
+        return this;
+    }
+
+    useService(type: constructor<Object>): KoaCoreApp<StateT, ContextT> {
+        this._DIContainer.register(type, {useClass: type});
+        return this;
     }
 
     /**
