@@ -45,7 +45,7 @@ class KoaCoreApp<
 
         this._DIContainer = container.createChildContainer();
 
-        this._ControllerStorage = new ControllersStorage(this._DIContainer);
+        this._ControllerStorage = new ControllersStorage();
         this._ConvertersProvider = new ConvertersProvider(this._DIContainer);
         this._MimeTypeProviders = new MimeTypesProvider(this._DIContainer);
 

@@ -6,12 +6,10 @@ import { getRoutesList } from '../routing/decorators';
 
 module ControllersStorage {
     export class ControllersStorage implements Iterable<constructor<Object>> {
-        protected _DIContext: DependencyContainer;
         protected _RegisteredControllers: Set<constructor<Object>>;
 
-        constructor(diContext: DependencyContainer) {
+        constructor() {
             this._RegisteredControllers = new Set<constructor<Object>>();
-            this._DIContext = diContext;
         }
 
         [Symbol.iterator](): Iterator<constructor<Object>, any, undefined> {
@@ -20,7 +18,6 @@ module ControllersStorage {
 
         register(controllerType: constructor<Object>) {
             this._RegisteredControllers.add(controllerType);
-            this._DIContext.register(controllerType, { useClass: controllerType });
         }
 
         registerRoutes(registry: IRouteRegistry) {
