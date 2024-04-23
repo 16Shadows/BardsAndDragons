@@ -14,6 +14,7 @@ import {AuthMiddleware} from "../middleware/AuthMiddleware";
 export class UserController extends Object {
     protected readonly _dbContext: ModelDataSource;
     private contentTypeJson = {"Content-Type": "application/json"};
+    private contentTypeJsonString = "application/json";
 
     constructor(dbContext: ModelDataSource) {
         super();
@@ -28,14 +29,16 @@ export class UserController extends Object {
 
         // Проверка заполнения полей
         if (!username || !email || !password) {
-            return new ExtendedReturn(400, this.contentTypeJson, {error: 'Required fields are not filled'});
+            return new ExtendedReturn(400, this.contentTypeJson, {error: 'Required fields are not filled'},
+                this.contentTypeJsonString);
         }
 
         let repository = this._dbContext.getRepository(User);
 
         // Проверка на существование пользователя
         if (await repository.findOneBy({username: username})) {
-            return new ExtendedReturn(400, this.contentTypeJson, {error: 'User with that username is already registered'});
+            return new ExtendedReturn(400, this.contentTypeJson, {error: 'User with that username is already registered'},
+                this.contentTypeJsonString);
         }
 
         const user: User = new User();
@@ -52,8 +55,8 @@ export class UserController extends Object {
         return new ExtendedReturn(201, this.contentTypeJson, {
             message: 'User successfully registered',
             token: token,
-            userId: user.id
-        });
+            userState: userPayload.getPayload()
+        }, this.contentTypeJsonString);
     }
 
     @POST('login')
@@ -62,24 +65,32 @@ export class UserController extends Object {
     async login(bag: MiddlewareBag, body: { username: string, password: string }) {
         const {username, password} = body;
 
+        // Проверка заполнения полей
+        if (!username || !password) {
+            return new ExtendedReturn(400, this.contentTypeJson, {error: 'Required fields are not filled'}, this.contentTypeJsonString);
+        }
+
         let repository = this._dbContext.getRepository(User);
 
         // Проверка на существование пользователя
         const user = await repository.findOneBy({username: username});
         if (!user) {
-            return new ExtendedReturn(400, this.contentTypeJson, {error: 'User not found'});
+            return new ExtendedReturn(400, this.contentTypeJson, {error: 'User not found'}, this.contentTypeJsonString);
         }
 
         // Проверка пароля
         if (!await bcrypt.compare(password, user.passwordHash)) {
-            return new ExtendedReturn(400, this.contentTypeJson, {error: 'Wrong password'});
+            return new ExtendedReturn(400, this.contentTypeJson, {error: 'Wrong password'}, this.contentTypeJsonString);
         }
 
         // Генерация токена
         const userPayload = new UserPayload(user.id, user.username);
         const token = signJwt(userPayload);
 
-        return new ExtendedReturn(200, this.contentTypeJson, {token: token});
+        return new ExtendedReturn(200, this.contentTypeJson, {
+            token: token,
+            userState: userPayload.getPayload()
+        }, this.contentTypeJsonString);
     }
 
     @POST('logout')
@@ -87,6 +98,6 @@ export class UserController extends Object {
     @Return('application/json')
     @Middleware(AuthMiddleware)
     async logout(bag: MiddlewareBag, body: Object) {
-        return new ExtendedReturn(200, this.contentTypeJson, {message: 'Logout successful'});
+        return new ExtendedReturn(200, this.contentTypeJson, {message: 'Logout successful'}, this.contentTypeJsonString);
     }
 }
