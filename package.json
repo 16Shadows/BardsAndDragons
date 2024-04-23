@@ -1,14 +1,11 @@
 {
   "dependencies": {
-    "@types/content-type": "^1.1.8",
-    "@types/koa": "^2.15.0",
-    "@types/koa-router": "^7.4.8",
-    "@types/koa-static": "^4.0.4",
-    "@types/require-directory": "^2.1.6",
+    "bcryptjs": "^2.4.3",
     "best-require": "^1.1.4",
     "content-type": "^1.0.5",
     "dotenv": "^16.4.5",
     "iconv-lite": "^0.6.3",
+    "jsonwebtoken": "^9.0.2",
     "koa": "^2.15.3",
     "koa-router": "^12.0.1",
     "koa-static": "^5.0.0",
@@ -20,6 +17,13 @@
     "typescript": "^5.4.5"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/content-type": "^1.1.8",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/koa": "^2.15.0",
+    "@types/koa-router": "^7.4.8",
+    "@types/koa-static": "^4.0.4",
+    "@types/require-directory": "^2.1.6",
     "@types/jest": "^29.5.12",
     "concurrently": "^8.2.2",
     "copyfiles": "^2.4.1",
