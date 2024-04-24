@@ -7,6 +7,7 @@ import { Middleware, MiddlewareBag } from "../modules/core/middleware/middleware
 import { ExampleMiddleware, ExampleMiddlewareBag } from "../middleware/ExampleMiddleware";
 import { ModelDataSource } from "../model/dataSource";
 import { User } from "../model/user";
+import { auto, json } from "../modules/core/routing/response";
 
 @Controller('api/v1/test')
 @Controller()
@@ -77,7 +78,7 @@ export class TestController extends Object
     @Accept('application/json')
     async list2(bag: MiddlewareBag, body: Object) {
         console.log(body);
-        return new ExtendedReturn(201, undefined, body, 'application/json');
+        return json(body);
     }
 
     @POST('list3')
@@ -85,6 +86,6 @@ export class TestController extends Object
     @Return('application/json')
     async list3(bag: MiddlewareBag, body: Object) {
         console.log(body);
-        return new ExtendedReturn(201, undefined, body);
+        return auto(body, 201);
     }
 };

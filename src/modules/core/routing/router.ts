@@ -191,7 +191,16 @@ export class Router implements IRouter {
             return new HTTPResponse(500);
 
         if (result instanceof ExtendedReturn)
-            return new HTTPResponse(result.code, result.headers, await mimeTypeConverter.convertTo(result.body, mimeTypeParams));
+        {
+            var headers = result.headers;
+            if (headers == undefined)
+                headers = {};
+            
+            if (headers['Content-Type'] == undefined)
+                headers['Content-Type'] = mimeType;
+
+            return new HTTPResponse(result.code, headers, await mimeTypeConverter.convertTo(result.body, mimeTypeParams));   
+        }
         else
             return new HTTPResponse(200, { 'Content-Type': mimeType }, await mimeTypeConverter.convertTo(result, mimeTypeParams));
     }
