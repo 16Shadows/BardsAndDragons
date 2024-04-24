@@ -18,7 +18,7 @@ module Response {
     }
 
     export function auto(body: any, code: number = 200, headers?: OutgoingHttpHeaders): ExtendedReturn {
-        return new ExtendedReturn(code, headers, body);
+        return new ExtendedReturn(code, headers, body, 'application/json');
     }
 
     export function status(code: number = 200, headers?: OutgoingHttpHeaders): HTTPResponse {
