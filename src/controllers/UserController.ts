@@ -62,8 +62,10 @@ export class UserController extends Object {
     @POST('login')
     @Accept('application/json')
     @Return('application/json')
-    async login(bag: MiddlewareBag, body: { username: string, password: string }) {
-        const {username, password} = body;
+    async login(bag: MiddlewareBag, body: { login: string, password: string }) {
+        const {login, password} = body;
+        // Позже будем проверять это ник или почта
+        const username = login;
 
         // Проверка заполнения полей
         if (!username || !password) {
