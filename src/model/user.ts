@@ -2,6 +2,7 @@ import { Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { Image } from './image';
 import { City } from './city';
 import { UsersGame } from './usersGame';
+import { NotificationBase } from './notifications/notificationBase';
 
 @Entity()
 export class User {
@@ -21,39 +22,60 @@ export class User {
     @Column()
     email: string;
 
-    @Column()
+    @Column({
+        default: false
+    })
     isDeleted: boolean;
 
     //Extended account info (optional)
 
-    @Column()
+    @Column({
+        nullable: true
+    })
     birthday?: Date;
     
-    @Column()
+    @Column({
+        nullable: true
+    })
     displayName?: string;
 
-    @ManyToOne(() => Image)
+    @ManyToOne(() => Image, {
+        onDelete: 'SET NULL'
+    })
     avatar?: Promise<Image>;
 
-    @Column()
+    @Column({
+        nullable: true
+    })
     profileDescription?: string;
 
-    @Column()
+    @Column({
+        nullable: true
+    })
     contactInfo?: string;
 
-    @ManyToOne(() => City)
+    @ManyToOne(() => City, {
+        onDelete: 'SET NULL'
+    })
     city?: Promise<City>;
 
     //Settings
 
-    @Column()
+    @Column({
+        default: false
+    })
     canDisplayAge: boolean;
 
     //Relations
     
-    @OneToMany(() => UsersGame, game => game.user)
+    @OneToMany(() => UsersGame, game => game.user, {
+        cascade: true
+    })
     games: Promise<UsersGame[]>;
 
     @ManyToMany(() => User, user => user.friends)
     friends: Promise<User[]>;
+
+    @OneToMany(() => NotificationBase, notif => notif.receiver)
+    notifications: Promise<NotificationBase[]>;
 }

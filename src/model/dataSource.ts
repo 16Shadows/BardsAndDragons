@@ -1,5 +1,13 @@
 import { DataSource } from "typeorm";
 import { User } from "./user";
+import { Game } from "./game";
+import { GameTag } from "./gameTag";
+import { Image } from "./image";
+import { UsersGame } from "./usersGame";
+import { City } from "./city";
+import { NotificationBase } from "./notifications/notificationBase";
+import { FriendRequestNotification } from "./notifications/friendRequestNotification";
+import { FriendRequestAcceptedNotification } from "./notifications/friendRequestAcceptedNotification";
 
 export class ModelDataSource extends DataSource {
     constructor() {
@@ -12,7 +20,17 @@ export class ModelDataSource extends DataSource {
             database: process.env.DATABASE_NAME,
             synchronize: true,
             logging: true,
-            entities: [User]
+            entities: [
+                User,
+                Game,
+                GameTag,
+                Image,
+                UsersGame,
+                City,
+                NotificationBase,
+                FriendRequestNotification,
+                FriendRequestAcceptedNotification
+            ]
         })
     }
 }

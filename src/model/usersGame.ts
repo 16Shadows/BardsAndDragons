@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user";
 import { Game } from "./game";
 
@@ -7,12 +7,20 @@ export class UsersGame {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, user => user.games)
+    @ManyToOne(() => User, user => user.games, {
+        onDelete: 'CASCADE',
+        orphanedRowAction: 'delete'
+    })
     user: Promise<User>;
 
-    @ManyToOne(() => Game, game => game.users)
+    @ManyToOne(() => Game, game => game.users, {
+        onDelete: 'CASCADE',
+        orphanedRowAction: 'delete'
+    })
     game: Promise<Game>;
 
-    @Column()
+    @Column({
+        default: false
+    })
     playsOnline: boolean;
 }

@@ -26,6 +26,8 @@ export class Game {
     @ManyToMany(() => GameTag)
     tags: Promise<GameTag[]>;
 
-    @OneToMany(() => UsersGame, user => user.game)
+    @OneToMany(() => UsersGame, user => user.game, {
+        cascade: true
+    })
     users: Promise<UsersGame[]>;
 }
