@@ -46,7 +46,20 @@ export class Router implements IRouter {
         if (request.method == HTTPMethod.PUT || request.method == HTTPMethod.POST)
         {
             var mimeType = request.headers["content-type"] ?? this._DefaultMimeType;
-            var parsedType = contentType.parse(mimeType as string);
+            try {
+                var parsedType = contentType.parse(mimeType as string);
+            }
+            catch {
+                try {
+                    parsedType = contentType.parse(this._DefaultMimeType);
+                }
+                catch {
+                    parsedType = {
+                        type: 'text/plain',
+                        parameters: {}
+                    }
+                }
+            }
 
             //Check if a type converter for this mime type exists
             var typeConverter = mimeTypes.get(parsedType.type);
@@ -148,9 +161,12 @@ export class Router implements IRouter {
         var mimeType: string = undefined, mimeTypeParams: MimeTypeParams;
         if (result instanceof ExtendedReturn && result.bodyMimeType != undefined)
         {
-            var parsed = contentType.parse(result.bodyMimeType);
-            mimeType = parsed.type;
-            mimeTypeParams = parsed.parameters;
+            try {
+                var parsed = contentType.parse(result.bodyMimeType);
+                mimeType = parsed.type;
+                mimeTypeParams = parsed.parameters;
+            }
+            catch {}
         }
         
         if (mimeType == undefined)
@@ -169,8 +185,15 @@ export class Router implements IRouter {
                 else
                     accept = request.headers['accept'];
 
-                var acceptParsed = accept.map(x => contentType.parse(x)).filter(x => {
-                    return returnTypes.has(x.type);
+                var acceptParsed = accept.map(x => {
+                    try {
+                        return contentType.parse(x);
+                    }
+                    catch {
+                        return undefined;
+                    }
+                }).filter(x => {
+                    return x != undefined && returnTypes.has(x.type);
                 });
     
                 if (acceptParsed.length > 0)
