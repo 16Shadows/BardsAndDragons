@@ -1,26 +1,44 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useState } from "react";
+import "./App.css";
+import Navbar from "./components/Navbar";
+import Home from "./components/Home";
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Navbar />
+      <Home />
     </div>
   );
+  // let items = ["f", "s", "g"];
+
+  // const handleSelectItem = (item: string) => {
+  //   console.log(item);
+  // };
+
+  // return (
+  //   <div>
+  //     <ListGroup
+  //       items={items}
+  //       heading="dat List"
+  //       onSelectItem={handleSelectItem}
+  //     />
+  //   </div>
+  // );
+
+  // let ch = "dam dis shit";
+  // const [alertVisible, setAlertVisibility] = useState(false);
+
+  // return (
+  //   <div>
+  //     <img src={bdlogo} className="BD-logo" alt="bdlogo" />
+  //     {alertVisible && (
+  //       <Alert onClose={() => setAlertVisibility(false)}> aboba</Alert>
+  //     )}
+
+  //     <Button onClick={() => setAlertVisibility(true)}>ffFff</Button>
+  //   </div>
+  // );
 }
 
 export default App;
