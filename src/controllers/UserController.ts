@@ -95,4 +95,12 @@ export class UserController extends Object {
     async logout(bag: MiddlewareBag, body: Object) {
         return json({message: 'Logout successful'});
     }
+
+    @POST('test-query-with-auth')
+    @Accept('application/json')
+    @Return('application/json')
+    @Middleware(AuthMiddleware)
+    async testAuth(bag: MiddlewareBag, body: Object) {
+        return json({message: 'Test query with auth successful'});
+    }
 }
