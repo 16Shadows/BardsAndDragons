@@ -1,14 +1,13 @@
-import { HTTPMethod } from "../constants";
 import { HTTPResponse, IncomingHttpHeaders, RouteDefinitionPart, RouteHandler } from "../routing/core";
-import { ParsedUrlQuery } from 'querystring';
 import { Metadata_Prefix } from "../constants";
 import { constructor } from "../types";
+import { QueryBag } from "../routing/query";
 
 module Middleware {
     export type MiddlewareContext = {
         readonly handler: Readonly<RouteHandler>;
         readonly body: Readonly<any>;
-        readonly query: Readonly<ParsedUrlQuery>;
+        readonly query: Readonly<QueryBag>;
         readonly headers: Readonly<IncomingHttpHeaders>;
         readonly args: ReadonlyArray<any>;
     };
