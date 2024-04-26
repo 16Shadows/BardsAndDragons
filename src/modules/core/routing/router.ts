@@ -7,6 +7,7 @@ import contentType from 'content-type';
 import { HTTPMethod } from "../constants";
 import { constructor } from "../types";
 import { IMiddleware, MiddlewareBag, MiddlewareContext, getControllerMiddleware, getHandlerMiddleware } from "../middleware/middleware";
+import { QueryArgumentParams, QueryBag, getQueryArguments } from "./query";
 
 export class Router implements IRouter {
     protected _RouteRegistry : IRouteRegistry;
@@ -29,13 +30,13 @@ export class Router implements IRouter {
         return {
             execute: async function(context: DependencyContainer): Promise<HTTPResponse> {
                 var args = endpoints.arguments.map(x => x.value);
-                return await self.executeHandlers(request, endpoints.handlers, args, mimeTypes, context);
+                return await self.executeHandlers(request, endpoints.handlers, args, mimeTypes, context, converters);
             },
             resolvedPattern: endpoints.pattern
         };
     }
 
-    async executeHandlers(request: HTTPRequest, handlers: RouteHandler[], args: any[], mimeTypes: IMimeTypesProvider, context: DependencyContainer): Promise<HTTPResponse | undefined> {
+    async executeHandlers(request: HTTPRequest, handlers: RouteHandler[], args: any[], mimeTypes: IMimeTypesProvider, context: DependencyContainer, typeConverters: IConvertersProvider): Promise<HTTPResponse | undefined> {
         
         if (handlers.length == 0)
             return new HTTPResponse(404);
@@ -43,7 +44,7 @@ export class Router implements IRouter {
         var body: any = undefined;
 
         //Payload needs to be handled
-        if (request.method == HTTPMethod.PUT || request.method == HTTPMethod.POST)
+        if (Router.shouldProcessBody(request.method))
         {
             var mimeType = request.headers["content-type"] ?? this._DefaultMimeType;
             try {
@@ -85,21 +86,68 @@ export class Router implements IRouter {
             result: HTTPResponse | undefined;
         for (var handler of handlers)
         {
-            result = await this.executeHandler(request, handler, args, body, mimeTypes, context);
+            result = await this.executeHandler(request, handler, args, body, mimeTypes, context, typeConverters);
             if (result != undefined)
                 results.push(result);
         }
         return results[0];
     }
 
-    async executeHandler(request: HTTPRequest, handler: RouteHandler, args: ReadonlyArray<any>, body:any, mimeTypes: IMimeTypesProvider, context: DependencyContainer): Promise<HTTPResponse | undefined> {
+    async executeHandler(request: HTTPRequest, handler: RouteHandler, args: ReadonlyArray<any>, body:any, mimeTypes: IMimeTypesProvider, context: DependencyContainer, typeConverters: IConvertersProvider): Promise<HTTPResponse | undefined> {
+
+        var queryBag: QueryBag = {};
+
+        var queryArgs: ReadonlyMap<string, QueryArgumentParams> = getQueryArguments(handler.controller, handler.handler);
+
+        if (queryArgs.size > 0) {
+            var val: string[] | string | undefined;
+            for (var arg of queryArgs.entries()) {
+                val = request.query[arg[0]];
+                if (val == undefined)
+                {
+                    if (arg[1].optional)
+                        continue;
+                    else
+                        return undefined;
+                }
+                else if (typeof val == 'string')
+                {
+                    var typeConverter = typeConverters.get(arg[1].typeId);
+                    if (typeConverter == undefined)
+                        throw new Error(`Missing type converter for typeId '${arg[1].typeId}'.`);
+
+                    var converted = await typeConverter.convertFromString(val);
+
+                    if (converted === undefined)
+                        return undefined;
+
+                    queryBag[arg[0]] = converted;
+                }
+                else if (!arg[1].canHaveMultipleValues)
+                    return undefined;
+                else
+                {
+                    var convertedArr = await Promise.all(val.map(async x => {
+                        var typeConverter = typeConverters.get(arg[1].typeId);
+                        if (typeConverter == undefined)
+                            throw new Error(`Missing type converter for typeId '${arg[1].typeId}'.`);
+
+                        return typeConverter.convertFromString(x);
+                    }));
+
+                    if (convertedArr.some(x => x === undefined))
+                        return undefined;
+
+                    queryBag[arg[0]] = convertedArr;
+                }
+            }
+        }
 
         var middlewareBag: MiddlewareBag = {};
 
         var controllerMiddleware: ReadonlyArray<constructor<IMiddleware>> = getControllerMiddleware(handler.controller);
         var handlerMiddleware: ReadonlyArray<constructor<IMiddleware>> = getHandlerMiddleware(handler.controller, handler.handler);
 
-        var query = request.query;
         var headers = request.headers;
 
         if (controllerMiddleware?.length > 0 || handlerMiddleware?.length > 0)
@@ -107,7 +155,7 @@ export class Router implements IRouter {
             var middlewareContext: MiddlewareContext = {
                 handler: handler,
                 body: body,
-                query: query,
+                query: queryBag,
                 headers: headers,
                 args: args
             };
@@ -143,7 +191,7 @@ export class Router implements IRouter {
             handler = middlewareContext.handler;
             body = middlewareContext.body;
             headers = middlewareContext.headers;
-            query = middlewareContext.query;
+            queryBag = middlewareContext.query;
             args = middlewareContext.args;
         }
 
@@ -153,7 +201,11 @@ export class Router implements IRouter {
         var handlerMethod: Function = controllerInstance[handler.handler];
     
         //Invoke the method
-        var result: any = await handlerMethod.call(controllerInstance, middlewareBag, ...args, body);
+        var result: any;
+        if (Router.shouldProcessBody(request.method))
+            result = await handlerMethod.call(controllerInstance, middlewareBag, ...args, body, queryBag);
+        else
+            result = await handlerMethod.call(controllerInstance, middlewareBag, ...args, queryBag);
         //Return value is an already processed response, return as is.
         if (result instanceof HTTPResponse)
             return result;
@@ -226,5 +278,9 @@ export class Router implements IRouter {
         }
         else
             return new HTTPResponse(200, { 'Content-Type': mimeType }, await mimeTypeConverter.convertTo(result, mimeTypeParams));
+    }
+
+    protected static shouldProcessBody(method: HTTPMethod): boolean {
+        return method == HTTPMethod.PUT || method == HTTPMethod.POST;
     }
 };

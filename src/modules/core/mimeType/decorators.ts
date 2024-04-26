@@ -3,7 +3,6 @@ import { Metadata_Prefix } from "../constants";
 import { constructor } from '../types';
 import { MimeTypeParams } from './mimeTypeConverter';
 import { Endpoint } from '../routing/decorators';
-import { MiddlewareBag } from '../middleware/middleware';
 
 module MimeTypeDecorators {
     const Metadata_AcceptMimeType : string = `${Metadata_Prefix}AcceptMimeType`;
@@ -16,7 +15,7 @@ module MimeTypeDecorators {
         return accept.get(handlerName);
     }
 
-    export function Accept<TBag extends MiddlewareBag>(first: string, ...args: string[]) {
+    export function Accept(first: string, ...args: string[]) {
         return (target : Object, name: string, prop: TypedPropertyDescriptor<Endpoint>) => {
             var accept: Map<string, Set<string>> = Reflect.getMetadata(Metadata_AcceptMimeType, target);
             if (accept == undefined)
@@ -33,13 +32,13 @@ module MimeTypeDecorators {
     }
 
     export function getReturnContentTypes(target: constructor<Object>, handlerName: string): ReadonlyMap<string, MimeTypeParams> | undefined {
-        var accept: Map<string, Map<string, MimeTypeParams>> = Reflect.getMetadata(Metadata_AcceptMimeType, target.prototype);
+        var accept: Map<string, Map<string, MimeTypeParams>> = Reflect.getMetadata(Metadata_ReturnMimeType, target.prototype);
         if (accept == undefined)
             return undefined;
         return accept.get(handlerName);
     }
 
-    export function Return<TBag extends MiddlewareBag>(type: string, params?: MimeTypeParams) {
+    export function Return(type: string, params?: MimeTypeParams) {
         type = type.toLowerCase();
         return (target : Object, name: string, prop: TypedPropertyDescriptor<Endpoint>) => {
             var accept: Map<string, Map<string, MimeTypeParams>> = Reflect.getMetadata(Metadata_ReturnMimeType, target);
