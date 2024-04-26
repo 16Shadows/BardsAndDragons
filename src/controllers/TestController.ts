@@ -8,6 +8,7 @@ import { ExampleMiddleware, ExampleMiddlewareBag } from "../middleware/ExampleMi
 import { ModelDataSource } from "../model/dataSource";
 import { User } from "../model/user";
 import { auto, json } from "../modules/core/routing/response";
+import { QueryArgument, QueryBag } from "../modules/core/routing/query";
 
 @Controller('api/v1/test')
 @Controller()
@@ -87,5 +88,33 @@ export class TestController extends Object
     async list3(bag: MiddlewareBag, body: Object) {
         console.log(body);
         return auto(body, 201);
+    }
+
+    @GET('query')
+    @QueryArgument('test', {
+        typeId: 'int',
+        canHaveMultipleValues: false
+    })
+    async query(bag: MiddlewareBag, query: QueryBag) {
+        return query['test'];
+    }
+
+    @GET('query2')
+    @QueryArgument('test', {
+        typeId: 'int',
+        canHaveMultipleValues: true
+    })
+    async query2(bag: MiddlewareBag, query: QueryBag) {
+        return query['test'];
+    }
+
+    @GET('query3')
+    @QueryArgument('test', {
+        typeId: 'int',
+        canHaveMultipleValues: false,
+        optional: true
+    })
+    async query3(bag: MiddlewareBag, query: QueryBag) {
+        return query['test'] ?? 'fun!';
     }
 };
