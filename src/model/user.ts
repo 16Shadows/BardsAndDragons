@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Image } from './image';
 import { City } from './city';
 import { UsersGame } from './usersGame';
@@ -74,6 +74,9 @@ export class User {
     games: Promise<UsersGame[]>;
 
     @ManyToMany(() => User, user => user.friends)
+    @JoinTable({
+        name: 'user_friends'
+    })
     friends: Promise<User[]>;
 
     @OneToMany(() => NotificationBase, notif => notif.receiver)
