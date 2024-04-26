@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Image } from "./image";
 import { GameTag } from "./gameTag";
 import { UsersGame } from "./usersGame";
@@ -21,9 +21,15 @@ export class Game {
     ageRating: string;
 
     @ManyToMany(() => Image)
+    @JoinTable({
+        name: 'game_images'
+    })
     images: Promise<Image[]>;
 
     @ManyToMany(() => GameTag)
+    @JoinTable({
+        name: 'game_tags'
+    })
     tags: Promise<GameTag[]>;
 
     @OneToMany(() => UsersGame, user => user.game, {
