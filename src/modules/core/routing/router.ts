@@ -21,8 +21,8 @@ export class Router implements IRouter {
         this._DefaultMimeType = defaultMimeType ?? 'text/plain';
     }
 
-    resolve(request: HTTPRequest, converters: IConvertersProvider, mimeTypes: IMimeTypesProvider): ResolvedRoute | undefined {
-        var endpoints: RouteEndpoint | undefined = this._RouteRegistry.match(request.method, request.path, converters);
+    async resolve(request: HTTPRequest, converters: IConvertersProvider, mimeTypes: IMimeTypesProvider): Promise<ResolvedRoute | undefined> {
+        var endpoints: RouteEndpoint | undefined = await this._RouteRegistry.match(request.method, request.path, converters);
         var self = this;
         if (endpoints == undefined)
             return undefined;

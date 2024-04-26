@@ -28,7 +28,7 @@ module Converters {
 
     export interface ITypeConverter {
         //Used for route parsing
-        convertFromString(str: string): any | undefined;
+        convertFromString(str: string): Promise<any | undefined>;
     };
 }
 
