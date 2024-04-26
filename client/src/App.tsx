@@ -1,44 +1,33 @@
+import { BrowserRouter, Routes, Route, Link, NavLink } from "react-router-dom";
 import { useState } from "react";
 import "./CSS/App.css";
 import Navbar from "./components/Navbar";
+// pages
 import Home from "./components/Home";
+import ProfilePage from "./components/ProfilePage";
+import GamesPage from "./components/GamesPage";
+import MyGamesPage from "./components/MyGamesPage";
+import MyFriendsPage from "./components/MyFriendsPage";
+import PlayersPage from "./components/PlayersPage";
 
 function App() {
   return (
-    <div className="App">
-      <Navbar />
-      <Home />
-    </div>
+    <BrowserRouter>
+      <header>
+        <Navbar />
+      </header>
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="myprofile" element={<ProfilePage />} />
+          <Route path="mygames" element={<MyGamesPage />} />
+          <Route path="myfriends" element={<MyFriendsPage />} />
+          <Route path="sgames" element={<GamesPage />} />
+          <Route path="splayers" element={<PlayersPage />} />
+        </Routes>
+      </main>
+    </BrowserRouter>
   );
-  // let items = ["f", "s", "g"];
-
-  // const handleSelectItem = (item: string) => {
-  //   console.log(item);
-  // };
-
-  // return (
-  //   <div>
-  //     <ListGroup
-  //       items={items}
-  //       heading="dat List"
-  //       onSelectItem={handleSelectItem}
-  //     />
-  //   </div>
-  // );
-
-  // let ch = "dam dis shit";
-  // const [alertVisible, setAlertVisibility] = useState(false);
-
-  // return (
-  //   <div>
-  //     <img src={bdlogo} className="BD-logo" alt="bdlogo" />
-  //     {alertVisible && (
-  //       <Alert onClose={() => setAlertVisibility(false)}> aboba</Alert>
-  //     )}
-
-  //     <Button onClick={() => setAlertVisibility(true)}>ffFff</Button>
-  //   </div>
-  // );
 }
 
 export default App;

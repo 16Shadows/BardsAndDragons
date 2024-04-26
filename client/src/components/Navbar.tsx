@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import bdlogo from "../resources/bdlogo_mini.png";
 import avatarpic from "../resources/EmptyProfileAvatar_50px.png";
 import notificationPic from "../resources/notification_50px.png";
@@ -46,21 +47,21 @@ const Navbar = () => {
           <div>
             <ul className="navbar-nav mb-2 mb-lg-0">
               <li className="nav-item">
-                <a className="nav-link" aria-current="page" href="#">
+                <Link className="nav-link" aria-current="page" to="/">
                   Главная
-                </a>
+                </Link>
               </li>
 
               <li className="nav-item">
-                <a className="nav-link" href="#">
+                <Link className="nav-link" to="/splayers">
                   Поиск игроков
-                </a>
+                </Link>
               </li>
 
               <li className="nav-item">
-                <a className="nav-link" href="#">
+                <Link className="nav-link" to="/sgames">
                   Поиск игр
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -90,7 +91,6 @@ const Navbar = () => {
                   className="nav-link dropdown-toggle"
                   // TODO При открытии меню вызываем фетч данных об уведомлениях
                   onClick={() => console.log("Открыли уведомления")}
-                  href="#"
                   role="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
@@ -118,7 +118,6 @@ const Navbar = () => {
               <li className="nav-item dropdown">
                 <a
                   className="nav-link dropdown-toggle"
-                  href="#"
                   role="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
@@ -132,27 +131,28 @@ const Navbar = () => {
                 </a>
                 <ul className="dropdown-menu">
                   <li>
-                    <a className="dropdown-item" href="#">
+                    <Link className="dropdown-item" to="/mygames">
                       Мои игры
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a className="dropdown-item" href="#">
+                    <Link className="dropdown-item" to="/myfriends">
                       Мои друзья
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a className="dropdown-item" href="#">
+                    <Link className="dropdown-item" to="/myprofile">
                       Профиль
-                    </a>
+                    </Link>
                   </li>
                   <li>
                     <hr className="dropdown-divider" />
                   </li>
                   <li>
-                    <a className="dropdown-item" href="#">
+                    {/* TODO сделать выход из логина при переходе на главную страницу */}
+                    <Link className="dropdown-item" to="/">
                       Выйти
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </li>
@@ -161,10 +161,12 @@ const Navbar = () => {
             // Кнопки входа/регистрации, если пользователь не вошел в аккаунт
             <div className="nav-item login_reg_bundle ms-auto">
               <button type="button" className="btn btn-primary me-2">
-                Вход
+                {/* TODO страница входа */}
+                <Link to="/">Вход</Link>
               </button>
               <button type="button" className="btn btn-outline-primary">
-                Регистрация
+                {/* TODO страница входа */}
+                <Link to="/">Регистрация</Link>
               </button>
             </div>
           )}
