@@ -1,13 +1,26 @@
 import bdlogo from "../resources/bdlogo_mini.png";
 import avatarpic from "../resources/EmptyProfileAvatar_50px.png";
-import { useState } from "react";
+import notificationPic from "../resources/notification_50px.png";
+import notificationRedPic from "../resources/notification_red_50px.png";
+import NotificationsPanel from "./NotificationsPanel";
+import { useState, useEffect } from "react";
 
 const Navbar = () => {
-  // Добавить запрос, вошел ли пользователь в профиль или нет
-  const [loggedOn, setLoggedOn] = useState(false);
-  // Добавить запрос на данные профиля
+  // TODO Добавить запрос, вошел ли пользователь в профиль или нет
+  const [loggedOn, setLoggedOn] = useState(true);
+  // TODO Добавить запрос на данные профиля
   const [profileName, setProfileName] = useState("Тестовое имя профиля");
   const [profileAvatar, setProfileAvatar] = useState(avatarpic);
+  // TODO Добавить запрос на наличие уведомлений
+  const [gotNotifications, setGotNotifications] = useState(false);
+
+  // Для запроса уведомлений при рендере навбара
+  useEffect(
+    () => {
+      console.log("Надо сделать запрос к уведомлениям, прочитанным и новым");
+    }
+    //[] // Запуск только после первого рендера страницы/объекта navbar
+  );
 
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary bg-white">
@@ -72,6 +85,36 @@ const Navbar = () => {
           {loggedOn ? (
             // Кнопка профиля, если пользователь вошел в аккаунт
             <div className="navbar-nav  ms-auto">
+              <li className="nav-item dropdown">
+                <a
+                  className="nav-link dropdown-toggle"
+                  // TODO При открытии меню вызываем фетч данных об уведомлениях
+                  onClick={() => console.log("Открыли уведомления")}
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  {/* Изменение иконки уведомлений в зависимости от состояния gotNotifications */}
+                  {gotNotifications ? (
+                    <img
+                      className="rounded-circle me-2"
+                      alt="Notifications"
+                      src={notificationRedPic}
+                    />
+                  ) : (
+                    <img
+                      className="rounded-circle me-2"
+                      alt="Notifications"
+                      src={notificationPic}
+                    />
+                  )}
+                </a>
+                <ul className="dropdown-menu notifications_panel">
+                  <NotificationsPanel />
+                </ul>
+              </li>
+
               <li className="nav-item dropdown">
                 <a
                   className="nav-link dropdown-toggle"
