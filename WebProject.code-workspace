@@ -17,7 +17,8 @@
 				],
 				"runtimeArgs": [
 					"-r",
-					"ts-node/register"
+					"ts-node/register",
+					"--env-file=.env"
 				],
 				"cwd": "${workspaceRoot}",
 				"protocol": "inspector",
