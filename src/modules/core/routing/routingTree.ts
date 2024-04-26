@@ -100,7 +100,7 @@ module RoutingTree {
                 pattern._MaxLength == this._MaxLength;
         }
 
-        match(routePart: string, from: number, converters: IConvertersProvider): { charactersRead: number; argument: RouteArgument; } | undefined {
+        async match(routePart: string, from: number, converters: IConvertersProvider): Promise<{ charactersRead: number; argument: RouteArgument; } | undefined> {
             //Not enough symbols in the routePart to satisfy this argument's MinLength
             if (routePart.length - from < this._MinLength)
                 return undefined;
@@ -119,7 +119,7 @@ module RoutingTree {
                 var converter: ITypeConverter | undefined = converters.get(this._TypeId);
                 if (converter == undefined)
                     throw new Error(`Missing type converter for typeId ${this._TypeId} in current context.`);
-                value = converter.convertFromString(stringVal);
+                value = await converter.convertFromString(stringVal);
                 if (value == undefined)
                     return undefined;
             }
@@ -211,7 +211,7 @@ module RoutingTree {
             return true;
         }
     
-        match(routePart: PreprocessedRoutePart, converters: IConvertersProvider): RouteArgument[] | null | undefined {
+        async match(routePart: PreprocessedRoutePart, converters: IConvertersProvider): Promise<RouteArgument[] | null | undefined> {
             var out : RouteArgument[] | null = this.hasArguments ? [] : null;
     
             var matchAgainst = this.isCaseSensitive ? routePart.part : routePart.partLower;
@@ -230,7 +230,7 @@ module RoutingTree {
                 else
                 {
                     var asArgumentMatcher = this._Components[i] as ArgumentMatcher;
-                    var result = asArgumentMatcher.match(routePart.part, partIndex, converters);
+                    var result = await asArgumentMatcher.match(routePart.part, partIndex, converters);
                     if (result == undefined)
                         return undefined;
                     partIndex += result.charactersRead;
@@ -375,7 +375,7 @@ module RoutingTree {
          * @param converters 
          * @returns 
          */
-        match(route: ArrayView<PreprocessedRoutePart> | PreprocessedRoutePart[], result: RouteEndpoint, converters: IConvertersProvider): boolean  {
+        async match(route: ArrayView<PreprocessedRoutePart> | PreprocessedRoutePart[], result: RouteEndpoint, converters: IConvertersProvider): Promise<boolean>  {
             var match: RouteArgument[] | null | undefined;
             var routePart: PreprocessedRoutePart = route[0];
     
@@ -386,7 +386,7 @@ module RoutingTree {
                     if (entry.handlers === undefined)
                         continue;
     
-                    match = entry.matcher.match(routePart, converters);
+                    match = await entry.matcher.match(routePart, converters);
                     if (match === undefined)
                         continue;
                     else if (match != null)
@@ -405,7 +405,7 @@ module RoutingTree {
                     if (entry.node === undefined)
                         continue;
     
-                    match = entry.matcher.match(routePart, converters);
+                    match = await entry.matcher.match(routePart, converters);
                     if (match === undefined)
                         continue;
                     else if (match != null)
@@ -485,7 +485,7 @@ module RoutingTree {
             node.unregisterRoute(route, handler);
         }
     
-        match(method: HTTPMethod, route: string, converters: IConvertersProvider): RouteEndpoint | undefined {
+        async match(method: HTTPMethod, route: string, converters: IConvertersProvider): Promise<RouteEndpoint | undefined> {
             var node : RoutingTreeNode = this._RootNodes[method];
     
             var endpoint: RouteEndpoint = {
@@ -493,7 +493,7 @@ module RoutingTree {
                 arguments: [],
                 pattern: []
             };
-            return node.match(route.split('/').map(x => new PreprocessedRoutePart(x)), endpoint, converters) ? endpoint : undefined;
+            return (await node.match(route.split('/').map(x => new PreprocessedRoutePart(x)), endpoint, converters)) ? endpoint : undefined;
         }
     }
 }

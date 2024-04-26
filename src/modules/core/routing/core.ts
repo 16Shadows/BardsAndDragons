@@ -94,12 +94,12 @@ module RoutingCore {
         unregisterRoute(method: HTTPMethod, route: string, handler: RouteHandler): void;
         unregisterRoute(method: HTTPMethod, route: string, handler: RouteHandler, caseSensitive: boolean): void;
 
-        match(method: HTTPMethod, route: string, converters: IConvertersProvider): RouteEndpoint | undefined;
+        match(method: HTTPMethod, route: string, converters: IConvertersProvider): Promise<RouteEndpoint | undefined>;
     }
 
     export interface IRouter {
         get registry(): IRouteRegistry;
-        resolve(request: HTTPRequest, converters: IConvertersProvider, mimeTypes: IMimeTypesProvider): ResolvedRoute | undefined;
+        resolve(request: HTTPRequest, converters: IConvertersProvider, mimeTypes: IMimeTypesProvider): Promise<ResolvedRoute | undefined>;
     }
 }
 

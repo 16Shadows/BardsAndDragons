@@ -128,7 +128,7 @@ class KoaCoreApp<
             }
 
             //Use router to find an endpoint
-            var route = this._Router.resolve(request, this._ConvertersProvider, this._MimeTypeProviders);
+            var route = await this._Router.resolve(request, this._ConvertersProvider, this._MimeTypeProviders);
 
             //No endpoint found - pass control to the next middleware
             if (route == undefined)
