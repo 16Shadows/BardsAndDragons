@@ -99,7 +99,7 @@ export class Router implements IRouter {
 
         var queryArgs: ReadonlyMap<string, QueryArgumentParams> = getQueryArguments(handler.controller, handler.handler);
 
-        if (queryArgs.size > 0) {
+        if (queryArgs?.size > 0) {
             var val: string[] | string | undefined;
             for (var arg of queryArgs.entries()) {
                 val = request.query[arg[0]];
