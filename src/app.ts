@@ -1,7 +1,6 @@
 import KoaCoreApp from './modules/integration/koa/app';
 import serve from 'koa-static';
 import path from 'path';
-import cors from '@koa/cors';
 import {ExampleService} from './services/ExampleService';
 import {discoverControllers} from './modules/core/controllers/discovery';
 import {getDefaultConverters} from './modules/core/converters/default';
@@ -10,8 +9,6 @@ import {ModelDataSource} from './model/dataSource';
 
 (async () => {
     const app = new KoaCoreApp();
-    // Enable CORS for all routes
-    app.use(cors());
 
     const dataSource: ModelDataSource = await new ModelDataSource().initialize();
 
@@ -38,5 +35,7 @@ import {ModelDataSource} from './model/dataSource';
         await serve(path.join(__dirname, '..', 'client', 'build', 'index.html'))(ctx, next);
     });
 
-    app.listen(3000);
+    //Start server
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => console.log(`Server started on port ${port}`));
 })();
