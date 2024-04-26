@@ -1,5 +1,7 @@
 import { ModelDataSource } from "../model/dataSource";
 import { Game } from "../model/game";
+import { User } from "../model/user";
+import { UsersGame } from "../model/usersGame";
 import { Controller } from "../modules/core/controllers/decorators";
 import { MiddlewareBag } from "../modules/core/middleware/middleware";
 import { Return } from "../modules/core/mimeType/decorators";
@@ -15,6 +17,12 @@ type GameInfo = {
     description: string;
     tags: string[];
     images: string[];
+}
+
+type PlayerInfo = {
+    username: string;
+    displayName?: string;
+    playsOnline: boolean;
 }
 
 type ListQuery = {
@@ -77,6 +85,42 @@ export class GameController extends Object {
                 description: game.description,
                 tags: (await game.tags).map(x => x.text),
                 images: (await game.images).map(x => x.path)
+            };
+        }));
+    }
+
+    @GET('{game:game}/players')
+    @Return('application/json')
+    @QueryArgument('start', {
+        typeId: 'int',
+        canHaveMultipleValues: false,
+        optional: false
+    })
+    @QueryArgument('count', {
+        typeId: 'int',
+        canHaveMultipleValues: false,
+        optional: false
+    })
+    async getGamePlayers(bag: MiddlewareBag, game: Game, query: ListQuery) {
+        if (query.count > GameController.ListCountHardLimit)
+            return badRequest([]);
+        
+        var repo = this._dbContext.getRepository(UsersGame);
+
+        var result = await repo.createQueryBuilder('game')
+                               .where('game.gameId = :id', {id: game.id})
+                               .innerJoinAndSelect('game.user', 'user')
+                               .skip(query.start)
+                               .take(query.count)
+                               .getMany();
+
+        return await Promise.all(result.map(async x => {
+            var user = await x.user;
+
+            return {
+                username: user.username,
+                displayName: user.displayName,
+                playsOnline: x.playsOnline
             };
         }));
     }
