@@ -5,9 +5,7 @@ import {Middleware, MiddlewareBag} from "../modules/core/middleware/middleware";
 import {User} from "../model/user";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
 import bcrypt from "bcryptjs";
-import {signJwt} from "../utils/jwt";
-import {UserPayload} from "../utils/UserPayload";
-import {AuthMiddleware} from "../middleware/AuthMiddleware";
+import {AuthMiddleware, AuthMiddlewareBag, createAuthToken} from "../middleware/AuthMiddleware";
 import {badRequest, json} from "../modules/core/routing/response";
 
 @Controller('api/v1/user')
@@ -45,13 +43,16 @@ export class UserController extends Object {
         await repository.save(user);
 
         // Генерация токена
-        const userPayload = new UserPayload(user.id, user.username);
-        const token = signJwt(userPayload);
+        const token = await createAuthToken({
+            username: user.username
+        });
 
         return json({
             message: 'User successfully registered',
             token: token,
-            userState: userPayload.getPayload()
+            userState: {
+                username: user.username
+            }
         }, 201);
     }
 
@@ -82,10 +83,11 @@ export class UserController extends Object {
         }
 
         // Генерация токена
-        const userPayload = new UserPayload(user.id, user.username);
-        const token = signJwt(userPayload);
+        const token = await createAuthToken({
+            username: user.username
+        });
 
-        return json({token: token, userState: userPayload.getPayload()});
+        return json({token: token, userState: {username: user.username}});
     }
 
     @POST('logout')
