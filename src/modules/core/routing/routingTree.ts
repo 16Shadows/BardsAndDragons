@@ -1,8 +1,8 @@
 import { HTTPMethod } from "../constants";
-import { IRouteRegistry, RouteArgument, RouteDefinitionPart, RouteEndpoint } from "./core";
-import { IConvertersProvider, ITypeConverter } from "../converters/converter";
+import { IRouteRegistry, RouteArgument, RouteDefinitionPart, RouteEndpoint, RouteHandler } from "./core";
+import { IConvertersProvider } from "../converters/storage";
+import { ITypeConverter } from "../converters/converter";
 import { ArrayView, getArrayView } from "../utils/arrayUtils";
-import { sanitizeRoute } from "./utils";
 
 module RoutingTree {
     class PreprocessedRoutePart {
@@ -100,7 +100,7 @@ module RoutingTree {
                 pattern._MaxLength == this._MaxLength;
         }
 
-        match(routePart: string, from: number, converters: IConvertersProvider): { charactersRead: number; argument: RouteArgument; } | undefined {
+        async match(routePart: string, from: number, converters: IConvertersProvider): Promise<{ charactersRead: number; argument: RouteArgument; } | undefined> {
             //Not enough symbols in the routePart to satisfy this argument's MinLength
             if (routePart.length - from < this._MinLength)
                 return undefined;
@@ -119,7 +119,7 @@ module RoutingTree {
                 var converter: ITypeConverter | undefined = converters.get(this._TypeId);
                 if (converter == undefined)
                     throw new Error(`Missing type converter for typeId ${this._TypeId} in current context.`);
-                value = converter.convertFromString(stringVal);
+                value = await converter.convertFromString(stringVal);
                 if (value == undefined)
                     return undefined;
             }
@@ -149,10 +149,15 @@ module RoutingTree {
                 Note: escaped characters are poorly handled as they only examine presence of the preceeding backslash, won't properly handle \\{ or \\}
             */
             this._Pattern = pattern;
-            this._Components = pattern.pattern.split(/({[^{}]*})/).filter(x => x.length > 0).map<string | ArgumentMatcher>(x => {
-                return x.startsWith('{') ? new ArgumentMatcher(x) :
-                       pattern.isCaseSensitive == true ? x : x.toLowerCase();
-            })
+
+            if (pattern.pattern.length == 0)
+                this._Components = [''];
+            else
+                this._Components = pattern.pattern.split(/({[^{}]*})/).filter(x => x.length > 0).map<string | ArgumentMatcher>(x => {
+                    return x.startsWith('{') ? new ArgumentMatcher(x) :
+                        pattern.isCaseSensitive == true ? x : x.toLowerCase();
+                });
+
             this._HasArguments = this._Components.some(x => typeof x != 'string');
             this._HasPlainText = this._Components.some(x => typeof x == 'string');
         }
@@ -206,7 +211,7 @@ module RoutingTree {
             return true;
         }
     
-        match(routePart: PreprocessedRoutePart, converters: IConvertersProvider): RouteArgument[] | null | undefined {
+        async match(routePart: PreprocessedRoutePart, converters: IConvertersProvider): Promise<RouteArgument[] | null | undefined> {
             var out : RouteArgument[] | null = this.hasArguments ? [] : null;
     
             var matchAgainst = this.isCaseSensitive ? routePart.part : routePart.partLower;
@@ -225,7 +230,7 @@ module RoutingTree {
                 else
                 {
                     var asArgumentMatcher = this._Components[i] as ArgumentMatcher;
-                    var result = asArgumentMatcher.match(routePart.part, partIndex, converters);
+                    var result = await asArgumentMatcher.match(routePart.part, partIndex, converters);
                     if (result == undefined)
                         return undefined;
                     partIndex += result.charactersRead;
@@ -244,7 +249,7 @@ module RoutingTree {
         matcher: RoutePartMatcher;
     
         node?: RoutingTreeNode;
-        handlers?: Function[];
+        handlers?: RouteHandler[];
     };
 
     class RoutingTreeNode {
@@ -254,7 +259,7 @@ module RoutingTree {
             this._Entries = [];
         }
     
-        registerRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: Function): RoutingTreeNode {
+        registerRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: RouteHandler): RoutingTreeNode {
             /*
                 Route preference rules:
                     1. Longer routes are preferred to shorter routes.
@@ -299,6 +304,13 @@ module RoutingTree {
                     }
                     return;
                 }
+
+                /*
+                    We want to fall throught all plaintext rules first - either one will eventually match or we will start comparing with non-plaintext rules and win there.
+                    Without this condition a plaintext rule may get inserted incorrectly.
+                */
+                if (!entry.matcher.hasArguments) 
+                    continue;
     
                 if( entry.handlers !== undefined && route.length > 1 || //This conditions ensures than longer routes are preferred
                     entry.matcher.hasArguments && !matcher.hasArguments || //This condition ensures that routes without arguments are preferred
@@ -333,7 +345,7 @@ module RoutingTree {
             return this;
         }
     
-        unregisterRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: Function): RoutingTreeNode {
+        unregisterRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: RouteHandler): RoutingTreeNode {
             var matcher: RoutePartMatcher = new RoutePartMatcher(route[0]);
 
             var entry: RoutingTreeNodeEntry;
@@ -347,7 +359,7 @@ module RoutingTree {
                         entry.node.unregisterRoute(getArrayView(route, 1), handler);
                     else if (route.length == 1 && entry.handlers != undefined)
                     {
-                        var index = entry.handlers.indexOf(handler);
+                        var index = entry.handlers.findIndex(x => x.handler == handler.handler && x.controller == handler.controller);
                         if (index != -1)
                             entry.handlers.splice(index, 1);
                     }
@@ -363,7 +375,7 @@ module RoutingTree {
          * @param converters 
          * @returns 
          */
-        match(route: ArrayView<PreprocessedRoutePart> | PreprocessedRoutePart[], result: RouteEndpoint, converters: IConvertersProvider): boolean  {
+        async match(route: ArrayView<PreprocessedRoutePart> | PreprocessedRoutePart[], result: RouteEndpoint, converters: IConvertersProvider): Promise<boolean>  {
             var match: RouteArgument[] | null | undefined;
             var routePart: PreprocessedRoutePart = route[0];
     
@@ -374,7 +386,7 @@ module RoutingTree {
                     if (entry.handlers === undefined)
                         continue;
     
-                    match = entry.matcher.match(routePart, converters);
+                    match = await entry.matcher.match(routePart, converters);
                     if (match === undefined)
                         continue;
                     else if (match != null)
@@ -393,7 +405,7 @@ module RoutingTree {
                     if (entry.node === undefined)
                         continue;
     
-                    match = entry.matcher.match(routePart, converters);
+                    match = await entry.matcher.match(routePart, converters);
                     if (match === undefined)
                         continue;
                     else if (match != null)
@@ -417,20 +429,24 @@ module RoutingTree {
                 this._RootNodes.push(new RoutingTreeNode());
         }
     
-        registerRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: Function): void;
-        registerRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: Function): void;
-        registerRoute(method: HTTPMethod, route: string, handler: Function): void;
-        registerRoute(method: HTTPMethod, route: string, handler: Function, caseSensitive: boolean): void;
-        registerRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], handler: Function, caseSensitive?: boolean): void {
+        registerRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: RouteHandler): void;
+        registerRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: RouteHandler): void;
+        registerRoute(method: HTTPMethod, route: string, handler: RouteHandler): void;
+        registerRoute(method: HTTPMethod, route: string, handler: RouteHandler, caseSensitive: boolean): void;
+        registerRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], handler: RouteHandler, caseSensitive?: boolean): void {
             var node : RoutingTreeNode = this._RootNodes[method];
     
             if (typeof route == 'string')
-                route = [ { pattern: sanitizeRoute(route), isCaseSensitive: caseSensitive } ];
+                route = [ { pattern: route, isCaseSensitive: caseSensitive } ];
             else if (!Array.isArray(route))
                 route = [route];
+            else if (route.length == 0)
+                route = [ { pattern: '', isCaseSensitive: true } ];
     
+            route[0] = { pattern: route[0].pattern, isCaseSensitive: route[0].isCaseSensitive };
+
             route = route.flatMap<RouteDefinitionPart>(x => {
-                return sanitizeRoute(x.pattern).split('/').filter(x => x.length > 0).map<RouteDefinitionPart>(y => {
+                return x.pattern.split('/').map<RouteDefinitionPart>(y => {
                     return {
                         pattern: y,
                         isCaseSensitive: x.isCaseSensitive ?? true
@@ -441,20 +457,24 @@ module RoutingTree {
             node.registerRoute(route, handler);
         }
 
-        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: Function): void;
-        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: Function): void;
-        unregisterRoute(method: HTTPMethod, route: string, handler: Function): void;
-        unregisterRoute(method: HTTPMethod, route: string, handler: Function, caseSensitive: boolean): void;
-        unregisterRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], handler: Function, caseSensitive?: boolean): void {
+        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: RouteHandler): void;
+        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: RouteHandler): void;
+        unregisterRoute(method: HTTPMethod, route: string, handler: RouteHandler): void;
+        unregisterRoute(method: HTTPMethod, route: string, handler: RouteHandler, caseSensitive: boolean): void;
+        unregisterRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], handler: RouteHandler, caseSensitive?: boolean): void {
             var node : RoutingTreeNode = this._RootNodes[method];
     
             if (typeof route == 'string')
-                route = [ { pattern: sanitizeRoute(route), isCaseSensitive: caseSensitive } ];
+                route = [ { pattern: route, isCaseSensitive: caseSensitive } ];
             else if (!Array.isArray(route))
                 route = [route];
+            else if (route.length == 0)
+                route = [ { pattern: '', isCaseSensitive: true } ];
     
+            route[0] = { pattern: route[0].pattern, isCaseSensitive: route[0].isCaseSensitive };
+
             route = route.flatMap<RouteDefinitionPart>(x => {
-                return sanitizeRoute(x.pattern).split('/').filter(x => x.length > 0).map<RouteDefinitionPart>(y => {
+                return x.pattern.split('/').map<RouteDefinitionPart>(y => {
                     return {
                         pattern: y,
                         isCaseSensitive: x.isCaseSensitive
@@ -465,7 +485,7 @@ module RoutingTree {
             node.unregisterRoute(route, handler);
         }
     
-        match(method: HTTPMethod, route: string, converters: IConvertersProvider): RouteEndpoint | undefined {
+        async match(method: HTTPMethod, route: string, converters: IConvertersProvider): Promise<RouteEndpoint | undefined> {
             var node : RoutingTreeNode = this._RootNodes[method];
     
             var endpoint: RouteEndpoint = {
@@ -473,7 +493,7 @@ module RoutingTree {
                 arguments: [],
                 pattern: []
             };
-            return node.match(sanitizeRoute(route).split('/').filter(x => x.length > 0).map(x => new PreprocessedRoutePart(x)), endpoint, converters) ? endpoint : undefined;
+            return (await node.match(route.split('/').map(x => new PreprocessedRoutePart(x)), endpoint, converters)) ? endpoint : undefined;
         }
     }
 }
