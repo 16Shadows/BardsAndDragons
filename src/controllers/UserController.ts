@@ -6,9 +6,7 @@ import {User} from "../model/user";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
 import {ExtendedReturn} from "../modules/core/routing/core";
 import bcrypt from "bcryptjs";
-import {signJwt} from "../utils/jwt";
-import {UserPayload} from "../utils/UserPayload";
-import {AuthMiddleware} from "../middleware/AuthMiddleware";
+import {AuthMiddleware, AuthMiddlewareBag, createAuthToken} from "../middleware/AuthMiddleware";
 
 @Controller('api/v1/user')
 export class UserController extends Object {
@@ -49,13 +47,16 @@ export class UserController extends Object {
         await repository.save(user);
 
         // Генерация токена
-        const userPayload = new UserPayload(user.id, user.username);
-        const token = signJwt(userPayload);
+        const token = await createAuthToken({
+            username: user.username
+        });
 
         return new ExtendedReturn(201, this.contentTypeJson, {
             message: 'User successfully registered',
             token: token,
-            userState: userPayload.getPayload()
+            userState: {
+                username: user.username
+            }
         }, this.contentTypeJsonString);
     }
 
@@ -86,12 +87,15 @@ export class UserController extends Object {
         }
 
         // Генерация токена
-        const userPayload = new UserPayload(user.id, user.username);
-        const token = signJwt(userPayload);
+        const token = await createAuthToken({
+            username: user.username
+        });
 
         return new ExtendedReturn(200, this.contentTypeJson, {
             token: token,
-            userState: userPayload.getPayload()
+            userState: {
+                username: user.username
+            }
         }, this.contentTypeJsonString);
     }
 
@@ -99,7 +103,7 @@ export class UserController extends Object {
     @Accept('application/json')
     @Return('application/json')
     @Middleware(AuthMiddleware)
-    async logout(bag: MiddlewareBag, body: Object) {
+    async logout(bag: AuthMiddlewareBag, body: Object) {
         return new ExtendedReturn(200, this.contentTypeJson, {message: 'Logout successful'}, this.contentTypeJsonString);
     }
 }
