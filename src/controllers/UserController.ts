@@ -195,5 +195,7 @@ export class UserController extends Object {
 
         if (info.shouldDisplayAge != undefined)
             user.canDisplayAge = info.shouldDisplayAge;
+
+        await this._dbContext.getRepository(User).save(user);
     }
 }
