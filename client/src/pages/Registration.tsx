@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
-import http from '../http-common'
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import {Navigate, useNavigate} from "react-router-dom";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import {UserData} from "../models/UserData";
+import useApi from "../http-common";
 
 interface RegistrationFormState {
     username: string;
@@ -16,6 +16,7 @@ const Registration = () => {
     const isAuthenticated = useIsAuthenticated()
     const signIn = useSignIn<UserData>()
     const navigate = useNavigate()
+    const api = useApi()
 
     const [formData, setFormData] = useState<RegistrationFormState>({
         username: '',
@@ -37,7 +38,7 @@ const Registration = () => {
             return;
         }
 
-        http.post('/user/register', {
+        api.post('/user/register', {
             username: formData.username,
             email: formData.email,
             password: formData.password,
@@ -53,7 +54,7 @@ const Registration = () => {
             }
         }).catch((error) => {
             console.error(error);
-            setError(error.response.data.error);
+            setError(error.response?.data?.message);
         });
     };
 
