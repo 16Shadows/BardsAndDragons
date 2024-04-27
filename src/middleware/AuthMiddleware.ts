@@ -1,35 +1,99 @@
+import { ModelDataSource } from "../model/dataSource";
+import { User } from "../model/user";
 import {IMiddleware, MiddlewareContext} from "../modules/core/middleware/middleware";
 import {HTTPResponse} from "../modules/core/routing/core";
-import {verifyJwt} from "../utils/jwt";
-import {UserPayload} from "../utils/UserPayload";
+import jwt, { JwtPayload } from 'jsonwebtoken';
+
+type AuthToken = {
+    username: string;
+}
+
+export function createAuthToken(user: AuthToken): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+        jwt.sign(user, process.env.JWT_SECRET_KEY, {expiresIn: '7d'}, (error: Error, encoded: string) => {
+            if (error != undefined)
+                reject(error);
+            else
+                resolve(encoded);
+        });
+    })
+}
+
+function verifyAuthToken(token: string): Promise<AuthToken> {
+    return new Promise<AuthToken>((resolve, reject) => {
+        jwt.verify(token, process.env.JWT_SECRET_KEY, (payload: JwtPayload | string) => {
+            resolve(payload as AuthToken);
+        });
+    });
+}
 
 export type AuthMiddlewareBag = {
-    userPayload: UserPayload;
+    user: User;
 }
 
 export class AuthMiddleware implements IMiddleware {
+    private _dbContext: ModelDataSource;
+
+    constructor(dbContext: ModelDataSource) {
+        this._dbContext = dbContext;
+    }
+
     async run(ctx: MiddlewareContext, bag: AuthMiddlewareBag): Promise<HTTPResponse | MiddlewareContext | undefined> {
         let token = ctx.headers.authorization;
-        bag.userPayload = null;
 
-        if (!token) {
+        if (typeof token != 'string')
             return new HTTPResponse(401);
-        }
 
-        token = token.toString();
-        if (!token.toLowerCase().startsWith('bearer')) {
+        if (!token.toLowerCase().startsWith('bearer'))
             return new HTTPResponse(401);
-        }
 
         token = token.slice('bearer'.length).trim();
-        if (token) {
-            const decodedToken = verifyJwt(token);
-            if (decodedToken) {
-                bag.userPayload = decodedToken;
-                return undefined;
-            }
-        }
+        
+        var decodedToken = await verifyAuthToken(token);
+        
+        if (!decodedToken)
+            return new HTTPResponse(401);
 
-        return new HTTPResponse(401);
+        var repo = this._dbContext.getRepository(User);
+        var user = await repo.findOneBy({
+            username: decodedToken.username
+        });
+
+        if (user == null)
+            return new HTTPResponse(401);
+
+        bag.user = user;
+    }
+}
+
+export type OptionalAuthMiddlewareBag = Partial<AuthMiddlewareBag>;
+
+export class OptionalAuthMiddleware implements IMiddleware {
+    private _dbContext: ModelDataSource;
+
+    constructor(dbContext: ModelDataSource) {
+        this._dbContext = dbContext;
+    }
+
+    async run(ctx: MiddlewareContext, bag: OptionalAuthMiddlewareBag): Promise<HTTPResponse | MiddlewareContext | undefined> {
+        let token = ctx.headers.authorization;
+
+        if (typeof token != 'string')
+            return;
+
+        if (!token.toLowerCase().startsWith('bearer'))
+            return;
+
+        token = token.slice('bearer'.length).trim();
+        
+        var decodedToken = await verifyAuthToken(token);
+        
+        if (!decodedToken)
+            return;
+
+        var repo = this._dbContext.getRepository(User);
+        bag.user = await repo.findOneBy({
+            username: decodedToken.username
+        });
     }
 }
