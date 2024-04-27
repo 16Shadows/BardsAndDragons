@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 
 const Navbar = () => {
   // TODO Добавить запрос, вошел ли пользователь в профиль или нет
-  const [loggedOn, setLoggedOn] = useState(true);
+  const [loggedOn, setLoggedOn] = useState(false);
   // TODO Добавить запрос на данные профиля
   const [profileName, setProfileName] = useState("Тестовое имя профиля");
   const [profileAvatar, setProfileAvatar] = useState(avatarpic);
@@ -162,11 +162,11 @@ const Navbar = () => {
             <div className="nav-item login_reg_bundle ms-auto">
               <button type="button" className="btn btn-primary me-2">
                 {/* TODO страница входа */}
-                <Link to="/">Вход</Link>
+                <Link to="/login">Вход</Link>
               </button>
               <button type="button" className="btn btn-outline-primary">
                 {/* TODO страница входа */}
-                <Link to="/">Регистрация</Link>
+                <Link to="/register">Регистрация</Link>
               </button>
             </div>
           )}
