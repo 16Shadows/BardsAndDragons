@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import http from '../http-common'
+import useApi from '../http-common'
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
 import useSignIn from 'react-auth-kit/hooks/useSignIn'
 import {UserData} from '../models/UserData'
@@ -14,6 +14,7 @@ const Login = () => {
     const isAuthenticated = useIsAuthenticated()
     const signIn = useSignIn<UserData>()
     const navigate = useNavigate()
+    const api = useApi()
 
     const [formData, setFormData] = React.useState<LoginFormState>({login: '', password: ''})
     const [error, setError] = useState<string | null>(null);
@@ -25,7 +26,7 @@ const Login = () => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        http.post('user/login', JSON.stringify(formData))
+        api.post('user/login', JSON.stringify(formData))
             .then((response) => {
                 if (signIn({
                     auth: {
@@ -39,7 +40,7 @@ const Login = () => {
             })
             .catch((error) => {
                 console.error(error);
-                setError(error.response.data.error);
+                setError(error.response?.data?.message);
             });
     }
 

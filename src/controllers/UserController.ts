@@ -4,15 +4,13 @@ import {POST} from "../modules/core/routing/decorators";
 import {Middleware, MiddlewareBag} from "../modules/core/middleware/middleware";
 import {User} from "../model/user";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
-import {ExtendedReturn} from "../modules/core/routing/core";
 import bcrypt from "bcryptjs";
 import {AuthMiddleware, AuthMiddlewareBag, createAuthToken} from "../middleware/AuthMiddleware";
+import {badRequest, json} from "../modules/core/routing/response";
 
 @Controller('api/v1/user')
 export class UserController extends Object {
     protected readonly _dbContext: ModelDataSource;
-    private contentTypeJson = {"Content-Type": "application/json"};
-    private contentTypeJsonString = "application/json";
 
     constructor(dbContext: ModelDataSource) {
         super();
@@ -27,16 +25,14 @@ export class UserController extends Object {
 
         // Проверка заполнения полей
         if (!username || !email || !password) {
-            return new ExtendedReturn(400, this.contentTypeJson, {error: 'Required fields are not filled'},
-                this.contentTypeJsonString);
+            return badRequest({message: 'Required fields are not filled'});
         }
 
         let repository = this._dbContext.getRepository(User);
 
         // Проверка на существование пользователя
         if (await repository.findOneBy({username: username})) {
-            return new ExtendedReturn(400, this.contentTypeJson, {error: 'User with that username is already registered'},
-                this.contentTypeJsonString);
+            return badRequest({message: 'User with that username is already registered'});
         }
 
         const user: User = new User();
@@ -51,13 +47,13 @@ export class UserController extends Object {
             username: user.username
         });
 
-        return new ExtendedReturn(201, this.contentTypeJson, {
+        return json({
             message: 'User successfully registered',
             token: token,
             userState: {
                 username: user.username
             }
-        }, this.contentTypeJsonString);
+        }, 201);
     }
 
     @POST('login')
@@ -70,7 +66,7 @@ export class UserController extends Object {
 
         // Проверка заполнения полей
         if (!username || !password) {
-            return new ExtendedReturn(400, this.contentTypeJson, {error: 'Required fields are not filled'}, this.contentTypeJsonString);
+            return badRequest({message: 'Required fields are not filled'});
         }
 
         let repository = this._dbContext.getRepository(User);
@@ -78,12 +74,12 @@ export class UserController extends Object {
         // Проверка на существование пользователя
         const user = await repository.findOneBy({username: username});
         if (!user) {
-            return new ExtendedReturn(400, this.contentTypeJson, {error: 'User not found'}, this.contentTypeJsonString);
+            return badRequest({message: 'User not found'});
         }
 
         // Проверка пароля
         if (!await bcrypt.compare(password, user.passwordHash)) {
-            return new ExtendedReturn(400, this.contentTypeJson, {error: 'Wrong password'}, this.contentTypeJsonString);
+            return badRequest({message: 'Wrong password'});
         }
 
         // Генерация токена
@@ -91,19 +87,22 @@ export class UserController extends Object {
             username: user.username
         });
 
-        return new ExtendedReturn(200, this.contentTypeJson, {
-            token: token,
-            userState: {
-                username: user.username
-            }
-        }, this.contentTypeJsonString);
+        return json({token: token, userState: {username: user.username}});
     }
 
     @POST('logout')
     @Accept('application/json')
     @Return('application/json')
     @Middleware(AuthMiddleware)
-    async logout(bag: AuthMiddlewareBag, body: Object) {
-        return new ExtendedReturn(200, this.contentTypeJson, {message: 'Logout successful'}, this.contentTypeJsonString);
+    async logout(bag: MiddlewareBag, body: Object) {
+        return json({message: 'Logout successful'});
+    }
+
+    @POST('test-query-with-auth')
+    @Accept('application/json')
+    @Return('application/json')
+    @Middleware(AuthMiddleware)
+    async testAuth(bag: MiddlewareBag, body: Object) {
+        return json({message: 'Test query with auth successful'});
     }
 }
