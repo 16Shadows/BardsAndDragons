@@ -18,7 +18,7 @@ export class NotificationBase {
     @ManyToOne(() => User, {
         onDelete: 'CASCADE'
     })
-    receiver: User;
+    receiver: Promise<User>;
 
     @Column({
         default: false

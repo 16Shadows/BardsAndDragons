@@ -3,10 +3,10 @@ import { ModelDataSource } from "../model/dataSource";
 import { NotificationBase } from "../model/notifications/notificationBase";
 import { Controller } from "../modules/core/controllers/decorators";
 import { Middleware } from "../modules/core/middleware/middleware";
-import { Return } from "../modules/core/mimeType/decorators";
-import { GET } from "../modules/core/routing/decorators";
+import { Accept, Return } from "../modules/core/mimeType/decorators";
+import { GET, POST } from "../modules/core/routing/decorators";
 import { QueryArgument, QueryBag } from "../modules/core/routing/query";
-import { badRequest } from "../modules/core/routing/response";
+import { badRequest, forbidden } from "../modules/core/routing/response";
 
 type UserData = {
     username: string,
@@ -103,5 +103,16 @@ export class NotificationController {
                 }
             }
         }));
+    }
+
+    @POST('{notif:notification}/seen')
+    @Accept('application/json')
+    @Middleware(AuthMiddleware)
+    async markNotifictionSeen(middlewareBag: AuthMiddlewareBag, notif: NotificationBase) {
+        if ((await notif.receiver).id != middlewareBag.user.id)
+            return forbidden(null);
+
+        notif.seen = true;
+        await this._dbContext.getRepository(NotificationBase).save(notif);
     }
 }
