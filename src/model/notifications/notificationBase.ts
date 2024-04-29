@@ -3,6 +3,8 @@ import { User } from "../user";
 import { FriendRequestNotification } from "./friendRequestNotification";
 import { FriendRequestAcceptedNotification } from "./friendRequestAcceptedNotification";
 
+export type NotificationTypes = 'friendRequest' | 'friendRequestAccepted';
+
 @Entity()
 export class NotificationBase {
     @PrimaryGeneratedColumn()
@@ -10,7 +12,7 @@ export class NotificationBase {
 
     //Discriminator column
     @Column()
-    type: string;
+    type: NotificationTypes;
 
     //Shared info
     @ManyToOne(() => User, {

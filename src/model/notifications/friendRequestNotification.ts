@@ -8,11 +8,11 @@ export class FriendRequestNotification {
     id: number;
 
     @ManyToOne(() => User)
-    user: User;
+    user: Promise<User>;
     
     @OneToOne(() => NotificationBase, {
         onDelete: 'CASCADE'
     })
     @JoinColumn()
-    parent: NotificationBase;
+    parent: Promise<NotificationBase>;
 }
