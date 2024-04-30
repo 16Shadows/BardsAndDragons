@@ -14,7 +14,6 @@ import { Router } from '../../core/routing/router';
 import { getHttpMethodFromString } from '../../core/constants';
 import { IMimeTypeConverter, MimeTypesProvider } from '../../core/mimeType/mimeTypeConverter';
 import { PassThrough } from 'stream';
-import { sanitizeRoute } from '../../core/routing/utils';
 
 class KoaCoreApp<
     StateT = Koa.DefaultState,
@@ -118,6 +117,10 @@ class KoaCoreApp<
     }
 
     useControllerRouting(): KoaCoreApp<StateT, ContextT> {
+        function sanitizeRoute(route: string): string {
+            return route.startsWith('/') ? route.substring(1) : route;
+        };
+
         this.use(async (ctx, next) => {
             var request: HTTPRequest = {
                 headers: ctx.headers,
