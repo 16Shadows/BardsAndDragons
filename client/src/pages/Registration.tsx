@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
-import {Navigate, useNavigate} from "react-router-dom";
+import {Navigate, useLocation, useNavigate} from "react-router-dom";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import {UserData} from "../models/UserData";
 import useApi from "../http-common";
@@ -17,6 +17,7 @@ const Registration = () => {
     const signIn = useSignIn<UserData>()
     const navigate = useNavigate()
     const api = useApi()
+    const location = useLocation()
 
     const [formData, setFormData] = useState<RegistrationFormState>({
         username: '',
@@ -50,7 +51,7 @@ const Registration = () => {
                 },
                 userState: response.data.userState
             })) {
-                navigate('/secure')
+                navigate(location.state.from)
             }
         }).catch((error) => {
             console.error(error);
@@ -58,8 +59,12 @@ const Registration = () => {
         });
     };
 
-    return (
-        isAuthenticated ? <Navigate to={'/secure'} replace/> :
+    if (isAuthenticated) {
+        return (
+            <Navigate to="/" replace={true}/>
+        )
+    } else {
+        return (
             <div>
                 <h1>Registration</h1>
                 <form onSubmit={handleSubmit}>
@@ -107,7 +112,8 @@ const Registration = () => {
                     <button type="submit">Register</button>
                 </form>
             </div>
-    );
-};
+        );
+    }
+}
 
 export default Registration

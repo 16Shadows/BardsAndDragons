@@ -3,7 +3,7 @@ import useApi from '../http-common'
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
 import useSignIn from 'react-auth-kit/hooks/useSignIn'
 import {UserData} from '../models/UserData'
-import {useNavigate, Navigate} from 'react-router-dom'
+import {Navigate, useLocation, useNavigate} from 'react-router-dom'
 
 interface LoginFormState {
     login: string;
@@ -15,6 +15,7 @@ const Login = () => {
     const signIn = useSignIn<UserData>()
     const navigate = useNavigate()
     const api = useApi()
+    const location = useLocation()
 
     const [formData, setFormData] = React.useState<LoginFormState>({login: '', password: ''})
     const [error, setError] = useState<string | null>(null);
@@ -35,7 +36,7 @@ const Login = () => {
                     },
                     userState: response.data.userState
                 })) {
-                    navigate('/secure')
+                    navigate(location.state.from)
                 }
             })
             .catch((error) => {
@@ -46,7 +47,7 @@ const Login = () => {
 
     if (isAuthenticated) {
         return (
-            <Navigate to={'/secure'} replace/>
+            <Navigate to="/" replace={true}/>
         )
     } else {
         return (
