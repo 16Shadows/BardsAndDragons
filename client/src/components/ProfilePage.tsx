@@ -7,6 +7,7 @@ import DatePickerInput from "./DatePicker";
 
 import { registerLocale, setDefaultLocale } from "react-datepicker";
 import { ru } from "date-fns/locale/ru";
+import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
 // import DropdownList from "./DropdownList";
 registerLocale("ru", ru);
 
@@ -19,10 +20,24 @@ const ProfilePage = () => {
   const nickname = "Тестовый_Ник";
   const email = "Тест@ya.ru";
   const townList = ["Москва", "Пермь", "Верхняя Колва"];
+  // Запрос данных из бд
+  const [name, setName] = useState<string | null>(null);
+  const [town, setTown] = useState<string | null>(null);
+  const [birthDate, setBirthDate] = useState<Date | null>(null);
 
-  const [name, setName] = useState(null);
-  const [town, setTown] = useState(null);
-  const [birthDate, setBirthDate] = useState(null);
+  const handleNameChange = (event: {
+    target: { value: React.SetStateAction<null | string> };
+  }) => {
+    setName(event.target.value);
+  };
+  const handleTownChange = (event: {
+    target: { value: React.SetStateAction<null | string> };
+  }) => {
+    setTown(event.target.value);
+  };
+  const handleBirthDateChange = (value: React.SetStateAction<null | Date>) => {
+    setBirthDate(value);
+  };
 
   return (
     <div className="d-flex flex-column content">
@@ -68,10 +83,12 @@ const ProfilePage = () => {
           <div className="row">
             <div className="col col-form-label">
               <input
-                disabled
+                disabled={isEditing ? true : false}
                 name="name"
                 type="text"
-                placeholder="Имя (не выбрано)"
+                placeholder="Имя"
+                value={name ? name : nickname}
+                onChange={handleNameChange}
               ></input>
             </div>
           </div>
@@ -85,25 +102,30 @@ const ProfilePage = () => {
           <div className="row">
             <div className="col">
               <input
-                disabled
+                disabled={isEditing ? true : false}
                 name="town"
                 type="text"
-                placeholder="Город (не выбран)"
+                placeholder="Город"
+                value={town ? town : "Город (не выбран)"}
+                onChange={handleTownChange}
               ></input>
               {/* <DropdownList></DropdownList> */}
 
               <div className="row">
                 <div className="col">
-                  <DatePickerInput></DatePickerInput>
+                  <DatePickerInput
+                    startDate={birthDate}
+                    onChangeListener={handleBirthDateChange}
+                  ></DatePickerInput>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div>
-            галочки
-            {/* <TooltipComponent message="Возраст"></TooltipComponent> */}
-          </div>
+        <div className="row">
+          галочки
+          {/* <TooltipComponent message="Возраст"></TooltipComponent> */}
         </div>
       </div>
     </div>
