@@ -1,0 +1,16 @@
+.input {
+    display:block;
+    width: 100%;
+    border: none;
+    margin: 0;
+} 
+.age_input_group {
+    width: inherit;
+}
+.text_column {
+    width: 80%;
+}
+.label-col {
+    width: fit-content !important;
+
+}
