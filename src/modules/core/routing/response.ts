@@ -25,23 +25,23 @@ module Response {
         return new HTTPResponse(code, headers);
     }
 
-    export function badRequest(body: any): HTTPResponseConvertBody {
+    export function badRequest(body?: any): HTTPResponseConvertBody {
         return auto(body, 400);
     }
 
-    export function unauthorized(body: any): HTTPResponseConvertBody {
+    export function unauthorized(body?: any): HTTPResponseConvertBody {
         return auto(body, 401);
     }
     
-    export function forbidden(body: any): HTTPResponseConvertBody {
+    export function forbidden(body?: any): HTTPResponseConvertBody {
         return auto(body, 403);
     }
 
-    export function notFound(body: any): HTTPResponseConvertBody {
+    export function notFound(body?: any): HTTPResponseConvertBody {
         return auto(body, 404);
     }
 
-    export function conflict(body: any): HTTPResponseConvertBody {
+    export function conflict(body?: any): HTTPResponseConvertBody {
         return auto(body, 409);
     }
 }
