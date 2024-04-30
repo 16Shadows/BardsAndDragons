@@ -12,5 +12,9 @@
 }
 .label-col {
     width: fit-content !important;
-
+}
+.pic-col{
+    width:fit-contents !important;
+    display: flex;
+    justify-content: center;
 }

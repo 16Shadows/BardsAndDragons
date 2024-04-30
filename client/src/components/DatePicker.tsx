@@ -4,6 +4,7 @@ import DatePicker from "react-datepicker";
 const DatePickerInput = (props: {
   startDate: Date | null;
   onChangeListener: any;
+  disabled: boolean;
 }) => {
   const [startDate, setStartDate] = useState(props.startDate);
   // Подписываем обработчик события смены даты
@@ -11,6 +12,7 @@ const DatePickerInput = (props: {
 
   return (
     <DatePicker
+      disabled={props.disabled}
       locale="ru"
       showIcon
       dateFormat="dd/MM/yyyy"
@@ -20,7 +22,10 @@ const DatePickerInput = (props: {
         props.onChangeListener(date);
       }}
       // При некорректном,неполном или пустом вводе дата = null
-      onChangeRaw={() => setStartDate(null)}
+      onChangeRaw={() => {
+        setStartDate(null);
+        props.onChangeListener(null);
+      }}
     />
   );
 };

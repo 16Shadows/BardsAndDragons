@@ -8,6 +8,8 @@ import DatePickerInput from "./DatePicker";
 import { registerLocale, setDefaultLocale } from "react-datepicker";
 import { ru } from "date-fns/locale/ru";
 import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
+import Button from "./Button";
+import { set } from "date-fns";
 // import DropdownList from "./DropdownList";
 registerLocale("ru", ru);
 
@@ -28,7 +30,8 @@ const ProfilePage = () => {
   const handleNameChange = (event: {
     target: { value: React.SetStateAction<null | string> };
   }) => {
-    setName(event.target.value);
+    if (event.target.value === "") setName(null);
+    else setName(event.target.value);
   };
   const handleTownChange = (event: {
     target: { value: React.SetStateAction<null | string> };
@@ -42,12 +45,14 @@ const ProfilePage = () => {
   return (
     <div className="d-flex flex-column content">
       <div className="bg-white row">
-        <img
-          id="profile_pic"
-          className="profile_image"
-          alt="Profile avatar"
-          src={avatarpic}
-        />
+        <div className="col pic-col">
+          <img
+            id="profile_pic"
+            className="profile_image"
+            alt="Profile avatar"
+            src={avatarpic}
+          />
+        </div>
 
         <div className="label-col">
           <div className="col ">
@@ -83,11 +88,11 @@ const ProfilePage = () => {
           <div className="row">
             <div className="col col-form-label">
               <input
-                disabled={isEditing ? true : false}
+                disabled={!isEditing}
                 name="name"
                 type="text"
-                placeholder="Имя"
-                value={name ? name : nickname}
+                placeholder={nickname}
+                value={name ? name : ""}
                 onChange={handleNameChange}
               ></input>
             </div>
@@ -102,7 +107,7 @@ const ProfilePage = () => {
           <div className="row">
             <div className="col">
               <input
-                disabled={isEditing ? true : false}
+                disabled={!isEditing}
                 name="town"
                 type="text"
                 placeholder="Город"
@@ -114,6 +119,7 @@ const ProfilePage = () => {
               <div className="row">
                 <div className="col">
                   <DatePickerInput
+                    disabled={!isEditing}
                     startDate={birthDate}
                     onChangeListener={handleBirthDateChange}
                   ></DatePickerInput>
@@ -126,6 +132,21 @@ const ProfilePage = () => {
         <div className="row">
           галочки
           {/* <TooltipComponent message="Возраст"></TooltipComponent> */}
+        </div>
+        <div className="row">
+          {isEditing ? (
+            <Button
+              color="primary"
+              children="Закончить редактирование"
+              onClick={() => setIsEditing(false)}
+            ></Button>
+          ) : (
+            <Button
+              color="secondary"
+              children="Редактировать профиль"
+              onClick={() => setIsEditing(true)}
+            ></Button>
+          )}
         </div>
       </div>
     </div>
