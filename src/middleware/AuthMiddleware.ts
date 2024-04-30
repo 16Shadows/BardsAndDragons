@@ -21,11 +21,46 @@ export function createAuthToken(user: AuthToken): Promise<string> {
 }
 
 function verifyAuthToken(token: string): Promise<AuthToken> {
-    return new Promise<AuthToken>((resolve) => {
-        jwt.verify(token, process.env.JWT_SECRET_KEY, (payload: JwtPayload | string) => {
-            resolve(payload as AuthToken);
+    return new Promise<AuthToken>((resolve, reject) => {
+        jwt.verify(token, process.env.JWT_SECRET_KEY, (error: Error, payload: JwtPayload | string) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(payload as AuthToken);
+            }
         });
     });
+}
+
+async function authenticateUser(ctx: MiddlewareContext, dbContext: ModelDataSource): Promise<User | null> {
+    let token = ctx.headers.authorization;
+
+    // Проверка токена на тип
+    if (typeof token != 'string' || !token.toLowerCase().startsWith('bearer')) {
+        return null;
+    }
+
+    // Удаление префикса
+    token = token.slice('bearer'.length).trim();
+
+    // Проверка токена на валидность
+    const decodedToken = await verifyAuthToken(token).catch(() => {
+        return null;
+    });
+    if (!decodedToken) {
+        return null;
+    }
+
+    // Получение пользователя
+    const repo = dbContext.getRepository(User);
+    const user = await repo.findOneBy({
+        username: decodedToken.username
+    });
+    if (!user) {
+        return null;
+    }
+
+    return user;
 }
 
 export type AuthMiddlewareBag = {
@@ -34,37 +69,19 @@ export type AuthMiddlewareBag = {
 
 @injectable()
 export class AuthMiddleware implements IMiddleware {
-    private _dbContext: ModelDataSource;
+    private readonly _dbContext: ModelDataSource;
 
     constructor(dbContext: ModelDataSource) {
         this._dbContext = dbContext;
     }
 
     async run(ctx: MiddlewareContext, bag: AuthMiddlewareBag): Promise<HTTPResponse | MiddlewareContext | undefined> {
-        let token = ctx.headers.authorization;
-
-        if (typeof token != 'string')
+        const user = await authenticateUser(ctx, this._dbContext);
+        if (user) {
+            bag.user = user;
+        } else {
             return new HTTPResponse(401);
-
-        if (!token.toLowerCase().startsWith('bearer'))
-            return new HTTPResponse(401);
-
-        token = token.toLowerCase().slice('bearer'.length).trim();
-
-        const decodedToken = await verifyAuthToken(token);
-
-        if (!decodedToken)
-            return new HTTPResponse(401);
-
-        const repo = this._dbContext.getRepository(User);
-        const user = await repo.findOneBy({
-            username: decodedToken.username
-        });
-
-        if (!user)
-            return new HTTPResponse(401);
-
-        bag.user = user;
+        }
     }
 }
 
@@ -72,31 +89,18 @@ export type OptionalAuthMiddlewareBag = Partial<AuthMiddlewareBag>;
 
 @injectable()
 export class OptionalAuthMiddleware implements IMiddleware {
-    private _dbContext: ModelDataSource;
+    private readonly _dbContext: ModelDataSource;
 
     constructor(dbContext: ModelDataSource) {
         this._dbContext = dbContext;
     }
 
     async run(ctx: MiddlewareContext, bag: OptionalAuthMiddlewareBag): Promise<HTTPResponse | MiddlewareContext | undefined> {
-        let token = ctx.headers.authorization;
-
-        if (typeof token != 'string')
+        const user = await authenticateUser(ctx, this._dbContext);
+        if (user) {
+            bag.user = user;
+        } else {
             return;
-
-        if (!token.toLowerCase().startsWith('bearer'))
-            return;
-
-        token = token.toLowerCase().slice('bearer'.length).trim();
-
-        const decodedToken = await verifyAuthToken(token);
-
-        if (!decodedToken)
-            return;
-
-        const repo = this._dbContext.getRepository(User);
-        bag.user = await repo.findOneBy({
-            username: decodedToken.username
-        });
+        }
     }
 }
