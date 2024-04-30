@@ -5,10 +5,12 @@ import notificationPic from "../resources/notification_50px.png";
 import notificationRedPic from "../resources/notification_red_50px.png";
 import NotificationsPanel from "./NotificationsPanel";
 import {useState, useEffect} from "react";
+import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
+import useSignOut from "react-auth-kit/hooks/useSignOut";
 
 const Navbar = () => {
-    // TODO Добавить запрос, вошел ли пользователь в профиль или нет
-    const [loggedOn, setLoggedOn] = useState(false);
+    // Запрос, вошел ли пользователь в профиль или нет
+    const isAuthenticated = useIsAuthenticated()
     // TODO Добавить запрос на данные профиля
     const [profileName, setProfileName] = useState("Тестовое имя профиля");
     const [profileAvatar, setProfileAvatar] = useState(avatar);
@@ -16,6 +18,7 @@ const Navbar = () => {
     const [gotNotifications, setGotNotifications] = useState(false);
 
     const navigate = useNavigate();
+    const signOut = useSignOut()
 
     // Для запроса уведомлений при рендере навбара
     useEffect(
@@ -28,7 +31,7 @@ const Navbar = () => {
     return (
         <nav className="navbar navbar-expand-lg bg-body-tertiary bg-white">
             <div className="container-fluid">
-                <img src={logo} className="BD-logo" alt="bdlogo"/>
+                <img src={logo} className="BD-logo" alt="logo"/>
 
                 <button
                     className="navbar-toggler"
@@ -85,7 +88,7 @@ const Navbar = () => {
             </li>
           </ul> */}
 
-                    {loggedOn ? (
+                    {isAuthenticated ? (
                         // Кнопка профиля, если пользователь вошел в аккаунт
                         <div className="navbar-nav  ms-auto">
                             <li className="nav-item dropdown">
@@ -151,8 +154,8 @@ const Navbar = () => {
                                         <hr className="dropdown-divider"/>
                                     </li>
                                     <li>
-                                        {/* TODO сделать выход из логина при переходе на главную страницу */}
-                                        <Link className="dropdown-item" to="/">
+                                        {/* Выход из аккаунта с переходом на главную страницу */}
+                                        <Link className="dropdown-item" onClick={() => signOut()} to="/">
                                             Выйти
                                         </Link>
                                     </li>
@@ -162,11 +165,12 @@ const Navbar = () => {
                     ) : (
                         // Кнопки входа/регистрации, если пользователь не вошел в аккаунт
                         <div className="nav-item login_reg_bundle ms-auto">
-                            <button type="button" onClick={() => navigate('/login')}
-                                    className="btn btn-primary me-2">Вход
+                            <button type="button" onClick={() => navigate('/login')} className="btn btn-primary me-2">
+                                Вход
                             </button>
                             <button type="button" onClick={() => navigate('/register')}
-                                    className="btn btn-outline-primary">Регистрация
+                                    className="btn btn-outline-primary">
+                                Регистрация
                             </button>
                         </div>
                     )}
