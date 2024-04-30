@@ -1,4 +1,4 @@
-import {Link, useNavigate} from "react-router-dom";
+import {Link, NavLink, useNavigate} from "react-router-dom";
 import logo from "../resources/bdlogo_mini.png";
 import avatar from "../resources/EmptyProfileAvatar_50px.png";
 import notificationPic from "../resources/notification_50px.png";
@@ -52,21 +52,21 @@ const Navbar = () => {
                     <div>
                         <ul className="navbar-nav mb-2 mb-lg-0">
                             <li className="nav-item">
-                                <Link className="nav-link" aria-current="page" to="/">
+                                <NavLink className="nav-link" aria-current="page" to="/">
                                     Главная
-                                </Link>
+                                </NavLink>
                             </li>
 
                             <li className="nav-item">
-                                <Link className="nav-link" to="/players">
+                                <NavLink className="nav-link" to="/players">
                                     Поиск игроков
-                                </Link>
+                                </NavLink>
                             </li>
 
                             <li className="nav-item">
-                                <Link className="nav-link" to="/games">
+                                <NavLink className="nav-link" to="/games">
                                     Поиск игр
-                                </Link>
+                                </NavLink>
                             </li>
                         </ul>
                     </div>
@@ -136,19 +136,19 @@ const Navbar = () => {
                                 </a>
                                 <ul className="dropdown-menu">
                                     <li>
-                                        <Link className="dropdown-item" to="/my-games">
+                                        <NavLink className="dropdown-item" to="/my-games">
                                             Мои игры
-                                        </Link>
+                                        </NavLink>
                                     </li>
                                     <li>
-                                        <Link className="dropdown-item" to="/my-friends">
+                                        <NavLink className="dropdown-item" to="/my-friends">
                                             Мои друзья
-                                        </Link>
+                                        </NavLink>
                                     </li>
                                     <li>
-                                        <Link className="dropdown-item" to="/my-profile">
+                                        <NavLink className="dropdown-item" to="/my-profile">
                                             Профиль
-                                        </Link>
+                                        </NavLink>
                                     </li>
                                     <li>
                                         <hr className="dropdown-divider"/>
