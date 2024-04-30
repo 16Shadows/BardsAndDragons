@@ -79,7 +79,7 @@ module RoutingCore {
     };
     
     export type ResolvedRoute = {
-        executeHandlers(diContext: DependencyContainer): Promise<HTTPResponse | undefined>;
+        executeHandlers(): Promise<HTTPResponse | undefined>;
         resolvedPattern: RouteDefinitionPart[];
     };
 
@@ -99,7 +99,7 @@ module RoutingCore {
 
     export interface IRouter {
         get registry(): IRouteRegistry;
-        resolve(request: HTTPRequest, converters: IConvertersProvider, mimeTypes: IMimeTypesProvider): Promise<ResolvedRoute | undefined>;
+        resolve(request: HTTPRequest, context: DependencyContainer, converters: IConvertersProvider, mimeTypes: IMimeTypesProvider): Promise<ResolvedRoute | undefined>;
     }
 }
 

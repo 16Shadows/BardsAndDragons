@@ -22,13 +22,13 @@ export class Router implements IRouter {
         this._DefaultMimeType = defaultMimeType ?? 'text/plain';
     }
 
-    async resolve(request: HTTPRequest, converters: IConvertersProvider, mimeTypes: IMimeTypesProvider): Promise<ResolvedRoute | undefined> {
+    async resolve(request: HTTPRequest, context: DependencyContainer, converters: IConvertersProvider, mimeTypes: IMimeTypesProvider): Promise<ResolvedRoute | undefined> {
         var endpoints: Route | undefined = await this._RouteRegistry.match(request.method, request.path, converters);
         var self = this;
         if (endpoints == undefined)
             return undefined;
         return {
-            executeHandlers: async function(context: DependencyContainer): Promise<HTTPResponse> {
+            executeHandlers: async function(): Promise<HTTPResponse> {
                 var args = endpoints.arguments.map(x => x.value);
                 return await self.executeHandlers(request, endpoints.endpoints, args, mimeTypes, context, converters);
             },

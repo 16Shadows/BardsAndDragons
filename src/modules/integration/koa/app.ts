@@ -131,7 +131,7 @@ class KoaCoreApp<
             }
 
             //Use router to find an endpoint
-            var route = await this._Router.resolve(request, this._ConvertersProvider, this._MimeTypeProviders);
+            var route = await this._Router.resolve(request, this._DIContainer, this._ConvertersProvider, this._MimeTypeProviders);
 
             //No endpoint found - pass control to the next middleware
             if (route == undefined)
@@ -150,7 +150,7 @@ class KoaCoreApp<
             //Check if any of the downstream middleware has set shouldEvaluate to false or changed status from 404 Not Found
             if (ctxInfo.shouldEvaluate && ctx.status == 404)
             {
-                var result = await route.executeHandlers(this._DIContainer);
+                var result = await route.executeHandlers();
                 if (result != undefined) {
                     if (result.body != undefined)
                     {
