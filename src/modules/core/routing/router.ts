@@ -2,7 +2,7 @@ import { DependencyContainer } from "tsyringe";
 import { IConvertersProvider } from "../converters/storage";
 import { getAcceptContentTypes, getReturnContentTypes } from "../mimeType/decorators";
 import { IMimeTypeConverter, IMimeTypesProvider, MimeTypeParams } from "../mimeType/mimeTypeConverter";
-import { ExtendedReturn, HTTPRequest, HTTPResponse, IRouteRegistry, IRouter, ResolvedRoute, RouteEndpoint, RouteHandler } from "./core";
+import { HTTPResponseConvertBody, HTTPRequest, HTTPResponse, IRouteRegistry, IRouter, ResolvedRoute, Route, RouteEndpoint } from "./core";
 import contentType from 'content-type';
 import { HTTPMethod } from "../constants";
 import { constructor } from "../types";
@@ -23,20 +23,20 @@ export class Router implements IRouter {
     }
 
     async resolve(request: HTTPRequest, converters: IConvertersProvider, mimeTypes: IMimeTypesProvider): Promise<ResolvedRoute | undefined> {
-        var endpoints: RouteEndpoint | undefined = await this._RouteRegistry.match(request.method, request.path, converters);
+        var endpoints: Route | undefined = await this._RouteRegistry.match(request.method, request.path, converters);
         var self = this;
         if (endpoints == undefined)
             return undefined;
         return {
-            execute: async function(context: DependencyContainer): Promise<HTTPResponse> {
+            executeHandlers: async function(context: DependencyContainer): Promise<HTTPResponse> {
                 var args = endpoints.arguments.map(x => x.value);
-                return await self.executeHandlers(request, endpoints.handlers, args, mimeTypes, context, converters);
+                return await self.executeHandlers(request, endpoints.endpoints, args, mimeTypes, context, converters);
             },
             resolvedPattern: endpoints.pattern
         };
     }
 
-    async executeHandlers(request: HTTPRequest, handlers: RouteHandler[], args: any[], mimeTypes: IMimeTypesProvider, context: DependencyContainer, typeConverters: IConvertersProvider): Promise<HTTPResponse | undefined> {
+    async executeHandlers(request: HTTPRequest, handlers: RouteEndpoint[], args: any[], mimeTypes: IMimeTypesProvider, context: DependencyContainer, typeConverters: IConvertersProvider): Promise<HTTPResponse | undefined> {
         
         if (handlers.length == 0)
             return new HTTPResponse(404);
@@ -69,7 +69,7 @@ export class Router implements IRouter {
             
             //Filter handlers by the mime type they accept
             handlers = handlers.filter(x => {
-                return getAcceptContentTypes(x.controller, x.handler)?.has(parsedType.type) ?? false;
+                return getAcceptContentTypes(x.controller, x.handlerName)?.has(parsedType.type) ?? false;
             });
 
             if (handlers.length == 0)
@@ -93,11 +93,11 @@ export class Router implements IRouter {
         return results[0];
     }
 
-    async executeHandler(request: HTTPRequest, handler: RouteHandler, args: ReadonlyArray<any>, body:any, mimeTypes: IMimeTypesProvider, context: DependencyContainer, typeConverters: IConvertersProvider): Promise<HTTPResponse | undefined> {
+    async executeHandler(request: HTTPRequest, handler: RouteEndpoint, args: ReadonlyArray<any>, body:any, mimeTypes: IMimeTypesProvider, context: DependencyContainer, typeConverters: IConvertersProvider): Promise<HTTPResponse | undefined> {
 
         var queryBag: QueryBag = {};
 
-        var queryArgs: ReadonlyMap<string, QueryArgumentParams> = getQueryArguments(handler.controller, handler.handler);
+        var queryArgs: ReadonlyMap<string, QueryArgumentParams> = getQueryArguments(handler.controller, handler.handlerName);
 
         if (queryArgs?.size > 0) {
             var val: string[] | string | undefined;
@@ -146,7 +146,7 @@ export class Router implements IRouter {
         var middlewareBag: MiddlewareBag = {};
 
         var controllerMiddleware: ReadonlyArray<constructor<IMiddleware>> = getControllerMiddleware(handler.controller);
-        var handlerMiddleware: ReadonlyArray<constructor<IMiddleware>> = getHandlerMiddleware(handler.controller, handler.handler);
+        var handlerMiddleware: ReadonlyArray<constructor<IMiddleware>> = getHandlerMiddleware(handler.controller, handler.handlerName);
 
         var headers = request.headers;
 
@@ -198,7 +198,7 @@ export class Router implements IRouter {
 
         //Instantiate handler and find its method
         var controllerInstance: Object = context.resolve(handler.controller);
-        var handlerMethod: Function = controllerInstance[handler.handler];
+        var handlerMethod: Function = controllerInstance[handler.handlerName];
     
         //Invoke the method
         var result: any;
@@ -211,7 +211,7 @@ export class Router implements IRouter {
             return result;
         
         var mimeType: string = undefined, mimeTypeParams: MimeTypeParams;
-        if (result instanceof ExtendedReturn && result.bodyMimeType != undefined)
+        if (result instanceof HTTPResponseConvertBody && result.bodyMimeType != undefined)
         {
             try {
                 var parsed = contentType.parse(result.bodyMimeType);
@@ -223,7 +223,7 @@ export class Router implements IRouter {
         
         if (mimeType == undefined)
         {
-            var returnTypes : ReadonlyMap<string, MimeTypeParams> = getReturnContentTypes(handler.controller, handler.handler);
+            var returnTypes : ReadonlyMap<string, MimeTypeParams> = getReturnContentTypes(handler.controller, handler.handlerName);
 
             if (returnTypes == undefined || returnTypes.size == 0)
                 mimeType = this._DefaultMimeType;
@@ -265,7 +265,7 @@ export class Router implements IRouter {
         if (mimeTypeConverter == undefined)
             return new HTTPResponse(500);
 
-        if (result instanceof ExtendedReturn)
+        if (result instanceof HTTPResponseConvertBody)
         {
             var headers = result.headers;
             if (headers == undefined)

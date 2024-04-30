@@ -2,7 +2,7 @@ import { Controller } from "../modules/core/controllers/decorators";
 import { GET, POST } from "../modules/core/routing/decorators";
 import { ExampleService } from "../services/ExampleService";
 import { Accept, Return } from "../modules/core/mimeType/decorators";
-import { ExtendedReturn } from "../modules/core/routing/core";
+import { HTTPResponseConvertBody } from "../modules/core/routing/core";
 import { Middleware, MiddlewareBag } from "../modules/core/middleware/middleware";
 import { ExampleMiddleware, ExampleMiddlewareBag } from "../middleware/ExampleMiddleware";
 import { ModelDataSource } from "../model/dataSource";

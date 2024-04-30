@@ -147,7 +147,7 @@ class KoaCoreApp<
             //Check if any of the downstream middleware has set shouldEvaluate to false or changed status from 404 Not Found
             if (ctxInfo.shouldEvaluate && ctx.status == 404)
             {
-                var result = await route.execute(this._DIContainer);
+                var result = await route.executeHandlers(this._DIContainer);
                 if (result != undefined) {
                     if (result.body != undefined)
                     {

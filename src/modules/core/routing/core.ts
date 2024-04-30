@@ -16,16 +16,16 @@ module RoutingCore {
         value: any;
     };
 
-    export type RouteHandler = {
-        handler: string;
+    export type RouteEndpoint = {
+        handlerName: string;
         controller: constructor<Object>;
     };
 
-    export type RouteEndpoint = {
+    export type Route = {
         /**
          * A function registered as the handler of this endpoint.
          */
-        handlers: RouteHandler[];
+        endpoints: RouteEndpoint[];
         /**
          * A set of arguments extracted from the route left-to-right based on its pattern.
          */
@@ -64,7 +64,7 @@ module RoutingCore {
         }
     };
 
-    export class ExtendedReturn {
+    export class HTTPResponseConvertBody {
         readonly code: number;
         readonly headers?: OutgoingHttpHeaders;
         readonly body?: any;
@@ -79,22 +79,22 @@ module RoutingCore {
     };
     
     export type ResolvedRoute = {
-        execute(diContext: DependencyContainer): Promise<HTTPResponse | undefined>;
+        executeHandlers(diContext: DependencyContainer): Promise<HTTPResponse | undefined>;
         resolvedPattern: RouteDefinitionPart[];
     };
 
     export interface IRouteRegistry {
-        registerRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: RouteHandler): void;
-        registerRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: RouteHandler): void;
-        registerRoute(method: HTTPMethod, route: string, handler: RouteHandler): void;
-        registerRoute(method: HTTPMethod, route: string, handler: RouteHandler, caseSensitive: boolean): void;
+        registerRoute(method: HTTPMethod, route: RouteDefinitionPart, endpoint: RouteEndpoint): void;
+        registerRoute(method: HTTPMethod, route: RouteDefinitionPart[], endpoint: RouteEndpoint): void;
+        registerRoute(method: HTTPMethod, route: string, endpoint: RouteEndpoint): void;
+        registerRoute(method: HTTPMethod, route: string, endpoint: RouteEndpoint, caseSensitive: boolean): void;
     
-        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: RouteHandler): void;
-        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: RouteHandler): void;
-        unregisterRoute(method: HTTPMethod, route: string, handler: RouteHandler): void;
-        unregisterRoute(method: HTTPMethod, route: string, handler: RouteHandler, caseSensitive: boolean): void;
+        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart, endpoint: RouteEndpoint): void;
+        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart[], endpoint: RouteEndpoint): void;
+        unregisterRoute(method: HTTPMethod, route: string, endpoint: RouteEndpoint): void;
+        unregisterRoute(method: HTTPMethod, route: string, endpoint: RouteEndpoint, caseSensitive: boolean): void;
 
-        match(method: HTTPMethod, route: string, converters: IConvertersProvider): Promise<RouteEndpoint | undefined>;
+        match(method: HTTPMethod, route: string, converters: IConvertersProvider): Promise<Route | undefined>;
     }
 
     export interface IRouter {
