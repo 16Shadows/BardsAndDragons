@@ -38,7 +38,7 @@ module RoutingCore {
 
     export type HTTPHeaders = {
         [key: string]: string | string[]
-        'Content-Type'?: string;
+        'content-type'?: string;
     }
 
     export type IncomingHttpHeaders = HTTPHeaders & {};

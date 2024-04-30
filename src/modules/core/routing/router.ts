@@ -46,7 +46,7 @@ export class Router implements IRouter {
         //Payload needs to be handled
         if (Router.shouldProcessBody(request.method))
         {
-            var mimeType = request.headers["content-type"] ?? this._DefaultMimeType;
+            var mimeType = request.headers['content-type'] ?? this._DefaultMimeType;
             try {
                 var parsedType = contentType.parse(mimeType as string);
             }
