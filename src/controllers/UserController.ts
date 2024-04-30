@@ -94,7 +94,7 @@ export class UserController extends Object {
     @Accept('application/json')
     @Return('application/json')
     @Middleware(AuthMiddleware)
-    async logout(bag: MiddlewareBag, body: Object) {
+    async logout(bag: AuthMiddlewareBag, body: Object) {
         return json({message: 'Logout successful'});
     }
 
@@ -102,7 +102,7 @@ export class UserController extends Object {
     @Accept('application/json')
     @Return('application/json')
     @Middleware(AuthMiddleware)
-    async testAuth(bag: MiddlewareBag, body: Object) {
-        return json({message: 'Test query with auth successful'});
+    async testAuth(bag: AuthMiddlewareBag, body: Object) {
+        return json({message: `Test query with auth successful. User: ${bag.user.username}`});
     }
 }

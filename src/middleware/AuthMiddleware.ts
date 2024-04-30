@@ -1,8 +1,9 @@
-import { ModelDataSource } from "../model/dataSource";
-import { User } from "../model/user";
+import {ModelDataSource} from "../model/dataSource";
+import {User} from "../model/user";
 import {IMiddleware, MiddlewareContext} from "../modules/core/middleware/middleware";
 import {HTTPResponse} from "../modules/core/routing/core";
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt, {JwtPayload} from 'jsonwebtoken';
+import {injectable} from "tsyringe";
 
 type AuthToken = {
     username: string;
@@ -20,7 +21,7 @@ export function createAuthToken(user: AuthToken): Promise<string> {
 }
 
 function verifyAuthToken(token: string): Promise<AuthToken> {
-    return new Promise<AuthToken>((resolve, reject) => {
+    return new Promise<AuthToken>((resolve) => {
         jwt.verify(token, process.env.JWT_SECRET_KEY, (payload: JwtPayload | string) => {
             resolve(payload as AuthToken);
         });
@@ -31,6 +32,7 @@ export type AuthMiddlewareBag = {
     user: User;
 }
 
+@injectable()
 export class AuthMiddleware implements IMiddleware {
     private _dbContext: ModelDataSource;
 
@@ -47,19 +49,19 @@ export class AuthMiddleware implements IMiddleware {
         if (!token.toLowerCase().startsWith('bearer'))
             return new HTTPResponse(401);
 
-        token = token.slice('bearer'.length).trim();
-        
-        var decodedToken = await verifyAuthToken(token);
-        
+        token = token.toLowerCase().slice('bearer'.length).trim();
+
+        const decodedToken = await verifyAuthToken(token);
+
         if (!decodedToken)
             return new HTTPResponse(401);
 
-        var repo = this._dbContext.getRepository(User);
-        var user = await repo.findOneBy({
+        const repo = this._dbContext.getRepository(User);
+        const user = await repo.findOneBy({
             username: decodedToken.username
         });
 
-        if (user == null)
+        if (!user)
             return new HTTPResponse(401);
 
         bag.user = user;
@@ -68,6 +70,7 @@ export class AuthMiddleware implements IMiddleware {
 
 export type OptionalAuthMiddlewareBag = Partial<AuthMiddlewareBag>;
 
+@injectable()
 export class OptionalAuthMiddleware implements IMiddleware {
     private _dbContext: ModelDataSource;
 
@@ -84,14 +87,14 @@ export class OptionalAuthMiddleware implements IMiddleware {
         if (!token.toLowerCase().startsWith('bearer'))
             return;
 
-        token = token.slice('bearer'.length).trim();
-        
-        var decodedToken = await verifyAuthToken(token);
-        
+        token = token.toLowerCase().slice('bearer'.length).trim();
+
+        const decodedToken = await verifyAuthToken(token);
+
         if (!decodedToken)
             return;
 
-        var repo = this._dbContext.getRepository(User);
+        const repo = this._dbContext.getRepository(User);
         bag.user = await repo.findOneBy({
             username: decodedToken.username
         });
