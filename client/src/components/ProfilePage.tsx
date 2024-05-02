@@ -22,7 +22,7 @@ registerLocale("ru", ru);
 
 const ProfilePage = () => {
   // Изменение режима редактирования по кнопке
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
   // TODO Запрос данных из бд
   const nickname = "Тестовый_Ник";
   const email = "Тест@ya.ru";
@@ -184,7 +184,7 @@ const ProfilePage = () => {
               {/* <DropdownList></DropdownList> */}
 
               <div className="row">
-                <div className="col">
+                <div className="col DatePicker">
                   <DatePickerInput
                     disabled={!isEditing}
                     startDate={birthDate}
@@ -276,7 +276,8 @@ const ProfilePage = () => {
           ) : (
             <Button
               key={"startRedactingButton"}
-              color="secondary"
+              color="primary"
+              outline={true}
               children="Редактировать профиль"
               onClick={() => setIsEditing(true)}
             ></Button>

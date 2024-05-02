@@ -5,11 +5,15 @@ interface Props {
   children: string;
   onClick: () => void;
   color?: "primary" | "secondary" | "danger" | "success";
+  outline?: boolean;
 }
 
-const Button = ({ children, onClick, color = "primary" }: Props) => {
+const Button = ({ children, onClick, color = "primary", outline }: Props) => {
   return (
-    <button className={"btn btn-" + color} onClick={onClick}>
+    <button
+      className={outline ? "btn btn-outline-" + color : "btn btn-" + color}
+      onClick={onClick}
+    >
       {children}
     </button>
   );
