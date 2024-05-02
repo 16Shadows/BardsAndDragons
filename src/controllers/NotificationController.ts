@@ -128,7 +128,7 @@ export class NotificationController {
                     return;
 
                 for (var notif of notifs)
-                    self._NotificationController.sendNotification(middlewareBag.user.username, await NotificationController.convertNotification(notif));
+                    stream.push(UserNotificationService.createNotificationMessage(await NotificationController.convertNotification(notif)));
                 
                 if (notifs.length == NotificationController.NotifDispatchGroupSize)
                 {
