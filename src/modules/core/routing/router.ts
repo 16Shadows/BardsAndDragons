@@ -112,6 +112,12 @@ export class Router implements IRouter {
                 }
                 else if (typeof val == 'string')
                 {
+                    if (arg[1].typeId == '')
+                    {
+                        queryBag[arg[0]] = val;
+                        continue;
+                    }
+
                     var typeConverter = typeConverters.get(arg[1].typeId);
                     if (typeConverter == undefined)
                         throw new Error(`Missing type converter for typeId '${arg[1].typeId}'.`);
@@ -127,6 +133,12 @@ export class Router implements IRouter {
                     return undefined;
                 else
                 {
+                    if (arg[1].typeId == '')
+                    {
+                        queryBag[arg[0]] = val;
+                        continue;
+                    }
+
                     var convertedArr = await Promise.all(val.map(async x => {
                         var typeConverter = typeConverters.get(arg[1].typeId);
                         if (typeConverter == undefined)

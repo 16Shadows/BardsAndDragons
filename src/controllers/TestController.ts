@@ -117,4 +117,10 @@ export class TestController extends Object
     async query3(bag: MiddlewareBag, query: QueryBag) {
         return query['test'] ?? 'fun!';
     }
+
+    @GET('query4')
+    @QueryArgument('test')
+    async query4(bag: MiddlewareBag, query: QueryBag) {
+        return query['test'];
+    }
 };
