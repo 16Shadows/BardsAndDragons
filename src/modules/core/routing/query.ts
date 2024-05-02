@@ -7,7 +7,7 @@ module Query {
     const Metadata_QueryParams = `${Metadata_Prefix}QueryParams`;
 
     export type QueryArgumentOptions = {
-        typeId: string;
+        typeId?: string;
         optional?: boolean;
         canHaveMultipleValues?: boolean;
     }
@@ -17,7 +17,7 @@ module Query {
         [key: string]: any[] | any;
     };
 
-    export function QueryArgument(name: string, params: QueryArgumentOptions) {
+    export function QueryArgument(name: string, params?: QueryArgumentOptions) {
         return (target: Object, handlerName: string, prop: TypedPropertyDescriptor<Endpoint>) => {
             var handlerInfo: Map<string, Map<string, QueryArgumentParams>> = Reflect.getMetadata(Metadata_QueryParams, target);
             if (handlerInfo == undefined)
@@ -31,9 +31,9 @@ module Query {
                 throw new Error(`Duplicate query argument ${name}`);
 
             queryArgs.set(name, {
-                typeId: params.typeId,
-                optional: params.optional ?? false,
-                canHaveMultipleValues: params.canHaveMultipleValues ?? true
+                typeId: params?.typeId ?? '',
+                optional: params?.optional ?? false,
+                canHaveMultipleValues: params?.canHaveMultipleValues ?? true
             });
         }
     }
