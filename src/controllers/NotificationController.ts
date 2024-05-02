@@ -84,6 +84,7 @@ export class NotificationController {
 
         const notifs = await repo.createQueryBuilder('notif')
                            .where('notif.receiverId = :id', {id: middlewareBag.user.id})
+                           .orderBy('notif.id', 'DESC')
                            .skip(start)
                            .take(count)
                            .getMany();
