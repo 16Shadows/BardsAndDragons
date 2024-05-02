@@ -107,7 +107,7 @@ export class NotificationController {
     @Middleware(ParseLastEventID)
     @Middleware(AuthMiddleware)
     async subscribeToNotificationEvents(middlewareBag: AuthMiddlewareBag & LastEventIDBag) {
-        var stream = this._NotificationController.createStream(middlewareBag.user.username);
+        var stream = this._NotificationController.createSubscriber(middlewareBag.user.username);
 
         var lastNotifId = +middlewareBag.lastEventID;
         //Query all notifications after lastEventId (if it was sent)
