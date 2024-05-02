@@ -4,12 +4,15 @@ import "../CSS/ProfilePage.css";
 import "../CSS/react-datepicker.css";
 import avatarpic from "../resources/EmptyProfileAvatar_200px.png";
 import DatePickerInput from "./DatePicker";
+import PopupButton from "../interfaces/PopupButtonInterface";
 
 import { registerLocale, setDefaultLocale } from "react-datepicker";
 import { ru } from "date-fns/locale/ru";
 import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
 import Button from "./Button";
 import { set } from "date-fns";
+import Popup from "./Popup";
+import { useNavigate } from "react-router-dom";
 // import DropdownList from "./DropdownList";
 registerLocale("ru", ru);
 
@@ -41,6 +44,34 @@ const ProfilePage = () => {
   const handleBirthDateChange = (value: React.SetStateAction<null | Date>) => {
     setBirthDate(value);
   };
+
+  const navigate = useNavigate();
+
+  const deleteProfile = () => {
+    navigate("/");
+    console.log("Ох НЕТ! Профиль был удален");
+    // Добавить удаление профиля
+  };
+  const [modalShow, setModalShow] = useState(false);
+
+  const DeleteProfileButtons = [
+    {
+      text: "Удалить",
+      action: () => {
+        console.log("Профиль удален.");
+        deleteProfile();
+      },
+      variant: "danger",
+    } as PopupButton,
+
+    {
+      text: "Отмена",
+      action: () => {
+        console.log("Удаление отменено.");
+      },
+      variant: "primary",
+    } as PopupButton,
+  ];
 
   return (
     <div className="d-flex flex-column content">
@@ -133,20 +164,38 @@ const ProfilePage = () => {
           галочки
           {/* <TooltipComponent message="Возраст"></TooltipComponent> */}
         </div>
-        <div className="row">
+        <div className="row mb-2">
           {isEditing ? (
             <Button
+              key={"doneRedactingButton"}
               color="primary"
               children="Закончить редактирование"
               onClick={() => setIsEditing(false)}
             ></Button>
           ) : (
             <Button
+              key={"startRedactingButton"}
               color="secondary"
               children="Редактировать профиль"
               onClick={() => setIsEditing(true)}
             ></Button>
           )}
+        </div>
+        <div className="row">
+          <Popup
+            popupButtonText="Удалить профиль"
+            popupButtonVariant="danger"
+            show={modalShow}
+            onHide={() => setModalShow(false)}
+            disabled={false}
+            title="Удаление профиля"
+            message={
+              'Вы уверены, что хотите удалить профиль "' +
+              nickname +
+              '"? \nОтменить это действие будет невозможно!'
+            }
+            buttons={DeleteProfileButtons}
+          />
         </div>
       </div>
     </div>

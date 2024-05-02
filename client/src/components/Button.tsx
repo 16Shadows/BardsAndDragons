@@ -1,4 +1,5 @@
-import React from "react";
+import React, { Key } from "react";
+import { IntegerType } from "typeorm";
 
 interface Props {
   children: string;

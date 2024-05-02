@@ -113,6 +113,14 @@ const Navbar = () => {
                 </a>
                 <ul className="dropdown-menu">
                   <li>
+                    <Link className="dropdown-item" to="/myprofile">
+                      Профиль
+                    </Link>
+                  </li>
+                  <li>
+                    <hr className="dropdown-divider" />
+                  </li>
+                  <li>
                     <Link className="dropdown-item" to="/mygames">
                       Мои игры
                     </Link>
@@ -122,11 +130,7 @@ const Navbar = () => {
                       Мои друзья
                     </Link>
                   </li>
-                  <li>
-                    <Link className="dropdown-item" to="/myprofile">
-                      Профиль
-                    </Link>
-                  </li>
+
                   <li>
                     <hr className="dropdown-divider" />
                   </li>
