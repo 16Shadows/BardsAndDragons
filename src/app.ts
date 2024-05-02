@@ -7,6 +7,7 @@ import {getDefaultConverters} from './modules/core/converters/default';
 import {getDefaultMimeTypes} from './modules/core/mimeType/default';
 import {ModelDataSource} from './model/dataSource';
 import { discoverConverters } from './modules/core/converters/discovery';
+import { UserNotificationService } from './services/UserNotificationService';
 
 (async () => {
     const app = new KoaCoreApp();
@@ -15,6 +16,7 @@ import { discoverConverters } from './modules/core/converters/discovery';
 
     app.useSingleton(ExampleService);
     app.useSingleton(dataSource);
+    app.useSingleton(UserNotificationService);
 
     //Note: looks like serve doesn't interrupt middleware chain even if it finds a file to serve
     //May cause side effects, should find another package or implement it manually
