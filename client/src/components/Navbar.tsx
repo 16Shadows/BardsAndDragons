@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 
 const Navbar = () => {
   // TODO Добавить запрос, вошел ли пользователь в профиль или нет
-  const [loggedOn, setLoggedOn] = useState(false);
+  const [loggedOn, setLoggedOn] = useState(true);
   // TODO Добавить запрос на данные профиля
   const [profileName, setProfileName] = useState("Тестовое имя профиля");
   const [profileAvatar, setProfileAvatar] = useState(avatarpic);
@@ -65,24 +65,6 @@ const Navbar = () => {
               </li>
             </ul>
           </div>
-
-          {/* Я думаю это не MVP */}
-          {/* <ul className="navbar-nav">
-            <li className="nav-item search">
-              <form className="d-flex" role="search">
-                <input
-                  className="form-control me-2"
-                  type="search"
-                  placeholder="Поиск"
-                  aria-label="Search"
-                />
-                <button className="btn btn-outline-success" type="submit">
-                  Поиск
-                </button>
-              </form>
-            </li>
-          </ul> */}
-
           {loggedOn ? (
             // Кнопка профиля, если пользователь вошел в аккаунт
             <div className="navbar-nav  ms-auto">

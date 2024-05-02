@@ -1,6 +1,5 @@
 
 * {
-  margin: 0;
   font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   color: #333;
 }
@@ -25,8 +24,19 @@
 .navbar a:hover {
   color: #f0472a;
 }
-.content {
-  margin: 40px auto;
+.content{
+  margin: 20px auto;
   padding: 20px;
+  width: 800px;
+  max-width: 800px;
+  align-self: center;
+  /* цвет для дебага */
+  background-color: antiquewhite;
 }
-
+.profile_image {
+  width: 200px;
+  height: 200px;
+  outline-color: #6e6e6e;
+  outline-width: 2px;
+  outline-style: solid;
+}
