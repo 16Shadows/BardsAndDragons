@@ -115,11 +115,17 @@ export class NotificationController {
         {
             var self = this;
             async function queryNotifs() {
+                if (stream.closed)
+                    return;
+
                 const repo = self._dbContext.getRepository(NotificationBase);
                 const notifs = await repo.createQueryBuilder('notif')
                                          .where('notif.receiverId = :recId AND notif.id > :lastId', {recId: middlewareBag.user.id, lastId: lastNotifId})
                                          .take(NotificationController.NotifDispatchGroupSize)
                                          .getMany();
+
+                if (stream.closed)
+                    return;
 
                 for (var notif of notifs)
                     self._NotificationController.sendNotification(middlewareBag.user.username, await NotificationController.convertNotification(notif));
