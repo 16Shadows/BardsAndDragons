@@ -198,4 +198,12 @@ export class UserController extends Object {
 
         await this._dbContext.getRepository(User).save(user);
     }
+
+    @POST('@current/delete')
+    @Middleware(AuthMiddleware)
+    async deleteMe(bag: AuthMiddlewareBag) {
+        const repo = this._dbContext.getRepository(User);
+        await repo.softRemove(bag.user);
+        return this.logout(bag, {});
+    }
 }
