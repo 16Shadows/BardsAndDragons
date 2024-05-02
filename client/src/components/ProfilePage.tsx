@@ -3,46 +3,59 @@ import "../CSS/App.css";
 import "../CSS/ProfilePage.css";
 import "../CSS/react-datepicker.css";
 import avatarpic from "../resources/EmptyProfileAvatar_200px.png";
+// Datepicker - https://reactdatepicker.com/
 import DatePickerInput from "./DatePicker";
+// Select - https://react-select.com/home
+import Select from "react-select";
 import PopupButton from "../interfaces/PopupButtonInterface";
+import Popup from "./Popup";
+import Button from "./Button";
 
 import { registerLocale, setDefaultLocale } from "react-datepicker";
 import { ru } from "date-fns/locale/ru";
 import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
-import Button from "./Button";
 import { set } from "date-fns";
-import Popup from "./Popup";
 import { useNavigate } from "react-router-dom";
-// import DropdownList from "./DropdownList";
-registerLocale("ru", ru);
+import TooltipComponent from "./TooltipComponent";
 
-// Datepicker - https://reactdatepicker.com/
+registerLocale("ru", ru);
 
 const ProfilePage = () => {
   // Изменение режима редактирования по кнопке
   const [isEditing, setIsEditing] = useState(false);
-  // Запрос данных из бд
+  // TODO Запрос данных из бд
   const nickname = "Тестовый_Ник";
   const email = "Тест@ya.ru";
   const townList = ["Москва", "Пермь", "Верхняя Колва"];
-  // Запрос данных из бд
+  // TODO Запрос данных из бд
   const [name, setName] = useState<string | null>(null);
   const [town, setTown] = useState<string | null>(null);
   const [birthDate, setBirthDate] = useState<Date | null>(null);
+  const [isShowingAge, setIsShowingAge] = useState<boolean>(false);
 
   const handleNameChange = (event: {
     target: { value: React.SetStateAction<null | string> };
   }) => {
     if (event.target.value === "") setName(null);
     else setName(event.target.value);
+    // TODO запрос на изменение бд
   };
   const handleTownChange = (event: {
     target: { value: React.SetStateAction<null | string> };
   }) => {
     setTown(event.target.value);
+    // TODO запрос на изменение бд
   };
   const handleBirthDateChange = (value: React.SetStateAction<null | Date>) => {
     setBirthDate(value);
+    // TODO запрос на изменение бд
+  };
+  const hangleIsShowingAgeChange = (event: {
+    target: { value: React.SetStateAction<Boolean> };
+  }) => {
+    if (event.target.value === true) setIsShowingAge(true);
+    else setIsShowingAge(false);
+    // TODO запрос на изменение бд
   };
 
   const navigate = useNavigate();
@@ -50,7 +63,7 @@ const ProfilePage = () => {
   const deleteProfile = () => {
     navigate("/");
     console.log("Ох НЕТ! Профиль был удален");
-    // Добавить удаление профиля
+    // TODO Добавить удаление профиля
   };
   const [modalShow, setModalShow] = useState(false);
 
@@ -160,10 +173,25 @@ const ProfilePage = () => {
           </div>
         </div>
 
+        <hr style={{ marginTop: 15 }} />
+
         <div className="row">
-          галочки
-          {/* <TooltipComponent message="Возраст"></TooltipComponent> */}
+          <div className="form-check col">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              id="isShowingAgeCheckbox"
+              checked={isShowingAge}
+            />
+            <label className="form-check-label" htmlFor="isShowingAgeCheckbox">
+              Показывать мой возраст
+            </label>
+            <TooltipComponent message='Если выбрано "Не показывать" - ваш Возраст не будет виден другим пользователям, но продолжит использоваться в алгоритме подбора игроков'></TooltipComponent>
+          </div>
         </div>
+
+        <hr style={{ marginTop: 15 }} />
+
         <div className="row mb-2">
           {isEditing ? (
             <Button
