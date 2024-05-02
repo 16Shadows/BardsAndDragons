@@ -18,3 +18,10 @@
     display: flex;
     justify-content: center;
 }
+.profile-row{
+    display: flex;
+    align-items: center !important;
+}
+.text-red {
+    color: red;
+}
