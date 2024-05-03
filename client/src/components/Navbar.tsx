@@ -1,19 +1,24 @@
-import { Link } from "react-router-dom";
-import bdlogo from "../resources/bdlogo_mini.png";
-import avatarpic from "../resources/EmptyProfileAvatar_50px.png";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import logo from "../resources/bdlogo_mini.png";
+import avatar from "../resources/EmptyProfileAvatar_50px.png";
 import notificationPic from "../resources/notification_50px.png";
 import notificationRedPic from "../resources/notification_red_50px.png";
 import NotificationsPanel from "./NotificationsPanel";
 import { useState, useEffect } from "react";
+import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
+import useSignOut from "react-auth-kit/hooks/useSignOut";
 
 const Navbar = () => {
-  // TODO Добавить запрос, вошел ли пользователь в профиль или нет
-  const [loggedOn, setLoggedOn] = useState(true);
+  // Запрос, вошел ли пользователь в профиль или нет
+  const isAuthenticated = useIsAuthenticated();
   // TODO Добавить запрос на данные профиля
   const [profileName, setProfileName] = useState("Тестовое имя профиля");
-  const [profileAvatar, setProfileAvatar] = useState(avatarpic);
+  const [profileAvatar, setProfileAvatar] = useState(avatar);
   // TODO Добавить запрос на наличие уведомлений
   const [gotNotifications, setGotNotifications] = useState(false);
+
+  const navigate = useNavigate();
+  const signOut = useSignOut();
 
   // Для запроса уведомлений при рендере навбара
   useEffect(
@@ -26,7 +31,7 @@ const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary bg-white">
       <div className="container-fluid">
-        <img src={bdlogo} className="BD-logo" alt="bdlogo" />
+        <img src={logo} className="BD-logo" alt="logo" />
 
         <button
           className="navbar-toggler"
@@ -47,25 +52,43 @@ const Navbar = () => {
           <div>
             <ul className="navbar-nav mb-2 mb-lg-0">
               <li className="nav-item">
-                <Link className="nav-link" aria-current="page" to="/">
+                <NavLink className="nav-link" aria-current="page" to="/">
                   Главная
-                </Link>
+                </NavLink>
               </li>
 
               <li className="nav-item">
-                <Link className="nav-link" to="/splayers">
+                <NavLink className="nav-link" to="/players">
                   Поиск игроков
-                </Link>
+                </NavLink>
               </li>
 
               <li className="nav-item">
-                <Link className="nav-link" to="/sgames">
+                <NavLink className="nav-link" to="/games">
                   Поиск игр
-                </Link>
+                </NavLink>
               </li>
             </ul>
           </div>
-          {loggedOn ? (
+
+          {/* Я думаю это не MVP */}
+          {/* <ul className="navbar-nav">
+            <li className="nav-item search">
+              <form className="d-flex" role="search">
+                <input
+                  className="form-control me-2"
+                  type="search"
+                  placeholder="Поиск"
+                  aria-label="Search"
+                />
+                <button className="btn btn-outline-success" type="submit">
+                  Поиск
+                </button>
+              </form>
+            </li>
+          </ul> */}
+
+          {isAuthenticated ? (
             // Кнопка профиля, если пользователь вошел в аккаунт
             <div className="navbar-nav  ms-auto">
               <li className="nav-item dropdown">
@@ -113,30 +136,30 @@ const Navbar = () => {
                 </a>
                 <ul className="dropdown-menu">
                   <li>
-                    <Link className="dropdown-item" to="/myprofile">
-                      Профиль
-                    </Link>
-                  </li>
-                  <li>
-                    <hr className="dropdown-divider" />
-                  </li>
-                  <li>
-                    <Link className="dropdown-item" to="/mygames">
+                    <NavLink className="dropdown-item" to="/my-games">
                       Мои игры
-                    </Link>
+                    </NavLink>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to="/myfriends">
+                    <NavLink className="dropdown-item" to="/my-friends">
                       Мои друзья
-                    </Link>
+                    </NavLink>
                   </li>
-
+                  <li>
+                    <NavLink className="dropdown-item" to="/my-profile">
+                      Профиль
+                    </NavLink>
+                  </li>
                   <li>
                     <hr className="dropdown-divider" />
                   </li>
                   <li>
-                    {/* TODO сделать выход из логина при переходе на главную страницу */}
-                    <Link className="dropdown-item" to="/">
+                    {/* Выход из аккаунта с переходом на главную страницу */}
+                    <Link
+                      className="dropdown-item"
+                      onClick={() => signOut()}
+                      to="/"
+                    >
                       Выйти
                     </Link>
                   </li>
@@ -146,13 +169,19 @@ const Navbar = () => {
           ) : (
             // Кнопки входа/регистрации, если пользователь не вошел в аккаунт
             <div className="nav-item login_reg_bundle ms-auto">
-              <button type="button" className="btn btn-primary me-2">
-                {/* TODO страница входа */}
-                <Link to="/login">Вход</Link>
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                className="btn btn-primary me-2"
+              >
+                Вход
               </button>
-              <button type="button" className="btn btn-outline-primary">
-                {/* TODO страница входа */}
-                <Link to="/register">Регистрация</Link>
+              <button
+                type="button"
+                onClick={() => navigate("/register")}
+                className="btn btn-outline-primary"
+              >
+                Регистрация
               </button>
             </div>
           )}

@@ -12,7 +12,7 @@ import Popup from "./Popup";
 import Button from "./Button";
 
 import { registerLocale, setDefaultLocale } from "react-datepicker";
-import { ru } from "date-fns/locale/ru";
+import ru from "date-fns/locale/ru";
 import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
 import { set } from "date-fns";
 import { useNavigate } from "react-router-dom";
