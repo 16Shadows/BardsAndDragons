@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import "../CSS/App.css";
-import "../CSS/ProfilePage.css";
-import "../CSS/react-datepicker.css";
+import "../css/App.css";
+import "../css/ProfilePage.css";
+import "../css/react-datepicker.css";
 import avatarpic from "../resources/EmptyProfileAvatar_200px.png";
 // Datepicker - https://reactdatepicker.com/
 import DatePickerInput from "./DatePicker";
@@ -54,10 +54,10 @@ const ProfilePage = () => {
     setBirthDate(value);
     // запрос на изменение бд идет при сохранении изменений
   };
-  const hangleIsShowingAgeChange = (event: {
-    target: { value: React.SetStateAction<Boolean> };
-  }) => {
-    if (event.target.value === true) setIsShowingAge(true);
+  const hangleIsShowingAgeChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (event.target.checked) setIsShowingAge(true);
     else setIsShowingAge(false);
     // запрос на изменение бд идет при сохранении изменений
   };
@@ -202,17 +202,14 @@ const ProfilePage = () => {
           <div className="col">
             <div className="form-check col">
               <input
+                disabled={!isEditing}
                 type="checkbox"
                 className="form-check-input"
                 id="isShowingAgeCheckbox"
                 checked={isShowingAge}
+                onChange={hangleIsShowingAgeChange}
               />
-              <label
-                className="form-check-label"
-                htmlFor="isShowingAgeCheckbox"
-              >
-                Показывать мой возраст
-              </label>
+              <label className="form-check-label">Показывать мой возраст</label>
               <TooltipComponent message='Если выбрано "Не показывать" - ваш Возраст не будет виден другим пользователям, но продолжит использоваться в алгоритме подбора игроков'></TooltipComponent>
             </div>
           </div>

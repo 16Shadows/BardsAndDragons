@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Link, NavLink } from "react-router-dom";
 import { useState } from "react";
-import "./CSS/App.css";
+import "./css/App.css";
 import Navbar from "./components/Navbar";
 import React from "react";
 import AuthProvider from "react-auth-kit";
@@ -33,9 +33,9 @@ function App() {
         <main>
           <Routes>
             <Route path={"/"} element={<Home />} />
-            <Route path={"/myprofile"} element={<ProfilePage />} />
-            <Route path={"/mygames"} element={<MyGamesPage />} />
-            <Route path={"/myfriends"} element={<MyFriendsPage />} />
+            <Route path={"/my-profile"} element={<ProfilePage />} />
+            <Route path={"/my-games"} element={<MyGamesPage />} />
+            <Route path={"/my-friends"} element={<MyFriendsPage />} />
             <Route path={"/sgames"} element={<GamesPage />} />
             <Route path={"/splayers"} element={<PlayersPage />} />
             <Route path={"/login"} element={<Login />} />
