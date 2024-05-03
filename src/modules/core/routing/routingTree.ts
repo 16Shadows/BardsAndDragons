@@ -1,5 +1,5 @@
 import { HTTPMethod } from "../constants";
-import { IRouteRegistry, RouteArgument, RouteDefinitionPart, RouteEndpoint, RouteHandler } from "./core";
+import { IRouteRegistry, RouteArgument, RouteDefinitionPart, Route, RouteEndpoint } from "./core";
 import { IConvertersProvider } from "../converters/storage";
 import { ITypeConverter } from "../converters/converter";
 import { ArrayView, getArrayView } from "../utils/arrayUtils";
@@ -249,7 +249,7 @@ module RoutingTree {
         matcher: RoutePartMatcher;
     
         node?: RoutingTreeNode;
-        handlers?: RouteHandler[];
+        handlers?: RouteEndpoint[];
     };
 
     class RoutingTreeNode {
@@ -259,7 +259,7 @@ module RoutingTree {
             this._Entries = [];
         }
     
-        registerRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: RouteHandler): RoutingTreeNode {
+        registerRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: RouteEndpoint): RoutingTreeNode {
             /*
                 Route preference rules:
                     1. Longer routes are preferred to shorter routes.
@@ -345,7 +345,7 @@ module RoutingTree {
             return this;
         }
     
-        unregisterRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: RouteHandler): RoutingTreeNode {
+        unregisterRoute(route: ArrayView<RouteDefinitionPart> | RouteDefinitionPart[], handler: RouteEndpoint): RoutingTreeNode {
             var matcher: RoutePartMatcher = new RoutePartMatcher(route[0]);
 
             var entry: RoutingTreeNodeEntry;
@@ -359,7 +359,7 @@ module RoutingTree {
                         entry.node.unregisterRoute(getArrayView(route, 1), handler);
                     else if (route.length == 1 && entry.handlers != undefined)
                     {
-                        var index = entry.handlers.findIndex(x => x.handler == handler.handler && x.controller == handler.controller);
+                        var index = entry.handlers.findIndex(x => x.handlerName == handler.handlerName && x.controller == handler.controller);
                         if (index != -1)
                             entry.handlers.splice(index, 1);
                     }
@@ -375,7 +375,7 @@ module RoutingTree {
          * @param converters 
          * @returns 
          */
-        async match(route: ArrayView<PreprocessedRoutePart> | PreprocessedRoutePart[], result: RouteEndpoint, converters: IConvertersProvider): Promise<boolean>  {
+        async match(route: ArrayView<PreprocessedRoutePart> | PreprocessedRoutePart[], result: Route, converters: IConvertersProvider): Promise<boolean>  {
             var match: RouteArgument[] | null | undefined;
             var routePart: PreprocessedRoutePart = route[0];
     
@@ -394,7 +394,7 @@ module RoutingTree {
                             result.arguments.push(item);
     
                     result.pattern.push(entry.matcher.pattern);
-                    result.handlers = entry.handlers;
+                    result.endpoints = entry.handlers;
                     return true;
                 }
             }
@@ -429,11 +429,11 @@ module RoutingTree {
                 this._RootNodes.push(new RoutingTreeNode());
         }
     
-        registerRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: RouteHandler): void;
-        registerRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: RouteHandler): void;
-        registerRoute(method: HTTPMethod, route: string, handler: RouteHandler): void;
-        registerRoute(method: HTTPMethod, route: string, handler: RouteHandler, caseSensitive: boolean): void;
-        registerRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], handler: RouteHandler, caseSensitive?: boolean): void {
+        registerRoute(method: HTTPMethod, route: RouteDefinitionPart, handendpointer: RouteEndpoint): void;
+        registerRoute(method: HTTPMethod, route: RouteDefinitionPart[], endpoint: RouteEndpoint): void;
+        registerRoute(method: HTTPMethod, route: string, endpoint: RouteEndpoint): void;
+        registerRoute(method: HTTPMethod, route: string, endpoint: RouteEndpoint, caseSensitive: boolean): void;
+        registerRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], endpoint: RouteEndpoint, caseSensitive?: boolean): void {
             var node : RoutingTreeNode = this._RootNodes[method];
     
             if (typeof route == 'string')
@@ -454,14 +454,14 @@ module RoutingTree {
                 });
             });
     
-            node.registerRoute(route, handler);
+            node.registerRoute(route, endpoint);
         }
 
-        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart, handler: RouteHandler): void;
-        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart[], handler: RouteHandler): void;
-        unregisterRoute(method: HTTPMethod, route: string, handler: RouteHandler): void;
-        unregisterRoute(method: HTTPMethod, route: string, handler: RouteHandler, caseSensitive: boolean): void;
-        unregisterRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], handler: RouteHandler, caseSensitive?: boolean): void {
+        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart, endpoint: RouteEndpoint): void;
+        unregisterRoute(method: HTTPMethod, route: RouteDefinitionPart[], endpoint: RouteEndpoint): void;
+        unregisterRoute(method: HTTPMethod, route: string, endpoint: RouteEndpoint): void;
+        unregisterRoute(method: HTTPMethod, route: string, endpoint: RouteEndpoint, caseSensitive: boolean): void;
+        unregisterRoute(method: HTTPMethod, route: string | RouteDefinitionPart | RouteDefinitionPart[], endpoint: RouteEndpoint, caseSensitive?: boolean): void {
             var node : RoutingTreeNode = this._RootNodes[method];
     
             if (typeof route == 'string')
@@ -482,14 +482,14 @@ module RoutingTree {
                 });
             });
     
-            node.unregisterRoute(route, handler);
+            node.unregisterRoute(route, endpoint);
         }
     
-        async match(method: HTTPMethod, route: string, converters: IConvertersProvider): Promise<RouteEndpoint | undefined> {
+        async match(method: HTTPMethod, route: string, converters: IConvertersProvider): Promise<Route | undefined> {
             var node : RoutingTreeNode = this._RootNodes[method];
     
-            var endpoint: RouteEndpoint = {
-                handlers: undefined,
+            var endpoint: Route = {
+                endpoints: undefined,
                 arguments: [],
                 pattern: []
             };

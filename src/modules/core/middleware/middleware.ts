@@ -1,11 +1,11 @@
-import { HTTPResponse, IncomingHttpHeaders, RouteDefinitionPart, RouteHandler } from "../routing/core";
+import { HTTPResponse, IncomingHttpHeaders, RouteDefinitionPart, RouteEndpoint } from "../routing/core";
 import { Metadata_Prefix } from "../constants";
 import { constructor } from "../types";
 import { QueryBag } from "../routing/query";
 
 module Middleware {
     export type MiddlewareContext = {
-        readonly handler: Readonly<RouteHandler>;
+        readonly handler: Readonly<RouteEndpoint>;
         readonly body: Readonly<any>;
         readonly query: Readonly<QueryBag>;
         readonly headers: Readonly<IncomingHttpHeaders>;

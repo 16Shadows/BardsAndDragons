@@ -13,8 +13,7 @@ import { ControllersStorage } from '../../core/controllers/storage';
 import { Router } from '../../core/routing/router';
 import { getHttpMethodFromString } from '../../core/constants';
 import { IMimeTypeConverter, MimeTypesProvider } from '../../core/mimeType/mimeTypeConverter';
-import { PassThrough } from 'stream';
-import { sanitizeRoute } from '../../core/routing/utils';
+import { PassThrough, pipeline } from 'stream';
 
 class KoaCoreApp<
     StateT = Koa.DefaultState,
@@ -118,6 +117,10 @@ class KoaCoreApp<
     }
 
     useControllerRouting(): KoaCoreApp<StateT, ContextT> {
+        function sanitizeRoute(route: string): string {
+            return route.startsWith('/') ? route.substring(1) : route;
+        };
+
         this.use(async (ctx, next) => {
             var request: HTTPRequest = {
                 headers: ctx.headers,
@@ -128,7 +131,7 @@ class KoaCoreApp<
             }
 
             //Use router to find an endpoint
-            var route = await this._Router.resolve(request, this._ConvertersProvider, this._MimeTypeProviders);
+            var route = await this._Router.resolve(request, this._DIContainer, this._ConvertersProvider, this._MimeTypeProviders);
 
             //No endpoint found - pass control to the next middleware
             if (route == undefined)
@@ -147,15 +150,16 @@ class KoaCoreApp<
             //Check if any of the downstream middleware has set shouldEvaluate to false or changed status from 404 Not Found
             if (ctxInfo.shouldEvaluate && ctx.status == 404)
             {
-                var result = await route.execute(this._DIContainer);
+                var result = await route.executeHandlers();
                 if (result != undefined) {
                     if (result.body != undefined)
                     {
-                        var body = new PassThrough();
-                        result.body.pipe(body);
-                        ctx.body = body;
+                        //Wrap body into an instance of Stream so that koa can handle it properly
+                        ctx.body = pipeline(result.body, new PassThrough(), () => {});
                     }
+
                     ctx.status = result.code;
+                    
                     if (result.headers != undefined)
                     {
                         for (var header in result.headers)

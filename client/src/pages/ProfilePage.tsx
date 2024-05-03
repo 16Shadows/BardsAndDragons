@@ -1,22 +1,22 @@
 import React, { useState } from "react";
-import "../css/App.css";
-import "../css/ProfilePage.css";
-import "../css/react-datepicker.css";
+import "../CSS/App.css";
+import "../CSS/ProfilePage.css";
+import "../CSS/react-datepicker.css";
 import avatarpic from "../resources/EmptyProfileAvatar_200px.png";
 // Datepicker - https://reactdatepicker.com/
-import DatePickerInput from "./DatePicker";
+import DatePickerInput from "../components/DatePicker";
 // Select - https://react-select.com/home
 import Select from "react-select";
 import PopupButton from "../interfaces/PopupButtonInterface";
-import Popup from "./Popup";
-import Button from "./Button";
+import Popup from "../components/Popup";
+import Button from "../components/Button";
 
 import { registerLocale, setDefaultLocale } from "react-datepicker";
 import ru from "date-fns/locale/ru";
 import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
 import { set } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import TooltipComponent from "./TooltipComponent";
+import TooltipComponent from "../components/TooltipComponent";
 
 registerLocale("ru", ru);
 

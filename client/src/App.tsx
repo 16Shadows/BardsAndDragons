@@ -1,22 +1,12 @@
-import { BrowserRouter, Routes, Route, Link, NavLink } from "react-router-dom";
-import { useState } from "react";
-import "./css/App.css";
-import Navbar from "./components/Navbar";
 import React from "react";
+import { BrowserRouter } from "react-router-dom";
 import AuthProvider from "react-auth-kit";
 import createStore from "react-auth-kit/createStore";
-import RequireAuth from "@auth-kit/react-router/RequireAuth";
+import RoutesComponent from "./components/routes/Routes";
+import "./CSS/App.css";
 
-// pages
-import Home from "./components/Home";
-import ProfilePage from "./components/ProfilePage";
-import GamesPage from "./components/GamesPage";
-import MyGamesPage from "./components/MyGamesPage";
-import MyFriendsPage from "./components/MyFriendsPage";
-import PlayersPage from "./components/PlayersPage";
-import Login from "./pages/Login";
-import SecureComponent from "./pages/SecureComponent";
-import Registration from "./pages/Registration";
+// Components
+import Navbar from "./components/Navbar";
 
 const store = createStore({
   authName: "_auth",
@@ -31,24 +21,7 @@ function App() {
           <Navbar />
         </header>
         <main>
-          <Routes>
-            <Route path={"/"} element={<Home />} />
-            <Route path={"/my-profile"} element={<ProfilePage />} />
-            <Route path={"/my-games"} element={<MyGamesPage />} />
-            <Route path={"/my-friends"} element={<MyFriendsPage />} />
-            <Route path={"/sgames"} element={<GamesPage />} />
-            <Route path={"/splayers"} element={<PlayersPage />} />
-            <Route path={"/login"} element={<Login />} />
-            <Route path={"/register"} element={<Registration />} />
-            <Route
-              path={"/secure"}
-              element={
-                <RequireAuth fallbackPath={"/login"}>
-                  <SecureComponent />
-                </RequireAuth>
-              }
-            />
-          </Routes>
+          <RoutesComponent />
         </main>
       </BrowserRouter>
     </AuthProvider>

@@ -1,5 +1,3 @@
-import { Readable } from 'stream';
-
 module MimeTypeUtils {
     export async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
         var chunks = [];
