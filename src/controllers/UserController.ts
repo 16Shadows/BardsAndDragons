@@ -66,7 +66,7 @@ export class UserController extends Object {
 
         // Проверка заполнения полей
         if (!username || !password) {
-            return badRequest({message: 'Required fields are not filled'});
+            return badRequest({message: 'NotFilled'});
         }
 
         let repository = this._dbContext.getRepository(User);
@@ -74,12 +74,12 @@ export class UserController extends Object {
         // Проверка на существование пользователя
         const user = await repository.findOneBy({username: username});
         if (!user) {
-            return badRequest({message: 'User not found'});
+            return badRequest({message: 'UserNotFound'});
         }
 
         // Проверка пароля
         if (!await bcrypt.compare(password, user.passwordHash)) {
-            return badRequest({message: 'Wrong password'});
+            return badRequest({message: 'WrongPassword'});
         }
 
         // Генерация токена
