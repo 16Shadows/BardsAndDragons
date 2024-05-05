@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import useApi from '../http-common';
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated';
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
@@ -11,6 +11,12 @@ interface LoginFormState {
     password: string;
 }
 
+enum LoginType {
+    Email = 'email',
+    Nickname = 'nickname',
+    Error = 'error'
+}
+
 const Login = () => {
     const isAuthenticated = useIsAuthenticated();
     const signIn = useSignIn<UserData>();
@@ -21,25 +27,61 @@ const Login = () => {
     const [formData, setFormData] = useState<LoginFormState>({login: '', password: ''});
     const [formErrors, setFormErrors] = useState<LoginFormState>({login: '', password: ''});
     const [error, setError] = useState<string | null>(null);
+    const [loginType, setLoginType] = useState<LoginType>(LoginType.Error);
+    const [loginLabel, setLoginLabel] = useState<string>('Email / Ник');
 
-    const validateForm = (name: string, value: string): boolean => {
-        let isValid = false;
-
-        if (name === 'login' && !value) {
+    const validateLogin = (value: string): LoginType => {
+        if (!value) {
             setFormErrors((prevState) => ({...prevState, login: 'Логин должен быть заполнен'}));
-        } else if (name === 'login' && value) {
-            setFormErrors((prevState) => ({...prevState, login: ''}));
-            isValid = true;
-        } else if (name === 'password' && !value) {
-            setFormErrors((prevState) => ({...prevState, password: 'Пароль должен быть заполнен'}));
-        } else if (name === 'password' && value) {
-            setFormErrors(prevState => ({...prevState, password: ''}));
-            isValid = true;
+            return LoginType.Error;
         }
 
-        setError('');
-        return isValid;
+        const email = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+        const nickname = /^[a-zA-Z0-9_]{5,}$/;
+
+        if (email.test(value)) {
+            setFormErrors((prevState) => ({...prevState, login: ''}));
+            return LoginType.Email;
+        } else if (nickname.test(value)) {
+            setFormErrors((prevState) => ({...prevState, login: ''}));
+            return LoginType.Nickname;
+        }
+
+        setFormErrors((prevState) => ({...prevState, login: 'Некорректный логин'}));
+        return LoginType.Error;
     }
+
+    const validateForm = (name: string, value: string): boolean => {
+        switch (name) {
+            case 'login':
+                setLoginType(validateLogin(value));
+                return loginType !== LoginType.Error;
+            case 'password':
+                if (!value) {
+                    setFormErrors((prevState) => ({...prevState, password: 'Пароль должен быть заполнен'}));
+                    return false;
+                } else {
+                    setFormErrors(prevState => ({...prevState, password: ''}));
+                    return true;
+                }
+        }
+
+        return false;
+    }
+
+    useEffect(() => {
+        switch (loginType) {
+            case LoginType.Email:
+                setLoginLabel('Email');
+                break;
+            case LoginType.Nickname:
+                setLoginLabel('Ник');
+                break;
+            default:
+                setLoginLabel('Email / Ник');
+                break;
+        }
+    }, [loginType])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
@@ -98,7 +140,7 @@ const Login = () => {
                             <h1 className="text-center mb-4">Вход в аккаунт</h1>
                             <Form onSubmit={handleSubmit} noValidate>
                                 <Form.Group className="mb-3" controlId="login">
-                                    <Form.Label>Email / Ник</Form.Label>
+                                    <Form.Label>{loginLabel}</Form.Label>
                                     <Form.Control
                                         type="text"
                                         name="login"
