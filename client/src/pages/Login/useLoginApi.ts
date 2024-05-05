@@ -11,9 +11,21 @@ const useLoginApi = () => {
     const navigate = useNavigate();
     const signIn = useSignIn<UserData>();
 
-    const loginUser = (formData: LoginFormState): Promise<string | null> => {
+    const loginByEmail = (formData: LoginFormState): Promise<string | null> => {
+        return loginUser('user/login-by-email', {email: formData.login, password: formData.password});
+    }
+
+    const loginByNickname = (formData: LoginFormState): Promise<string | null> => {
+        return loginUser('user/login-by-nickname', {nickname: formData.login, password: formData.password});
+    }
+
+    const loginUser = (url: string, credentials: {
+        email?: string;
+        nickname?: string;
+        password: string;
+    }): Promise<string | null> => {
         return new Promise((resolve, reject) =>
-            api.post('user/login', JSON.stringify(formData))
+            api.post(url, credentials)
                 .then((response) => {
                     // Устанавливаем токен
                     if (signIn({
@@ -36,7 +48,7 @@ const useLoginApi = () => {
                 }));
     };
 
-    return {loginUser};
+    return {loginByEmail, loginByNickname};
 };
 
 export default useLoginApi;

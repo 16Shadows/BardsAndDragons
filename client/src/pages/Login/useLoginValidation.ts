@@ -96,7 +96,7 @@ const useLoginValidation = () => {
         return false;
     };
 
-    return {formErrors, error, loginLabel, validateForm, setErrorFromServer};
+    return {formErrors, error, loginLabel, loginType, validateForm, setErrorFromServer};
 }
 
 export default useLoginValidation;

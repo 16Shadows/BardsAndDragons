@@ -1,6 +1,7 @@
 import {ChangeEvent, FormEvent, useState} from "react";
 import useLoginApi from "./useLoginApi";
 import useLoginValidation from "./useLoginValidation";
+import {LoginType} from "../../utils/accountValidation";
 
 export interface LoginFormState {
     login: string;
@@ -8,9 +9,9 @@ export interface LoginFormState {
 }
 
 const useLoginForm = () => {
-    const {loginUser} = useLoginApi();
+    const {loginByEmail, loginByNickname} = useLoginApi();
     const [formData, setFormData] = useState<LoginFormState>({login: '', password: ''});
-    const {formErrors, error, loginLabel, validateForm, setErrorFromServer} = useLoginValidation();
+    const {formErrors, error, loginLabel, loginType, validateForm, setErrorFromServer} = useLoginValidation();
 
     // Обработка изменений полей формы
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -28,8 +29,14 @@ const useLoginForm = () => {
         const isValidLogin = validateForm('login', formData.login);
         const isValidPassword = validateForm('password', formData.password);
         if (isValidLogin && isValidPassword) {
-            // Запрос на вход
-            loginUser(formData).catch(setErrorFromServer);
+            // Выполняем запрос в зависимости от типа логина
+            switch (loginType) {
+                case LoginType.Email:
+                    loginByEmail(formData).catch(setErrorFromServer);
+                    break;
+                case LoginType.Nickname:
+                    loginByNickname(formData).catch(setErrorFromServer);
+            }
         }
     };
 
