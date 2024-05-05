@@ -29,7 +29,7 @@ const Navbar = () => {
     );
 
     return (
-        <nav className="navbar navbar-expand-lg bg-body-tertiary bg-white">
+        <nav className="navbar navbar-expand-lg bg-body-tertiary bg-white mb-4">
             <div className="container-fluid">
                 <img src={logo} className="BD-logo" alt="logo"/>
 

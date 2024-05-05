@@ -56,38 +56,71 @@ export class UserController extends Object {
         }, 201);
     }
 
-    @POST('login')
-    @Accept('application/json')
-    @Return('application/json')
-    async login(bag: MiddlewareBag, body: { login: string, password: string }) {
-        const {login, password} = body;
-        // Позже будем проверять это ник или почта
-        const username = login;
-
-        // Проверка заполнения полей
-        if (!username || !password) {
-            return badRequest({message: 'Required fields are not filled'});
-        }
-
-        let repository = this._dbContext.getRepository(User);
-
-        // Проверка на существование пользователя
-        const user = await repository.findOneBy({username: username});
-        if (!user) {
-            return badRequest({message: 'User not found'});
-        }
-
+    async checkPasswordAndGenerateToken(password: string, user: User) {
         // Проверка пароля
         if (!await bcrypt.compare(password, user.passwordHash)) {
-            return badRequest({message: 'Wrong password'});
+            return badRequest({message: 'WrongPassword'});
         }
-
         // Генерация токена
         const token = await createAuthToken({
             username: user.username
         });
 
         return json({token: token, userState: {username: user.username}});
+    }
+
+    @POST('login-by-email')
+    @Accept('application/json')
+    @Return('application/json')
+    async loginByEmail(bag: MiddlewareBag, body: { email: string, password: string }) {
+        const {email, password} = body;
+
+        // Проверка заполнения полей
+        if (!email || !password) {
+            return badRequest({message: 'NotFilled'});
+        }
+        // Проверка email
+        const emailRegex = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+        if (!emailRegex.test(email)) {
+            return badRequest({message: 'InvalidEmail'});
+        }
+
+        let repository = this._dbContext.getRepository(User);
+
+        // Проверка на существование пользователя
+        const user = await repository.findOneBy({email: email});
+        if (!user) {
+            return badRequest({message: 'UserNotFound'});
+        }
+
+        return await this.checkPasswordAndGenerateToken(password, user);
+    }
+
+    @POST('login-by-nickname')
+    @Accept('application/json')
+    @Return('application/json')
+    async loginByNickname(bag: MiddlewareBag, body: { nickname: string, password: string }) {
+        const {nickname, password} = body;
+
+        // Проверка заполнения полей
+        if (!nickname || !password) {
+            return badRequest({message: 'NotFilled'});
+        }
+        // Проверка никнейма
+        const nicknameRegex = /^[a-zA-Z0-9_]{5,}$/;
+        if (!nicknameRegex.test(nickname)) {
+            return badRequest({message: 'InvalidNickname'});
+        }
+
+        let repository = this._dbContext.getRepository(User);
+
+        // Проверка на существование пользователя
+        const user = await repository.findOneBy({username: nickname});
+        if (!user) {
+            return badRequest({message: 'UserNotFound'});
+        }
+
+        return await this.checkPasswordAndGenerateToken(password, user);
     }
 
     @POST('logout')

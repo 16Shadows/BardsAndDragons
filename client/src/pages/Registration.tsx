@@ -51,7 +51,8 @@ const Registration = () => {
                 },
                 userState: response.data.userState
             })) {
-                navigate(location.state.from)
+                const from = location.state?.from || '/';
+                navigate(from);
             }
         }).catch((error) => {
             console.error(error);
