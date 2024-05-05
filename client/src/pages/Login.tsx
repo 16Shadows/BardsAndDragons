@@ -22,13 +22,41 @@ const Login = () => {
     const [formErrors, setFormErrors] = useState<LoginFormState>({login: '', password: ''});
     const [error, setError] = useState<string | null>(null);
 
+    const validateForm = (name: string, value: string): boolean => {
+        let isValid = false;
+
+        if (name === 'login' && !value) {
+            setFormErrors((prevState) => ({...prevState, login: 'Логин должен быть заполнен'}));
+        } else if (name === 'login' && value) {
+            setFormErrors((prevState) => ({...prevState, login: ''}));
+            isValid = true;
+        } else if (name === 'password' && !value) {
+            setFormErrors((prevState) => ({...prevState, password: 'Пароль должен быть заполнен'}));
+        } else if (name === 'password' && value) {
+            setFormErrors(prevState => ({...prevState, password: ''}));
+            isValid = true;
+        }
+
+        setError('');
+        return isValid;
+    }
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
-        setFormData({...formData, [name]: value});
+        setFormData((prevState) => ({...prevState, [name]: value}));
+        validateForm(name, value);
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        // Валидация полей
+        const isValidLogin = validateForm('login', formData.login)
+        const isValidPassword = validateForm('password', formData.password);
+        if (!isValidLogin || !isValidPassword) {
+            return;
+        }
+
         api.post('user/login', JSON.stringify(formData))
             .then((response) => {
                 if (signIn({
@@ -38,11 +66,22 @@ const Login = () => {
                     },
                     userState: response.data.userState
                 })) {
-                    navigate(location.state.from);
+                    const from = location.state?.from || '/';
+                    navigate(from);
                 }
             })
             .catch((error) => {
-                setError(error.response?.data?.message);
+                const message = error.response?.data?.message;
+
+                if (message === 'User not found') {
+                    setError('Пользователь не найден');
+                } else if (message === 'Wrong password') {
+                    setError('Неверный пароль');
+                } else if (message === 'Required fields are not filled') {
+                    setError('Заполните все обязательные поля');
+                } else if (message) {
+                    setError(message);
+                }
             });
     };
 
@@ -52,12 +91,12 @@ const Login = () => {
         );
     } else {
         return (
-            <Row className="justify-content-sm-center">
-                <Col sm={4}>
+            <Row className="justify-content-md-center">
+                <Col md={4}>
                     <Card className="mb-3">
                         <Card.Body>
                             <h1 className="text-center mb-4">Вход в аккаунт</h1>
-                            <Form onSubmit={handleSubmit} noValidate={true}>
+                            <Form onSubmit={handleSubmit} noValidate>
                                 <Form.Group className="mb-3" controlId="login">
                                     <Form.Label>Email / Ник</Form.Label>
                                     <Form.Control
@@ -65,8 +104,12 @@ const Login = () => {
                                         name="login"
                                         value={formData.login}
                                         onChange={handleChange}
+                                        isInvalid={!!formErrors.login}
                                         required
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {formErrors.login}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
 
                                 <Form.Group className="mb-4" controlId="password">
@@ -76,8 +119,12 @@ const Login = () => {
                                         name="password"
                                         value={formData.password}
                                         onChange={handleChange}
+                                        isInvalid={!!formErrors.password}
                                         required
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {formErrors.password}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
 
                                 <Button variant="primary" type="submit" className="mb-3 w-100">
