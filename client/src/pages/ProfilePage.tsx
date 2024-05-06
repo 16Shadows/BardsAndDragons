@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../CSS/App.css";
 import "../CSS/ProfilePage.css";
 import "../CSS/react-datepicker.css";
@@ -6,7 +6,7 @@ import avatarpic from "../resources/EmptyProfileAvatar_200px.png";
 // Datepicker - https://reactdatepicker.com/
 import DatePickerInput from "../components/DatePicker";
 // Select - https://react-select.com/home
-import Select, { ActionMeta, SingleValue } from "react-select";
+import Select, { ActionMeta, OptionsOrGroups, SingleValue } from "react-select";
 import PopupButton from "../interfaces/PopupButtonInterface";
 import Popup from "../components/Popup";
 import Button from "../components/Button";
@@ -18,25 +18,28 @@ import { set } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import TooltipComponent from "../components/TooltipComponent";
 import { inherits } from "util";
+import useApi from "../http-common";
 
 registerLocale("ru", ru);
 
+interface TownForSelect {
+  value: string;
+  label: string;
+}
+
 const ProfilePage = () => {
   // Изменение режима редактирования по кнопке
-  const [isEditing, setIsEditing] = useState(true);
-  // TODO Запрос данных из бд
-  const nickname = "Тестовый_Ник";
-  const email = "Тест@ya.ru";
-  const townList = [
-    { value: "Mосква", label: "Москва" },
-    { value: "Strawberry", label: "Strawberry" },
-    { value: "Vanilla", label: "Vanilla" },
-  ];
-  // TODO Запрос данных из бд
+  const [isEditing, setIsEditing] = useState(false);
+  // setUsername setEmail используются при запросе данных из бд, они не меняют данные в бд
+  // TODO сохранить на клиенте почту и никнейм, сделать константами и не запрашивать их
+  // TODO поля город и аватар нельзя поставить null, контакты должны быть заполнены
+  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [townList, setTownList] = useState<
+    OptionsOrGroups<TownForSelect, any> | undefined
+  >([]);
   const [name, setName] = useState<string | null>(null);
-  const [town, setTown] = useState<{ value: string; label: string } | null>(
-    null
-  );
+  const [town, setTown] = useState<TownForSelect>({ value: "", label: "" });
   const [birthDate, setBirthDate] = useState<Date | null>(null);
   const [isShowingAge, setIsShowingAge] = useState<boolean>(false);
   const [profileDescription, setProfileDescription] = useState<string | null>(
@@ -56,7 +59,7 @@ const ProfilePage = () => {
     action: any
   ) => {
     if (newValue != null) setTown(newValue);
-    else setTown(null);
+    else return;
     // запрос на изменение бд идет при сохранении изменений
   };
   const handleBirthDateChange = (value: React.SetStateAction<null | Date>) => {
@@ -85,12 +88,76 @@ const ProfilePage = () => {
     // запрос на изменение бд идет при сохранении изменений
   };
 
-  const SaveChangesToDB = () => {
-    console.log("Все изменения были сохранены в БД.");
-    // TODO запрос на изменение бд этого конкретного пользователя
+  const navigate = useNavigate();
+  const api = useApi();
+
+  const getCitiesQuery = async () => {
+    // GET запрос списка городов к серверу
+    api
+      .get("cities", {})
+      .then((response) => {
+        const a = response.data.map((x: string) => {
+          // TODO добавить локализацию городов, значение из бд и label локализован
+          return { value: x, label: x };
+        });
+        setTownList(a);
+      })
+      .catch((error) => {
+        console.error(error);
+        alert(error.message);
+      });
+  };
+  const getProfileInfoQuery = async () => {
+    // GET запрос списка городов к серверу
+    api
+      .get("user/@current", {})
+      .then((response) => {
+        console.log(response.data);
+        // TODO заменить на хранение на клиенте, не запрашивать
+        setUsername(response.data.username);
+        setEmail(response.data.email);
+        //
+        response.data.displayName && setName(response.data.displayName);
+        response.data.description &&
+          setProfileDescription(response.data.description);
+        response.data.contactInfo &&
+          setProfileContacts(response.data.contactInfo);
+        // Создаем объект города, TODO добавить локализацию  label
+        response.data.city &&
+          setTown({ value: response.data.city, label: response.data.city });
+        // TODO обработка установки картинки
+        // response.data.avatar && set...
+        response.data.birthday && setBirthDate(response.data.birthday);
+        response.data.shouldDisplayAge &&
+          setIsShowingAge(response.data.shouldDisplayAge);
+      })
+      .catch((error) => {
+        console.error(error);
+        alert(error.message);
+      });
   };
 
-  const navigate = useNavigate();
+  const SaveChangesToDB = () => {
+    console.log("Все изменения были сохранены в БД.");
+
+    api
+      .post("user/@current", {
+        // avatar
+        displayName: name,
+        city: town.value,
+        birthday: birthDate,
+        shouldDisplayAge: isShowingAge,
+        description: profileDescription,
+        contactInfo: profileContacts,
+      })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.error(error);
+        alert(error.message);
+      });
+  };
 
   const deleteProfile = () => {
     navigate("/");
@@ -117,6 +184,11 @@ const ProfilePage = () => {
       variant: "primary",
     } as PopupButton,
   ];
+
+  useEffect(() => {
+    getCitiesQuery();
+    getProfileInfoQuery();
+  }, []); // [] - Запросы идут только при первом рендере страницы
 
   return (
     <div className="d-flex flex-column content">
@@ -157,7 +229,7 @@ const ProfilePage = () => {
         <div className="col value-column">
           <div className="row">
             <div className="col col-form-label">
-              <label className="">{nickname}</label>
+              <label className="">{username}</label>
             </div>
           </div>
 
@@ -167,7 +239,7 @@ const ProfilePage = () => {
                 disabled={!isEditing}
                 name="name"
                 type="text"
-                placeholder={nickname}
+                placeholder={username}
                 value={name ? name : ""}
                 onChange={handleNameChange}
                 style={{ width: "inherit" }}
@@ -218,7 +290,7 @@ const ProfilePage = () => {
                 onChange={hangleIsShowingAgeChange}
               />
               <label className="form-check-label">Показывать мой возраст</label>
-              <TooltipComponent message='Если выбрано "Не показывать" - ваш Возраст не будет виден другим пользователям, но продолжит использоваться в алгоритме подбора игроков'></TooltipComponent>
+              <TooltipComponent message='Если выбрано "Не показывать" - ваш возраст не будет виден другим пользователям, но продолжит использоваться в алгоритме подбора игроков'></TooltipComponent>
             </div>
           </div>
         </div>
@@ -276,9 +348,13 @@ const ProfilePage = () => {
               key={"doneRedactingButton"}
               color="primary"
               children="Закончить редактирование"
-              onClick={() => setIsEditing(false)}
+              onClick={() => {
+                setIsEditing(false);
+                SaveChangesToDB();
+              }}
             ></Button>
           ) : (
+            // TODO добавить отключение кнопки, если есть незаполненные необходимые поля (town, contacts), подсвечивать поля
             <Button
               key={"startRedactingButton"}
               color="primary"
@@ -299,7 +375,7 @@ const ProfilePage = () => {
             title="Удаление профиля"
             message={
               'Вы уверены, что хотите удалить профиль "' +
-              nickname +
+              username +
               '"? \nОтменить это действие будет невозможно!'
             }
             buttons={DeleteProfileButtons}

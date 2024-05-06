@@ -11,6 +11,10 @@ import { City } from "../model/city";
 import { Image } from "../model/image";
 
 type UserInfo = {
+    // TODO заменить на хранение на клиенте, не запрашивать
+    username: string;
+    email: string;
+    //
     displayName?: string;
     description?: string;
     contactInfo?: string; //SHOULD ONLY BE RETURNED IF THE REQUESTING USER HAS ACCESS TO THIS INFORMATION (FRIEND)
@@ -136,6 +140,8 @@ export class UserController extends Object {
     @Return('application/json')
     async getMyInfo(bag: AuthMiddlewareBag): Promise<PersonalUserInfo> {
         return {
+            username: bag.user.username,
+            email: bag.user.email,
             displayName: bag.user.displayName,
             description: bag.user.profileDescription,
             contactInfo: bag.user.contactInfo,
