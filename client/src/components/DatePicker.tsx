@@ -12,6 +12,8 @@ const DatePickerInput = (props: {
 
   return (
     <DatePicker
+      // привязка стилей через wrapperClassName
+      wrapperClassName="datePicker"
       disabled={props.disabled}
       locale="ru"
       showIcon

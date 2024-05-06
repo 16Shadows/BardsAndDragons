@@ -6,7 +6,7 @@ import avatarpic from "../resources/EmptyProfileAvatar_200px.png";
 // Datepicker - https://reactdatepicker.com/
 import DatePickerInput from "../components/DatePicker";
 // Select - https://react-select.com/home
-import Select from "react-select";
+import Select, { ActionMeta, SingleValue } from "react-select";
 import PopupButton from "../interfaces/PopupButtonInterface";
 import Popup from "../components/Popup";
 import Button from "../components/Button";
@@ -17,6 +17,7 @@ import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionO
 import { set } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import TooltipComponent from "../components/TooltipComponent";
+import { inherits } from "util";
 
 registerLocale("ru", ru);
 
@@ -26,10 +27,16 @@ const ProfilePage = () => {
   // TODO Запрос данных из бд
   const nickname = "Тестовый_Ник";
   const email = "Тест@ya.ru";
-  const townList = ["Москва", "Пермь", "Верхняя Колва"];
+  const townList = [
+    { value: "Mосква", label: "Москва" },
+    { value: "Strawberry", label: "Strawberry" },
+    { value: "Vanilla", label: "Vanilla" },
+  ];
   // TODO Запрос данных из бд
   const [name, setName] = useState<string | null>(null);
-  const [town, setTown] = useState<string | null>(null);
+  const [town, setTown] = useState<{ value: string; label: string } | null>(
+    null
+  );
   const [birthDate, setBirthDate] = useState<Date | null>(null);
   const [isShowingAge, setIsShowingAge] = useState<boolean>(false);
   const [profileDescription, setProfileDescription] = useState<string | null>(
@@ -44,10 +51,12 @@ const ProfilePage = () => {
     else setName(event.target.value);
     // запрос на изменение бд идет при сохранении изменений
   };
-  const handleTownChange = (event: {
-    target: { value: React.SetStateAction<null | string> };
-  }) => {
-    setTown(event.target.value);
+  const handleTownChange = (
+    newValue: SingleValue<{ value: string; label: string } | null>,
+    action: any
+  ) => {
+    if (newValue != null) setTown(newValue);
+    else setTown(null);
     // запрос на изменение бд идет при сохранении изменений
   };
   const handleBirthDateChange = (value: React.SetStateAction<null | Date>) => {
@@ -86,7 +95,7 @@ const ProfilePage = () => {
   const deleteProfile = () => {
     navigate("/");
     console.log("Ох НЕТ! Профиль был удален");
-    // TODO Добавить удаление профиля
+    // TODO Добавить запрос на удаление профиля
   };
   const [modalShow, setModalShow] = useState(false);
 
@@ -145,7 +154,7 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        <div className="col">
+        <div className="col value-column">
           <div className="row">
             <div className="col col-form-label">
               <label className="">{nickname}</label>
@@ -161,6 +170,7 @@ const ProfilePage = () => {
                 placeholder={nickname}
                 value={name ? name : ""}
                 onChange={handleNameChange}
+                style={{ width: "inherit" }}
               ></input>
             </div>
           </div>
@@ -173,15 +183,13 @@ const ProfilePage = () => {
 
           <div className="row">
             <div className="col">
-              <input
-                disabled={!isEditing}
-                name="town"
-                type="text"
-                placeholder="Не выбран"
-                value={town ? town : ""}
+              <Select
+                options={townList}
                 onChange={handleTownChange}
-              ></input>
-              {/* <DropdownList></DropdownList> */}
+                isDisabled={!isEditing}
+                placeholder={"Не выбран"}
+                value={town ? town : null}
+              />
 
               <div className="row">
                 <div className="col DatePicker">
