@@ -25,10 +25,3 @@
 .text-red {
     color: red;
 }
-/* Стили datePicker применяются к компоненту DatePicker.tsx через wrapperClassName */
-.datePicker {
-    width: inherit !important;
-}
-.datePicker input {
-    width: inherit !important;
-}
