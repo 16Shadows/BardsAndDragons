@@ -7,6 +7,18 @@ import {Accept, Return} from "../modules/core/mimeType/decorators";
 import bcrypt from "bcryptjs";
 import {AuthMiddleware, AuthMiddlewareBag, createAuthToken} from "../middleware/AuthMiddleware";
 import {badRequest, json} from "../modules/core/routing/response";
+import {validateEmail, validateNickname, validatePassword} from "../utils/userValidation";
+import {
+    emailAlreadyUseError,
+    invalidEmailError,
+    invalidNicknameError, invalidPasswordError, nicknameAlreadyUseError,
+    notFilledError,
+    userNotFoundError,
+    wrongPasswordError
+} from "../utils/errorMessages";
+
+// Константы
+const saltRounds = 10;
 
 @Controller('api/v1/user')
 export class UserController extends Object {
@@ -20,25 +32,41 @@ export class UserController extends Object {
     @POST('register')
     @Accept('application/json')
     @Return('application/json')
-    async register(bag: MiddlewareBag, body: { username: string, email: string, password: string }) {
-        const {username, email, password} = body;
+    async register(bag: MiddlewareBag, body: { nickname: string, email: string, password: string }) {
+        const {nickname, email, password} = body;
 
         // Проверка заполнения полей
-        if (!username || !email || !password) {
-            return badRequest({message: 'Required fields are not filled'});
+        if (!nickname || !email || !password) {
+            return badRequest({message: notFilledError});
+        }
+        // Проверка email
+        if (!validateEmail(email)) {
+            return badRequest({message: invalidEmailError});
+        }
+        // Проверка nickname
+        if (!validateNickname(nickname)) {
+            return badRequest({message: invalidNicknameError});
+        }
+        // Проверка пароля
+        if (!validatePassword(password)) {
+            return badRequest({message: invalidPasswordError});
         }
 
         let repository = this._dbContext.getRepository(User);
 
-        // Проверка на существование пользователя
-        if (await repository.findOneBy({username: username})) {
-            return badRequest({message: 'User with that username is already registered'});
+        // Проверка на существование никнейма
+        if (await repository.findOneBy({username: nickname})) {
+            return badRequest({message: nicknameAlreadyUseError});
+        }
+        // Проверка на существование email
+        if (await repository.findOneBy({email: email})) {
+            return badRequest({message: emailAlreadyUseError});
         }
 
         const user: User = new User();
-        user.username = username;
+        user.username = nickname;
         user.email = email;
-        user.passwordHash = await bcrypt.hash(password, 10);
+        user.passwordHash = await bcrypt.hash(password, saltRounds);
 
         await repository.save(user);
 
@@ -48,7 +76,6 @@ export class UserController extends Object {
         });
 
         return json({
-            message: 'User successfully registered',
             token: token,
             userState: {
                 username: user.username
@@ -59,7 +86,7 @@ export class UserController extends Object {
     async checkPasswordAndGenerateToken(password: string, user: User) {
         // Проверка пароля
         if (!await bcrypt.compare(password, user.passwordHash)) {
-            return badRequest({message: 'WrongPassword'});
+            return badRequest({message: wrongPasswordError});
         }
         // Генерация токена
         const token = await createAuthToken({
@@ -77,12 +104,11 @@ export class UserController extends Object {
 
         // Проверка заполнения полей
         if (!email || !password) {
-            return badRequest({message: 'NotFilled'});
+            return badRequest({message: notFilledError});
         }
         // Проверка email
-        const emailRegex = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
-        if (!emailRegex.test(email)) {
-            return badRequest({message: 'InvalidEmail'});
+        if (!validateEmail(email)) {
+            return badRequest({message: invalidEmailError});
         }
 
         let repository = this._dbContext.getRepository(User);
@@ -90,7 +116,7 @@ export class UserController extends Object {
         // Проверка на существование пользователя
         const user = await repository.findOneBy({email: email});
         if (!user) {
-            return badRequest({message: 'UserNotFound'});
+            return badRequest({message: userNotFoundError});
         }
 
         return await this.checkPasswordAndGenerateToken(password, user);
@@ -104,12 +130,11 @@ export class UserController extends Object {
 
         // Проверка заполнения полей
         if (!nickname || !password) {
-            return badRequest({message: 'NotFilled'});
+            return badRequest({message: notFilledError});
         }
         // Проверка никнейма
-        const nicknameRegex = /^[a-zA-Z0-9_]{5,}$/;
-        if (!nicknameRegex.test(nickname)) {
-            return badRequest({message: 'InvalidNickname'});
+        if (!validateNickname(nickname)) {
+            return badRequest({message: invalidNicknameError});
         }
 
         let repository = this._dbContext.getRepository(User);
@@ -117,7 +142,7 @@ export class UserController extends Object {
         // Проверка на существование пользователя
         const user = await repository.findOneBy({username: nickname});
         if (!user) {
-            return badRequest({message: 'UserNotFound'});
+            return badRequest({message: userNotFoundError});
         }
 
         return await this.checkPasswordAndGenerateToken(password, user);
