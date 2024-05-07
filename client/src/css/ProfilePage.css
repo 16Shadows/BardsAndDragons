@@ -14,9 +14,9 @@
     width: fit-content !important;
 }
 .pic-col{
-    width:fit-contents !important;
-    display: flex;
-    justify-content: center;
+    width:min-content !important;
+    display: grid;
+    justify-items: center;
 }
 .profile-row{
     display: flex;
@@ -24,4 +24,11 @@
 }
 .text-red {
     color: red;
+}
+/* Стили datePicker применяются к компоненту DatePicker через wrapperClassName */
+.datePicker {
+    width: inherit !important;
+}
+.datePicker input {
+    width: inherit !important;
 }

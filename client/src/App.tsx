@@ -3,29 +3,29 @@ import { BrowserRouter } from "react-router-dom";
 import AuthProvider from "react-auth-kit";
 import createStore from "react-auth-kit/createStore";
 import RoutesComponent from "./components/routes/Routes";
-import "./CSS/App.css";
+import "./css/App.css";
 
 // Components
 import Navbar from "./components/Navbar";
 
 const store = createStore({
-    authName: "_auth",
-    authType: "localstorage",
+  authName: "_auth",
+  authType: "localstorage",
 });
 
 function App() {
-    return (
-        <AuthProvider store={store}>
-            <BrowserRouter>
-                <header>
-                    <Navbar/>
-                </header>
-                <main>
-                    <RoutesComponent/>
-                </main>
-            </BrowserRouter>
-        </AuthProvider>
-    );
+  return (
+    <AuthProvider store={store}>
+      <BrowserRouter>
+        <header>
+          <Navbar />
+        </header>
+        <main>
+          <RoutesComponent />
+        </main>
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
 export default App;

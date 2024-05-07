@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import "../CSS/App.css";
-import "../CSS/ProfilePage.css";
-import "../CSS/react-datepicker.css";
+import "../css/App.css";
+import "../css/ProfilePage.css";
+import "../css/react-datepicker.css";
 import avatarpic from "../resources/EmptyProfileAvatar_200px.png";
 
 // Select - https://react-select.com/home
