@@ -3,23 +3,22 @@ import "../CSS/App.css";
 import "../CSS/ProfilePage.css";
 import "../CSS/react-datepicker.css";
 import avatarpic from "../resources/EmptyProfileAvatar_200px.png";
-// Datepicker - https://reactdatepicker.com/
-import DatePickerInput from "../components/DatePicker";
+
 // Select - https://react-select.com/home
-import Select, { ActionMeta, OptionsOrGroups, SingleValue } from "react-select";
+import Select, { OptionsOrGroups, SingleValue } from "react-select";
+// Datepicker - https://reactdatepicker.com/
+// import DatePickerInput from "../components/DatePicker";
+import DatePicker from "react-datepicker";
 import PopupButton from "../interfaces/PopupButtonInterface";
 import Popup from "../components/Popup";
 import Button from "../components/Button";
 
-import { registerLocale, setDefaultLocale } from "react-datepicker";
-import ru from "date-fns/locale/ru";
-import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
-import { set } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import TooltipComponent from "../components/TooltipComponent";
-import { inherits } from "util";
 import useApi from "../http-common";
 
+import { registerLocale } from "react-datepicker";
+import ru from "date-fns/locale/ru";
 registerLocale("ru", ru);
 
 interface TownForSelect {
@@ -108,7 +107,6 @@ const ProfilePage = () => {
       });
   };
   const getProfileInfoQuery = async () => {
-    // GET запрос списка городов к серверу
     api
       .get("user/@current", {})
       .then((response) => {
@@ -196,10 +194,23 @@ const ProfilePage = () => {
         <div className="col pic-col">
           <img
             id="profile_pic"
-            className="profile_image"
+            className="profile_image mb-2"
             alt="Profile avatar"
             src={avatarpic}
           />
+          <div className="row">
+            {/* <input type="file"></input> */}
+            {isEditing && (
+              <Button
+                key={"changeAvatarButton"}
+                color="primary"
+                children="Выбрать изображение..."
+                onClick={() => {
+                  console.log("DDD");
+                }}
+              ></Button>
+            )}
+          </div>
         </div>
 
         <div className="label-col">
@@ -236,6 +247,7 @@ const ProfilePage = () => {
           <div className="row">
             <div className="col col-form-label">
               <input
+                required={true}
                 disabled={!isEditing}
                 name="name"
                 type="text"
@@ -265,11 +277,26 @@ const ProfilePage = () => {
 
               <div className="row">
                 <div className="col DatePicker">
-                  <DatePickerInput
+                  {/* <DatePickerInput
                     disabled={!isEditing}
-                    startDate={birthDate}
+                    date={birthDate ? birthDate.toString() : null}
                     onChangeListener={handleBirthDateChange}
-                  ></DatePickerInput>
+                  ></DatePickerInput> */}
+                  <DatePicker
+                    wrapperClassName="datePicker"
+                    disabled={!isEditing}
+                    minDate={new Date(1900, 0)}
+                    maxDate={new Date()}
+                    locale="ru"
+                    showIcon
+                    dateFormat="dd/MM/yyyy"
+                    selected={birthDate ? birthDate : null}
+                    onChange={handleBirthDateChange}
+                    // При некорректном, неполном или пустом вводе дата = null
+                    onChangeRaw={() => {
+                      handleBirthDateChange(null);
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -347,7 +374,7 @@ const ProfilePage = () => {
             <Button
               key={"doneRedactingButton"}
               color="primary"
-              children="Закончить редактирование"
+              children="Сохранить изменения"
               onClick={() => {
                 setIsEditing(false);
                 SaveChangesToDB();

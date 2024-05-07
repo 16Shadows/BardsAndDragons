@@ -31,8 +31,6 @@
   width: 800px;
   max-width: 800px;
   align-self: center;
-  /* цвет для дебага */
-  background-color: antiquewhite;
 }
 .profile_image {
   width: 200px;
