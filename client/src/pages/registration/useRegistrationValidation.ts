@@ -9,14 +9,13 @@ import {
     emailAlreadyUseError,
     invalidEmailError,
     invalidNicknameError,
-    invalidPasswordError,
     nicknameAlreadyUseError,
-    notFilledError,
+    notFilledError, passwordMustContainError,
     passwordRequiredError, passwordsNotMatchError
 } from "../../utils/errorMessages";
 import {RegistrationFormState} from "./useRegistrationForm";
 
-const useRegistrationValidation = () => {
+const useRegistrationValidation = (formData: RegistrationFormState) => {
     const [error, setError] = useState<string | null>(null);
     const [formErrors, setFormErrors] = useState<RegistrationFormState>({
         nickname: '',
@@ -53,7 +52,7 @@ const useRegistrationValidation = () => {
                 setFormErrors((prevState) => ({...prevState, password: passwordRequiredError}));
                 break;
             case PasswordType.InvalidPasswordError:
-                setFormErrors((prevState) => ({...prevState, password: invalidPasswordError}));
+                setFormErrors((prevState) => ({...prevState, password: passwordMustContainError}));
                 break;
             default:
                 setFormErrors((prevState) => ({...prevState, password: ''}));
@@ -79,16 +78,26 @@ const useRegistrationValidation = () => {
         }
     }
 
-    const setConfirmPasswordError = () => {
-        if (formErrors.confirmPassword !== formErrors.password) {
+    const setConfirmPasswordError = (name: string, value: string) => {
+        let {password, confirmPassword} = formData;
+        switch (name) {
+            case 'password':
+                password = value;
+                break;
+            case 'confirmPassword':
+                confirmPassword = value;
+                break;
+        }
+
+        if (password !== confirmPassword) {
             setFormErrors((prevState) => ({...prevState, confirmPassword: passwordsNotMatchError}));
         } else {
             setFormErrors((prevState) => ({...prevState, confirmPassword: ''}));
         }
     }
 
-    // Валидация формы
-    const validateForm = (name: string, value: string): boolean => {
+    // Валидация поля формы
+    const validateInputField = (name: string, value: string): boolean => {
         switch (name) {
             case 'email':
                 const isEmailValid = validateEmail(value);
@@ -101,17 +110,17 @@ const useRegistrationValidation = () => {
             case 'password':
                 const passwordType = validatePassword(value);
                 setPasswordError(passwordType);
-                setConfirmPasswordError();
+                setConfirmPasswordError(name, value);
                 return passwordType === PasswordType.Password;
             case 'confirmPassword':
-                setConfirmPasswordError();
-                return value === formErrors.password;
+                setConfirmPasswordError(name, value);
+                return value === formData.password;
         }
 
         return false;
     };
 
-    return {formErrors, error, validateForm, setErrorFromServer};
+    return {formErrors, error, validateInputField, setErrorFromServer};
 }
 
 export default useRegistrationValidation;
