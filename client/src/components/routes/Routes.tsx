@@ -3,8 +3,8 @@ import {Route, Routes} from "react-router-dom";
 
 // Pages
 import Home from "../../pages/Home";
-import Login from "../../pages/Login/LoginForm";
-import Registration from "../../pages/Registration";
+import Login from "../../pages/login/LoginForm";
+import Registration from "../../pages/registration/RegistrationForm";
 import ProfilePage from "../../pages/ProfilePage";
 import MyGamesPage from "../../pages/MyGamesPage";
 import MyFriendsPage from "../../pages/MyFriendsPage";

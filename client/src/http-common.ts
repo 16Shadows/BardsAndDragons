@@ -1,16 +1,24 @@
-import axios from 'axios';
+import axios, {AxiosInstance} from 'axios';
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import {useEffect} from "react";
 
-export const api = axios.create({
-    baseURL: '/api/v1/',
-    headers: {
-        'Content-type': 'application/json',
-        'Accept': 'application/json'
-    }
-});
+/**
+ * Creates an instance of the API with specified baseURL and headers.
+ *
+ * Authorization header updates with useEffect and useAuthHeader hooks.
+ *
+ * @return {AxiosInstance} The configured axios instance for making API calls.
+ * @see https://axios-http.com/docs/example
+ */
+const useApi = (): AxiosInstance => {
+    const api = axios.create({
+        baseURL: '/api/v1/',
+        headers: {
+            'Content-type': 'application/json',
+            'Accept': 'application/json'
+        }
+    });
 
-const useApi = () => {
     const authHeader = useAuthHeader();
 
     useEffect(() => {
