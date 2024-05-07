@@ -10,20 +10,20 @@ export interface RegistrationFormState {
 }
 
 const useRegistrationForm = () => {
-    const {registerUser} = useRegistrationApi();
     const [formData, setFormData] = useState<RegistrationFormState>({
         nickname: '',
         email: '',
         password: '',
         confirmPassword: '',
     });
-    const {formErrors, error, validateForm, setErrorFromServer} = useRegistrationValidation();
+    const {formErrors, error, validateInputField, setErrorFromServer} = useRegistrationValidation(formData);
+    const {registerUser} = useRegistrationApi();
 
     // Обработка изменений полей формы
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target;
+    const handleChange = ({target}: ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = target;
         setFormData((prevState) => ({...prevState, [name]: value}));
-        validateForm(name, value);
+        validateInputField(name, value);
         setErrorFromServer(null);
     };
 
@@ -32,13 +32,14 @@ const useRegistrationForm = () => {
         e.preventDefault();
 
         // Проверка полей формы
-        const isValidNickname = validateForm('nickname', formData.nickname);
-        const isValidEmail = validateForm('email', formData.email);
-        const isValidPassword = validateForm('password', formData.password);
-        const isValidConfirmPassword = validateForm('confirmPassword', formData.confirmPassword);
+        const isValidNickname = validateInputField('nickname', formData.nickname);
+        const isValidEmail = validateInputField('email', formData.email);
+        const isValidPassword = validateInputField('password', formData.password);
+        const isValidConfirmPassword = validateInputField('confirmPassword', formData.confirmPassword);
         if (isValidNickname && isValidEmail && isValidPassword && isValidConfirmPassword) {
             // Выполняем запрос регистрации
-            registerUser(formData).catch(setErrorFromServer);
+            registerUser(formData)
+                .catch(setErrorFromServer);
         }
     };
 
