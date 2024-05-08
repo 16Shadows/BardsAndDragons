@@ -12,6 +12,7 @@ import GamesPage from "../../pages/GamesPage";
 import PlayersPage from "../../pages/PlayersPage";
 import SecureComponent from "../../pages/SecureComponent";
 import ProtectedRoutes from "./ProtectedRoutes";
+import TestPage from "../../pages/TestPage";
 
 const RoutesComponent = () => {
     return (
@@ -21,6 +22,8 @@ const RoutesComponent = () => {
             <Route path={"/login"} element={<Login/>}/>
             <Route path={"/register"} element={<Registration/>}/>
             <Route path={"/games"} element={<GamesPage/>}/>
+
+            <Route path={"test-page"} element={<TestPage/>}/>
 
             {/* Protected routes */}
             <Route element={<ProtectedRoutes fallbackPath='/login'/>}>
@@ -32,6 +35,9 @@ const RoutesComponent = () => {
 
                 <Route path={"/secure"} element={<SecureComponent/>}/>
             </Route>
+
+            {/* TODO: 404 page */}
+            <Route path={"*"} element={<div>404 Not found </div>}/>
         </Routes>)
 }
 
