@@ -20,7 +20,7 @@ function App() {
                 <header>
                     <Navbar/>
                 </header>
-                <main>
+                <main className="main">
                     <RoutesComponent/>
                 </main>
             </BrowserRouter>
