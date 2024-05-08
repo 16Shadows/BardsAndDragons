@@ -28,7 +28,7 @@ const useLoginApi = () => {
                         userState: response?.data?.userState
                     })) {
                         const from = location?.state?.from || '/';
-                        navigate(from);
+                        navigate(from, {replace: true});
                         resolve(null); // Возвращаем успех, если вход успешен
                     } else {
                         reject(signInError);
