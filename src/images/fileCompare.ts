@@ -22,7 +22,10 @@ export async function compareFiles(file1: string, file2: string): Promise<boolea
 
     var file1Stream = fs.createReadStream(file1);
     var file2Stream = fs.createReadStream(file2);
-    return compareStreams(file1Stream, file2Stream);
+    var result = await compareStreams(file1Stream, file2Stream);
+    file1Stream.destroy();
+    file2Stream.destroy();
+    return result;
 }
 
 function waitForData(stream: Readable): Promise<void> {
