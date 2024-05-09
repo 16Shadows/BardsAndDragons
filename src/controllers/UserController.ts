@@ -1,12 +1,54 @@
 import {Controller} from "../modules/core/controllers/decorators";
 import {ModelDataSource} from "../model/dataSource";
-import {POST} from "../modules/core/routing/decorators";
+import {GET, POST} from "../modules/core/routing/decorators";
 import {Middleware, MiddlewareBag} from "../modules/core/middleware/middleware";
 import {User} from "../model/user";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
 import bcrypt from "bcryptjs";
 import {AuthMiddleware, AuthMiddlewareBag, createAuthToken} from "../middleware/AuthMiddleware";
-import {badRequest, json} from "../modules/core/routing/response";
+import {badRequest, json, status} from "../modules/core/routing/response";
+import { City } from "../model/city";
+import { Image } from "../model/image";
+import {validateEmail, validateNickname, validatePassword} from "../utils/userValidation";
+import {
+    emailAlreadyUseError,
+    invalidEmailError,
+    invalidNicknameError, invalidPasswordError, nicknameAlreadyUseError,
+    notFilledError,
+    userNotFoundError,
+    wrongPasswordError
+} from "../utils/errorMessages";
+
+type UserInfo = {
+    // TODO заменить на хранение на клиенте, не запрашивать
+    username: string;
+    email: string;
+    //
+    displayName?: string;
+    description?: string;
+    contactInfo?: string; //SHOULD ONLY BE RETURNED IF THE REQUESTING USER HAS ACCESS TO THIS INFORMATION (FRIEND)
+    city?: string;
+    avatar?: string;
+};
+
+/**
+ * This info is accessible by anyone with access to the user's page
+ */
+type PublicUserInfo = UserInfo & {
+    age?: number; //SHOULD ONLY BE RETURNED IF THE USER HAS SPECIFIED THAT THEIR AGE SHOULD BE DISPLAYED
+};
+
+/**
+ * This info should only ever be accessible to the owner of the account.
+ */
+type PersonalUserInfo = UserInfo & {
+    birthday?: Date;
+    shouldDisplayAge: boolean;
+};
+
+// Константы
+const saltRounds = 10;
+
 
 @Controller('api/v1/user')
 export class UserController extends Object {
@@ -20,25 +62,41 @@ export class UserController extends Object {
     @POST('register')
     @Accept('application/json')
     @Return('application/json')
-    async register(bag: MiddlewareBag, body: { username: string, email: string, password: string }) {
-        const {username, email, password} = body;
+    async register(bag: MiddlewareBag, body: { nickname: string, email: string, password: string }) {
+        const {nickname, email, password} = body;
 
         // Проверка заполнения полей
-        if (!username || !email || !password) {
-            return badRequest({message: 'Required fields are not filled'});
+        if (!nickname || !email || !password) {
+            return badRequest({message: notFilledError});
+        }
+        // Проверка email
+        if (!validateEmail(email)) {
+            return badRequest({message: invalidEmailError});
+        }
+        // Проверка nickname
+        if (!validateNickname(nickname)) {
+            return badRequest({message: invalidNicknameError});
+        }
+        // Проверка пароля
+        if (!validatePassword(password)) {
+            return badRequest({message: invalidPasswordError});
         }
 
         let repository = this._dbContext.getRepository(User);
 
-        // Проверка на существование пользователя
-        if (await repository.findOneBy({username: username})) {
-            return badRequest({message: 'User with that username is already registered'});
+        // Проверка на существование никнейма
+        if (await repository.findOneBy({username: nickname})) {
+            return badRequest({message: nicknameAlreadyUseError});
+        }
+        // Проверка на существование email
+        if (await repository.findOneBy({email: email})) {
+            return badRequest({message: emailAlreadyUseError});
         }
 
         const user: User = new User();
-        user.username = username;
+        user.username = nickname;
         user.email = email;
-        user.passwordHash = await bcrypt.hash(password, 10);
+        user.passwordHash = await bcrypt.hash(password, saltRounds);
 
         await repository.save(user);
 
@@ -48,7 +106,6 @@ export class UserController extends Object {
         });
 
         return json({
-            message: 'User successfully registered',
             token: token,
             userState: {
                 username: user.username
@@ -56,32 +113,11 @@ export class UserController extends Object {
         }, 201);
     }
 
-    @POST('login')
-    @Accept('application/json')
-    @Return('application/json')
-    async login(bag: MiddlewareBag, body: { login: string, password: string }) {
-        const {login, password} = body;
-        // Позже будем проверять это ник или почта
-        const username = login;
-
-        // Проверка заполнения полей
-        if (!username || !password) {
-            return badRequest({message: 'Required fields are not filled'});
-        }
-
-        let repository = this._dbContext.getRepository(User);
-
-        // Проверка на существование пользователя
-        const user = await repository.findOneBy({username: username});
-        if (!user) {
-            return badRequest({message: 'User not found'});
-        }
-
+    async checkPasswordAndGenerateToken(password: string, user: User) {
         // Проверка пароля
         if (!await bcrypt.compare(password, user.passwordHash)) {
-            return badRequest({message: 'Wrong password'});
+            return badRequest({message: wrongPasswordError});
         }
-
         // Генерация токена
         const token = await createAuthToken({
             username: user.username
@@ -90,11 +126,63 @@ export class UserController extends Object {
         return json({token: token, userState: {username: user.username}});
     }
 
+    @POST('login-by-email')
+    @Accept('application/json')
+    @Return('application/json')
+    async loginByEmail(bag: MiddlewareBag, body: { email: string, password: string }) {
+        const {email, password} = body;
+
+        // Проверка заполнения полей
+        if (!email || !password) {
+            return badRequest({message: notFilledError});
+        }
+        // Проверка email
+        if (!validateEmail(email)) {
+            return badRequest({message: invalidEmailError});
+        }
+
+        let repository = this._dbContext.getRepository(User);
+
+        // Проверка на существование пользователя
+        const user = await repository.findOneBy({email: email});
+        if (!user) {
+            return badRequest({message: userNotFoundError});
+        }
+
+        return await this.checkPasswordAndGenerateToken(password, user);
+    }
+
+    @POST('login-by-nickname')
+    @Accept('application/json')
+    @Return('application/json')
+    async loginByNickname(bag: MiddlewareBag, body: { nickname: string, password: string }) {
+        const {nickname, password} = body;
+
+        // Проверка заполнения полей
+        if (!nickname || !password) {
+            return badRequest({message: notFilledError});
+        }
+        // Проверка никнейма
+        if (!validateNickname(nickname)) {
+            return badRequest({message: invalidNicknameError});
+        }
+
+        let repository = this._dbContext.getRepository(User);
+
+        // Проверка на существование пользователя
+        const user = await repository.findOneBy({username: nickname});
+        if (!user) {
+            return badRequest({message: userNotFoundError});
+        }
+
+        return await this.checkPasswordAndGenerateToken(password, user);
+    }
+
     @POST('logout')
     @Accept('application/json')
     @Return('application/json')
     @Middleware(AuthMiddleware)
-    async logout(bag: MiddlewareBag, body: Object) {
+    async logout(bag: AuthMiddlewareBag, body: Object) {
         return json({message: 'Logout successful'});
     }
 
@@ -102,7 +190,75 @@ export class UserController extends Object {
     @Accept('application/json')
     @Return('application/json')
     @Middleware(AuthMiddleware)
-    async testAuth(bag: MiddlewareBag, body: Object) {
-        return json({message: 'Test query with auth successful'});
+    async testAuth(bag: AuthMiddlewareBag, body: Object) {
+        return json({message: `Test query with auth successful. User: ${bag.user.username}`});
+    }
+
+    @GET('@current')
+    @Middleware(AuthMiddleware)
+    @Return('application/json')
+    async getMyInfo(bag: AuthMiddlewareBag): Promise<PersonalUserInfo> {
+        return {
+            username: bag.user.username,
+            email: bag.user.email,
+            displayName: bag.user.displayName,
+            description: bag.user.profileDescription,
+            contactInfo: bag.user.contactInfo,
+            city: (await bag.user.city)?.name,
+            avatar: (await bag.user.avatar)?.blob,
+            birthday: bag.user.birthday,
+            shouldDisplayAge: bag.user.canDisplayAge
+        };
+    }
+    
+    @POST('@current')
+    @Middleware(AuthMiddleware)
+    @Accept('application/json')
+    async postMyInfo(bag: AuthMiddlewareBag, info: Partial<PersonalUserInfo>) {
+        var user = bag.user;
+
+        var city: City;
+        var avatar: Image;
+
+        if (info.city)
+        {
+            var cityRepo = this._dbContext.getRepository(City);
+            city = await cityRepo.findOneBy({
+                name: info.city
+            });
+            if (city == null)
+                return status(400);
+        }
+
+        if (info.avatar)
+        {
+            var imageRepo = this._dbContext.getRepository(Image);
+            avatar = await imageRepo.findOneBy({
+                blob: info.avatar
+            });
+            if (avatar == null)
+                return status(400);
+        }
+
+        if (city != undefined)
+            user.city = Promise.resolve(city);
+
+        if (avatar != undefined)
+            user.avatar = Promise.resolve(avatar);
+
+        if (info.displayName != undefined)
+            user.displayName = info.displayName;
+        
+        if (info.description != undefined)
+            user.profileDescription = info.description;
+
+        if (info.contactInfo != undefined)
+            user.contactInfo = info.contactInfo;
+
+        if (info.birthday != undefined)
+            user.birthday = info.birthday;
+
+        if (info.shouldDisplayAge != undefined)
+            user.canDisplayAge = info.shouldDisplayAge;
     }
 }

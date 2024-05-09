@@ -1,8 +1,8 @@
-import { Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Image } from './image';
-import { City } from './city';
-import { UsersGame } from './usersGame';
-import { NotificationBase } from './notifications/notificationBase';
+import {Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Image} from './image';
+import {City} from './city';
+import {UsersGame} from './usersGame';
+import {NotificationBase} from './notifications/notificationBase';
 
 @Entity()
 export class User {
@@ -19,7 +19,9 @@ export class User {
     @Column()
     passwordHash: string;
 
-    @Column()
+    @Column({
+        unique: true
+    })
     email: string;
 
     @Column({
@@ -33,7 +35,7 @@ export class User {
         nullable: true
     })
     birthday?: Date;
-    
+
     @Column({
         nullable: true
     })
@@ -67,7 +69,7 @@ export class User {
     canDisplayAge: boolean;
 
     //Relations
-    
+
     @OneToMany(() => UsersGame, game => game.user, {
         cascade: true
     })

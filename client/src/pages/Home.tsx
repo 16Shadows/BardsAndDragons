@@ -28,7 +28,8 @@ const Home = () => {
             <button onClick={testQuery}>Check Auth</button>
             <button onClick={() => navigate('/login')}>Go to Login</button>
             <button onClick={() => navigate('/register')}>Go to Register</button>
-            <button onClick={() => navigate('/secure')}>GO to Secure Dashboard</button>
+            <button onClick={() => navigate('/secure')}>Go to Secure Dashboard</button>
+            <button onClick={() => navigate('/test-page')}>Go to Test Page</button>
         </div>
     )
 }
