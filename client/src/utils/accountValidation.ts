@@ -15,16 +15,24 @@ export const validateLogin = (value: string): LoginType => {
     if (!value) {
         return LoginType.LoginRequiredError;
     }
-    const emailRegex = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
-    const nicknameRegex = /^[a-zA-Z0-9_]{5,}$/;
 
-    if (emailRegex.test(value)) {
+    if (validateEmail(value)) {
         return LoginType.Email;
-    } else if (nicknameRegex.test(value)) {
+    } else if (validateNickname(value)) {
         return LoginType.Nickname;
     }
 
     return LoginType.InvalidLoginError;
+};
+
+export const validateEmail = (value: string): boolean => {
+    const emailRegex = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+    return emailRegex.test(value);
+};
+
+export const validateNickname = (value: string): boolean => {
+    const nicknameRegex = /^[a-zA-Z0-9_]{5,}$/;
+    return nicknameRegex.test(value);
 };
 
 export const validatePassword = (value: string): PasswordType => {
