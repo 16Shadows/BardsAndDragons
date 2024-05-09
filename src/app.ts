@@ -6,6 +6,7 @@ import {discoverControllers} from './modules/core/controllers/discovery';
 import {getDefaultConverters} from './modules/core/converters/default';
 import {getDefaultMimeTypes} from './modules/core/mimeType/default';
 import {ModelDataSource} from './model/dataSource';
+import { discoverMimeTypeConverters } from './modules/core/mimeType/mimeTypeConverter';
 
 (async () => {
     const app = new KoaCoreApp();
@@ -28,6 +29,7 @@ import {ModelDataSource} from './model/dataSource';
 
     app.useControllers(discoverControllers('./controllers', __dirname));
     app.useTypeConverters(getDefaultConverters());
+    app.useMimeTypes(discoverMimeTypeConverters('./images', __dirname));
     app.useMimeTypes(getDefaultMimeTypes());
 
     // Перенаправление всех оставшихся запросов на index.html React-приложения
