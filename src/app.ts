@@ -28,6 +28,7 @@ import { discoverMimeTypeConverters } from './modules/core/mimeType/mimeTypeConv
     //IMPORTANT: ALL ROUTES IN THE REACT APP MUST BE DEFINED ON THE SERVER AS WELL. THE SERVER SHOULD SERVER REACT APP'S BUNDLE WHEN THOSE ROUTES ARE REQUESTED
 
     app.useControllers(discoverControllers('./controllers', __dirname));
+    app.useControllers(discoverControllers('./images', __dirname));
     app.useTypeConverters(getDefaultConverters());
     app.useMimeTypes(discoverMimeTypeConverters('./images', __dirname));
     app.useMimeTypes(getDefaultMimeTypes());
