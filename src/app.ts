@@ -6,6 +6,7 @@ import {discoverControllers} from './modules/core/controllers/discovery';
 import {getDefaultConverters} from './modules/core/converters/default';
 import {getDefaultMimeTypes} from './modules/core/mimeType/default';
 import {ModelDataSource} from './model/dataSource';
+import { discoverMimeTypeConverters } from './modules/core/mimeType/mimeTypeConverter';
 
 (async () => {
     const app = new KoaCoreApp();
@@ -27,7 +28,9 @@ import {ModelDataSource} from './model/dataSource';
     //IMPORTANT: ALL ROUTES IN THE REACT APP MUST BE DEFINED ON THE SERVER AS WELL. THE SERVER SHOULD SERVER REACT APP'S BUNDLE WHEN THOSE ROUTES ARE REQUESTED
 
     app.useControllers(discoverControllers('./controllers', __dirname));
+    app.useControllers(discoverControllers('./images', __dirname));
     app.useTypeConverters(getDefaultConverters());
+    app.useMimeTypes(discoverMimeTypeConverters('./images', __dirname));
     app.useMimeTypes(getDefaultMimeTypes());
 
     // Перенаправление всех оставшихся запросов на index.html React-приложения
