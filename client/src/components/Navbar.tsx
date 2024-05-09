@@ -13,7 +13,7 @@ const Navbar = () => {
   // Запрос, вошел ли пользователь в профиль или нет
   const isAuthenticated = useIsAuthenticated();
   // TODO Добавить запрос на данные профиля
-  const [profileName, setProfileName] = useState("Имя профиля");
+  const [profileName, setProfileName] = useState("");
   const [profileAvatar, setProfileAvatar] = useState(avatar);
   // TODO Добавить запрос на наличие уведомлений
   const [gotNotifications, setGotNotifications] = useState(false);
@@ -30,6 +30,9 @@ const Navbar = () => {
       .then((response) => {
         console.log(response.data);
         // TODO заменить на хранение на клиенте, не запрашивать
+        if (response.data.displayName)
+          setProfileName(response.data.displayName);
+        else setProfileName(response.data.username);
         // setUsername(response.data.username);
         // TODO обработка установки картинки
         // response.data.avatar && set...
@@ -42,7 +45,7 @@ const Navbar = () => {
   // Для запроса уведомлений при рендере навбара
   useEffect(
     () => {
-      //   getProfileInfoQuery();
+      if (isAuthenticated) getProfileInfoQuery();
       console.log("Надо сделать запрос к уведомлениям, прочитанным и новым");
     },
     [] // Запуск только после первого рендера страницы/объекта navbar
