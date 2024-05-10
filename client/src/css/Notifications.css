@@ -1,4 +1,3 @@
-.notifications_panel {
-    /* Не работает пока, как и алайнмент по правой границе родителя */
+.notifications_panel_not_dropdown {
     width: 500px !important;
 }
