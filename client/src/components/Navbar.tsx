@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import useApi from "../http-common";
+import "../css/Notifications.css";
 import {
   NotificationObject,
   QueryNotificationObject,

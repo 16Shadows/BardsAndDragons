@@ -18,12 +18,12 @@ const NotificationTemplate = (props: NotificationObject) => {
     <div
       className={
         props.seen
-          ? "d-flex border border-3 border-info rounded m-2"
-          : "d-flex border border-3 border-ыусщтвфкн rounded m-2"
+          ? "notification-template d-flex border border-3 border-info rounded m-2"
+          : "notification-template d-flex border border-3 rounded m-2"
       }
     >
       <div className="row ms-1 w-100">
-        <div className="d-grid col-sm-auto justify-content-center">
+        <div className="d-grid col-2 col-sm-auto justify-content-center">
           <div className="row align-items-start mt-2">
             <img
               className="rounded-circle"

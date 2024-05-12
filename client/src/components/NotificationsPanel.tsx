@@ -74,11 +74,12 @@ const NotificationsPanel = () => {
   return (
     <div>
       <a
-        className="nav-link dropdown-toggle"
+        className="nav-link dropdown-toggle "
         // TODO при прочитывании уведов добавить запрос в бд - прочитаны
         onClick={() => setGotNotifications(false)}
         role="button"
         data-bs-toggle="dropdown"
+        data-bs-auto-close="outside"
         aria-expanded="false"
       >
         {gotNotifications ? (
@@ -95,7 +96,13 @@ const NotificationsPanel = () => {
           />
         )}
       </a>
-      <ul className="dropdown-menu notifications_panel">
+      <ul
+        className={
+          false
+            ? "overflow-auto dropdown-menu notifications-menu dropdown-menu-end "
+            : "overflow-auto dropdown-menu notifications-menu dropdown-menu-end "
+        }
+      >
         {/* TODO Добавить изменение стиля в зависимости от дропдауна уведов */}
         <div className={"" + (true ? "a" : "b")}>
           {notifications
