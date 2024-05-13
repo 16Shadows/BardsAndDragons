@@ -3,8 +3,8 @@ import {Route, Routes} from "react-router-dom";
 
 // Pages
 import Home from "../../pages/Home";
-import Login from "../../pages/Login";
-import Registration from "../../pages/Registration";
+import Login from "../../pages/login/LoginForm";
+import Registration from "../../pages/registration/RegistrationForm";
 import ProfilePage from "../../pages/ProfilePage";
 import MyGamesPage from "../../pages/MyGamesPage";
 import MyFriendsPage from "../../pages/MyFriendsPage";
@@ -12,6 +12,7 @@ import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
 import PlayersPage from "../../pages/PlayersPage";
 import SecureComponent from "../../pages/SecureComponent";
 import ProtectedRoutes from "./ProtectedRoutes";
+import TestPage from "../../pages/TestPage";
 
 const RoutesComponent = () => {
     return (
@@ -21,6 +22,8 @@ const RoutesComponent = () => {
             <Route path={"/login"} element={<Login/>}/>
             <Route path={"/register"} element={<Registration/>}/>
             <Route path={"/games"} element={<SearchGamesPage/>}/>
+
+            <Route path={"test-page"} element={<TestPage/>}/>
 
             {/* Protected routes */}
             <Route element={<ProtectedRoutes fallbackPath='/login'/>}>
@@ -32,6 +35,9 @@ const RoutesComponent = () => {
 
                 <Route path={"/secure"} element={<SecureComponent/>}/>
             </Route>
+
+            {/* TODO: 404 page */}
+            <Route path={"*"} element={<div>404 Not found </div>}/>
         </Routes>)
 }
 

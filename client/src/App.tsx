@@ -4,6 +4,7 @@ import AuthProvider from "react-auth-kit";
 import createStore from "react-auth-kit/createStore";
 import RoutesComponent from "./components/routes/Routes";
 import "./css/App.css";
+import Container from 'react-bootstrap/Container';
 
 // Components
 import Navbar from "./components/Navbar";
@@ -21,7 +22,9 @@ function App() {
                     <Navbar/>
                 </header>
                 <main className="main">
-                    <RoutesComponent/>
+                    <Container>
+                        <RoutesComponent/>
+                    </Container>
                 </main>
             </BrowserRouter>
         </AuthProvider>

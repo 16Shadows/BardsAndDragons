@@ -9,9 +9,11 @@ type AuthToken = {
     username: string;
 }
 
+const expirationTime = '7d';
+
 export function createAuthToken(user: AuthToken): Promise<string> {
     return new Promise<string>((resolve, reject) => {
-        jwt.sign(user, process.env.JWT_SECRET_KEY, {expiresIn: '7d'}, (error: Error, encoded: string) => {
+        jwt.sign(user, process.env.JWT_SECRET_KEY, {expiresIn: expirationTime}, (error: Error, encoded: string) => {
             if (error != undefined)
                 reject(error);
             else
