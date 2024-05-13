@@ -1,12 +1,13 @@
 import {Controller} from "../modules/core/controllers/decorators";
 import {ModelDataSource} from "../model/dataSource";
-import {POST} from "../modules/core/routing/decorators";
+import {GET, POST} from "../modules/core/routing/decorators";
 import {Middleware, MiddlewareBag} from "../modules/core/middleware/middleware";
 import {User} from "../model/user";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
 import bcrypt from "bcryptjs";
 import {AuthMiddleware, AuthMiddlewareBag, createAuthToken} from "../middleware/AuthMiddleware";
 import {badRequest, json} from "../modules/core/routing/response";
+import { QueryArgument, QueryBag } from "../modules/core/routing/query";
 
 @Controller('api/v1/user')
 export class UserController extends Object {
@@ -104,5 +105,18 @@ export class UserController extends Object {
     @Middleware(AuthMiddleware)
     async testAuth(bag: AuthMiddlewareBag, body: Object) {
         return json({message: `Test query with auth successful. User: ${bag.user.username}`});
+    }
+
+    @GET('user-by-username')
+    @QueryArgument('username', {
+        canHaveMultipleValues: false,
+        optional: false
+    })
+    @Return('application/json')
+    async getGamesNumber(bag: MiddlewareBag, query: QueryBag) {
+        let repository = this._dbContext.getRepository(User);
+        
+        const user = await repository.findOneBy({username: query['username']});
+        return user;
     }
 }
