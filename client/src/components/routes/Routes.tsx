@@ -8,7 +8,7 @@ import Registration from "../../pages/registration/RegistrationForm";
 import ProfilePage from "../../pages/ProfilePage";
 import MyGamesPage from "../../pages/MyGamesPage";
 import MyFriendsPage from "../../pages/MyFriendsPage";
-import GamesPage from "../../pages/GamesPage";
+import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
 import PlayersPage from "../../pages/PlayersPage";
 import SecureComponent from "../../pages/SecureComponent";
 import ProtectedRoutes from "./ProtectedRoutes";
@@ -21,7 +21,7 @@ const RoutesComponent = () => {
             <Route path={"/"} element={<Home/>}/>
             <Route path={"/login"} element={<Login/>}/>
             <Route path={"/register"} element={<Registration/>}/>
-            <Route path={"/games"} element={<GamesPage/>}/>
+            <Route path={"/games"} element={<SearchGamesPage/>}/>
 
             <Route path={"test-page"} element={<TestPage/>}/>
 

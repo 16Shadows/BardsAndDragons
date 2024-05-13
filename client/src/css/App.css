@@ -1,15 +1,22 @@
 
 * {
-  margin: 0;
   font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-  color: #333;
 }
+
 .navbar {
   padding: 20px;
   /* display: flex; */
   align-items: center;
   margin: 0 auto;
   border-bottom: 1px solid #f2f2f2;
+
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+
+  color: #333;
 }
 .navbar h1 {
   color: #f0472a;
@@ -30,3 +37,16 @@
   padding: 20px;
 }
 
+:root {
+  --top-indent: 115px;
+}
+
+.main {
+  top: var(--top-indent);
+  position: relative;
+}
+
+.static-item {
+  position: sticky;
+  top: var(--top-indent);
+}

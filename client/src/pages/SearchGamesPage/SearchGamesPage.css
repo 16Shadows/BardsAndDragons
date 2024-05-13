@@ -1,0 +1,55 @@
+/* Для переменных */
+:root {
+    --box-back-color: rgba(179, 179, 181, 0.3);
+}
+
+/* Заголовок списка игр */
+#game-header {
+    background-color: white;
+    padding-top: 115px;
+    margin-bottom: 0px; 
+    padding-bottom: 10px; 
+    top: 0px;
+    position: fixed; 
+    width: 100%;
+}
+
+/* Список игр */
+#game-box {
+    background-color: var(--box-back-color);
+    padding: 20px 20px 5px 20px;
+    border-radius: 10px;
+    margin-top: 50px;
+    margin-bottom: 20px;
+}
+
+/* Форма фильтрации */
+#search-box {
+    background-color: var(--box-back-color); 
+    padding: 15px 20px 20px 20px;
+    border-radius: 10px;
+}
+
+/* Кнопка поиска */
+#search-button {
+    width: 100%;
+    font-size: 20px;
+    padding: 3px 5px 3px 5px;
+    background-color: rgb(77, 167, 250);
+    border-color: rgb(77, 167, 250);
+}
+
+/* Блок с кнопкой поиска */
+#search-button-block {
+    width: 48%;
+    margin-left: 4%;
+    display: inline-block;
+}
+
+/* Список опций сортировки */
+#select-list {
+    width: 57%;
+    margin-left: 3%;
+    font-size: 18px;
+    padding: 3px 3px 3px 3px;
+}

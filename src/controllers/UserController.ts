@@ -6,6 +6,7 @@ import {User} from "../model/user";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
 import bcrypt from "bcryptjs";
 import {AuthMiddleware, AuthMiddlewareBag, createAuthToken} from "../middleware/AuthMiddleware";
+import { QueryArgument, QueryBag } from "../modules/core/routing/query";
 import {badRequest, json, status} from "../modules/core/routing/response";
 import { City } from "../model/city";
 import { Image } from "../model/image";
@@ -48,7 +49,6 @@ type PersonalUserInfo = UserInfo & {
 
 // Константы
 const saltRounds = 10;
-
 
 @Controller('api/v1/user')
 export class UserController extends Object {
@@ -260,5 +260,18 @@ export class UserController extends Object {
 
         if (info.shouldDisplayAge != undefined)
             user.canDisplayAge = info.shouldDisplayAge;
+    }
+  
+    @GET('user-by-username')
+    @QueryArgument('username', {
+        canHaveMultipleValues: false,
+        optional: false
+    })
+    @Return('application/json')
+    async getGamesNumber(bag: MiddlewareBag, query: QueryBag) {
+        let repository = this._dbContext.getRepository(User);
+        
+        const user = await repository.findOneBy({username: query['username']});
+        return user;
     }
 }
