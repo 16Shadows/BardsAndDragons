@@ -169,64 +169,60 @@ const SearchGamesPage = () => {
 
     // Основной компонент
     return (
-        <div>
-            <Container>
-                <Row className="gx-5">
-                    {/* Поиск и сортировка */}
-                    <Col md="6">
-                        <div id="search-box" className="static-item">
-                            <Form onSubmit={searchGames}>
-                                {/* Поиск по названию */}
-                                <div style={{fontSize: "24px"}}><b>Название</b></div>
-                                <input style={{width: "100%"}} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+        <Row className="gx-5">
+            {/* Поиск и сортировка */}
+            <Col md="6">
+                <div id="search-box" className="static-item">
+                    <Form onSubmit={searchGames}>
+                        {/* Поиск по названию */}
+                        <div style={{fontSize: "24px"}}><b>Название</b></div>
+                        <input style={{width: "100%"}} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
 
-                                <div style={{marginTop: "15px", textAlign: "center"}}>
-                                    {/* Сортировка */}
-                                    <span style={{width: "48%", display: "inline-block"}}>
-                                        <span style={{fontWeight: "bolder", fontSize: "20px"}}>Сортировка:</span>
-                                        <select id="select-list" value={selectedSort} onChange={event => setSelectedSort(event.target.value)}>
-                                            <option disabled value={""}>Сортировка</option>
-                                            {Array.from(sortTypes.keys()).map((option) =>
-                                                <option key={option}>{option}</option>
-                                            )}
-                                        </select>      
-                                    </span>
-                                    
-                                    {/* Кнопка поиска */}
-                                    <span id="search-button-block">                   
-                                        <Button type="submit" id="search-button">Поиск</Button>
-                                    </span>  
+                        <div style={{marginTop: "15px", textAlign: "center"}}>
+                            {/* Сортировка */}
+                            <span style={{width: "48%", display: "inline-block"}}>
+                                <span style={{fontWeight: "bolder", fontSize: "20px"}}>Сортировка:</span>
+                                <select id="select-list" value={selectedSort} onChange={event => setSelectedSort(event.target.value)}>
+                                    <option disabled value={""}>Сортировка</option>
+                                    {Array.from(sortTypes.keys()).map((option) =>
+                                        <option key={option}>{option}</option>
+                                    )}
+                                </select>      
+                            </span>
+                            
+                            {/* Кнопка поиска */}
+                            <span id="search-button-block">                   
+                                <Button type="submit" id="search-button">Поиск</Button>
+                            </span>  
+                        </div>
+                    </Form>
+                </div>
+            </Col>
+            {/* Список игр */}
+            <Col md="6">
+                <h2 id="game-header">Игры</h2>
+                <div id="game-box">
+                    {
+                        // Если games = undefined, то "Игры загружаются..."
+                        games
+                            ?
+                            // Если не undefined, но список пуст, то "Игр не найдено"
+                            games.length > 0
+                                ?
+                                <div>
+                                    {games.map((game) => 
+                                        <GameItem game={game} subscribe={subscribe} unsubscribe={unsubscribe} logined={isAuthenticated} key={game.id}></GameItem>
+                                    )}
                                 </div>
-                            </Form>
-                        </div>
-                    </Col>
-                    {/* Список игр */}
-                    <Col md="6">
-                        <h2 id="game-header">Игры</h2>
-                        <div id="game-box">
-                            {
-                                // Если games = undefined, то "Игры загружаются..."
-                                games
-                                    ?
-                                    // Если не undefined, но список пуст, то "Игр не найдено"
-                                    games.length > 0
-                                        ?
-                                        <div>
-                                            {games.map((game) => 
-                                                <GameItem game={game} subscribe={subscribe} unsubscribe={unsubscribe} logined={isAuthenticated} key={game.id}></GameItem>
-                                            )}
-                                        </div>
-                                        :
-                                        <div>
-                                            <h2> Игр не найдено </h2>
-                                        </div>
-                                    : <h2> Игры загружаются... </h2>
-                            }
-                        </div>
-                    </Col>
-                </Row>
-            </Container>
-        </div>
+                                :
+                                <div>
+                                    <h2> Игр не найдено </h2>
+                                </div>
+                            : <h2> Игры загружаются... </h2>
+                    }
+                </div>
+            </Col>
+        </Row>
     );
 };
 
