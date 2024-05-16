@@ -75,35 +75,40 @@ const Navbar = () => {
             <ul className="navbar-nav mb-2 mb-lg-0">
               <li className="nav-item">
                 <NavLink
-                  data-bs-toggle="collapse"
-                  data-bs-target=".navbar-collapse.show"
+                  // data-bs-toggle="collapse"
+                  // data-bs-target=".navbar-collapse.show"
                   className="nav-link"
                   aria-current="page"
                   to="/"
                 >
-                  Главная
+                  <span
+                    data-bs-toggle="collapse"
+                    data-bs-target=".navbar-collapse.show"
+                  >
+                    Главная
+                  </span>
                 </NavLink>
               </li>
 
               <li className="nav-item">
-                <NavLink
-                  data-bs-toggle="collapse"
-                  data-bs-target=".navbar-collapse.show"
-                  className="nav-link"
-                  to="/players"
-                >
-                  Поиск игроков
+                <NavLink className="nav-link" to="/players">
+                  <span
+                    data-bs-toggle="collapse"
+                    data-bs-target=".navbar-collapse.show"
+                  >
+                    Поиск игроков
+                  </span>
                 </NavLink>
               </li>
 
               <li className="nav-item">
-                <NavLink
-                  data-bs-toggle="collapse"
-                  data-bs-target=".navbar-collapse.show"
-                  className="nav-link"
-                  to="/games"
-                >
-                  Поиск игр
+                <NavLink className="nav-link" to="/games">
+                  <span
+                    data-bs-toggle="collapse"
+                    data-bs-target=".navbar-collapse.show"
+                  >
+                    Поиск игр
+                  </span>
                 </NavLink>
               </li>
             </ul>
@@ -157,36 +162,36 @@ const Navbar = () => {
                 </a>
                 <ul className="dropdown-menu">
                   <li>
-                    <NavLink
-                      data-bs-toggle="collapse"
-                      data-bs-target=".navbar-collapse.show"
-                      className="dropdown-item"
-                      to="/my-profile"
-                    >
-                      Профиль
+                    <NavLink className="dropdown-item" to="/my-profile">
+                      <span
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse.show"
+                      >
+                        Профиль
+                      </span>
                     </NavLink>
                   </li>
                   <li>
                     <hr className="dropdown-divider" />
                   </li>
                   <li>
-                    <NavLink
-                      data-bs-toggle="collapse"
-                      data-bs-target=".navbar-collapse.show"
-                      className="dropdown-item"
-                      to="/my-games"
-                    >
-                      Мои игры
+                    <NavLink className="dropdown-item" to="/my-games">
+                      <span
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse.show"
+                      >
+                        Мои игры
+                      </span>
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink
-                      data-bs-toggle="collapse"
-                      data-bs-target=".navbar-collapse.show"
-                      className="dropdown-item"
-                      to="/my-friends"
-                    >
-                      Мои друзья
+                    <NavLink className="dropdown-item" to="/my-friends">
+                      <span
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse.show"
+                      >
+                        Мои друзья
+                      </span>
                     </NavLink>
                   </li>
 
@@ -196,13 +201,16 @@ const Navbar = () => {
                   <li>
                     {/* Выход из аккаунта с переходом на главную страницу */}
                     <Link
-                      data-bs-toggle="collapse"
-                      data-bs-target=".navbar-collapse.show"
                       className="dropdown-item"
                       onClick={() => signOut()}
                       to="/"
                     >
-                      Выйти
+                      <span
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse.show"
+                      >
+                        Выйти
+                      </span>
                     </Link>
                   </li>
                 </ul>
