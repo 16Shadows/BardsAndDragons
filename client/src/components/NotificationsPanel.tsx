@@ -76,6 +76,18 @@ const NotificationsPanel = () => {
         console.error(error);
       });
   };
+  const sendTestSourceEvent = async () => {
+    // GET запрос списка городов к серверу
+    api
+      // TODO - добавить запрос только части уведомлений, например 10 штук, кнопку "загрузить еще"
+      .get("testSourceEvent", {})
+      .then(async (response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
 
   // Тестовый запрос для проверки EventSource
   const sendTestSourceEvent = async () => {
