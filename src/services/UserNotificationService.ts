@@ -44,7 +44,7 @@ export class UserNotificationService {
             return false;
 
         const streamList = this._StreamMap.get(targetUsername);
-        if (streamList?.length == 0)
+        if (!streamList || streamList.length == 0)
             return false;
 
         const mes = UserNotificationService.createNotificationMessage(notification);
