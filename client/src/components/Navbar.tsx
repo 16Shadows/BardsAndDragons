@@ -1,22 +1,23 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import logo from "../resources/bdlogo_mini.png";
 import avatar from "../resources/EmptyProfileAvatar_50px.png";
-import notificationPic from "../resources/notification_50px.png";
-import notificationRedPic from "../resources/notification_red_50px.png";
 import NotificationsPanel from "./NotificationsPanel";
 import { useState, useEffect } from "react";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import useApi from "../http-common";
+import "../css/Notifications.css";
+import {
+  NotificationObject,
+  QueryNotificationObject,
+} from "../models/Notifications";
 
 const Navbar = () => {
   // Запрос, вошел ли пользователь в профиль или нет
   const isAuthenticated = useIsAuthenticated();
-  // TODO Добавить запрос на данные профиля
+  // TODO добавить обновление навбара после изменения, useRef?
   const [profileName, setProfileName] = useState("");
   const [profileAvatar, setProfileAvatar] = useState(avatar);
-  // TODO Добавить запрос на наличие уведомлений
-  const [gotNotifications, setGotNotifications] = useState(false);
 
   const navigate = useNavigate();
   const signOut = useSignOut();
@@ -28,12 +29,11 @@ const Navbar = () => {
     api
       .get("user/@current", {})
       .then((response) => {
-        console.log(response.data);
         // TODO заменить на хранение на клиенте, не запрашивать
         if (response.data.displayName)
           setProfileName(response.data.displayName);
         else setProfileName(response.data.username);
-        // setUsername(response.data.username);
+
         // TODO обработка установки картинки
         // response.data.avatar && set...
       })
@@ -42,11 +42,9 @@ const Navbar = () => {
       });
   };
 
-  // Для запроса уведомлений при рендере навбара
   useEffect(
     () => {
       if (isAuthenticated) getProfileInfoQuery();
-      console.log("Надо сделать запрос к уведомлениям, прочитанным и новым");
     },
     [] // Запуск только после первого рендера страницы/объекта navbar
   );
@@ -76,35 +74,40 @@ const Navbar = () => {
             <ul className="navbar-nav mb-2 mb-lg-0">
               <li className="nav-item">
                 <NavLink
-                  data-bs-toggle="collapse"
-                  data-bs-target=".navbar-collapse.show"
+                  // data-bs-toggle="collapse"
+                  // data-bs-target=".navbar-collapse.show"
                   className="nav-link"
                   aria-current="page"
                   to="/"
                 >
-                  Главная
+                  <span
+                    data-bs-toggle="collapse"
+                    data-bs-target=".navbar-collapse.show"
+                  >
+                    Главная
+                  </span>
                 </NavLink>
               </li>
 
               <li className="nav-item">
-                <NavLink
-                  data-bs-toggle="collapse"
-                  data-bs-target=".navbar-collapse.show"
-                  className="nav-link"
-                  to="/players"
-                >
-                  Поиск игроков
+                <NavLink className="nav-link" to="/players">
+                  <span
+                    data-bs-toggle="collapse"
+                    data-bs-target=".navbar-collapse.show"
+                  >
+                    Поиск игроков
+                  </span>
                 </NavLink>
               </li>
 
               <li className="nav-item">
-                <NavLink
-                  data-bs-toggle="collapse"
-                  data-bs-target=".navbar-collapse.show"
-                  className="nav-link"
-                  to="/games"
-                >
-                  Поиск игр
+                <NavLink className="nav-link" to="/games">
+                  <span
+                    data-bs-toggle="collapse"
+                    data-bs-target=".navbar-collapse.show"
+                  >
+                    Поиск игр
+                  </span>
                 </NavLink>
               </li>
             </ul>
@@ -114,32 +117,7 @@ const Navbar = () => {
             // Кнопка профиля, если пользователь вошел в аккаунт
             <div className="navbar-nav  ms-auto">
               <li className="nav-item dropdown">
-                <a
-                  className="nav-link dropdown-toggle"
-                  // TODO При открытии меню вызываем фетч данных об уведомлениях
-                  onClick={() => console.log("Открыли уведомления")}
-                  role="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  {/* Изменение иконки уведомлений в зависимости от состояния gotNotifications */}
-                  {gotNotifications ? (
-                    <img
-                      className="rounded-circle me-2"
-                      alt="Notifications"
-                      src={notificationRedPic}
-                    />
-                  ) : (
-                    <img
-                      className="rounded-circle me-2"
-                      alt="Notifications"
-                      src={notificationPic}
-                    />
-                  )}
-                </a>
-                <ul className="dropdown-menu notifications_panel">
-                  <NotificationsPanel />
-                </ul>
+                <NotificationsPanel />
               </li>
 
               <li className="nav-item dropdown">
@@ -156,38 +134,38 @@ const Navbar = () => {
                   />
                   {profileName}
                 </a>
-                <ul className="dropdown-menu">
+                <ul className="dropdown-menu" data-bs-auto-close="outside">
                   <li>
-                    <NavLink
-                      data-bs-toggle="collapse"
-                      data-bs-target=".navbar-collapse.show"
-                      className="dropdown-item"
-                      to="/my-profile"
-                    >
-                      Профиль
+                    <NavLink className="dropdown-item" to="/my-profile">
+                      <span
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse.show"
+                      >
+                        Профиль
+                      </span>
                     </NavLink>
                   </li>
                   <li>
                     <hr className="dropdown-divider" />
                   </li>
                   <li>
-                    <NavLink
-                      data-bs-toggle="collapse"
-                      data-bs-target=".navbar-collapse.show"
-                      className="dropdown-item"
-                      to="/my-games"
-                    >
-                      Мои игры
+                    <NavLink className="dropdown-item" to="/my-games">
+                      <span
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse.show"
+                      >
+                        Мои игры
+                      </span>
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink
-                      data-bs-toggle="collapse"
-                      data-bs-target=".navbar-collapse.show"
-                      className="dropdown-item"
-                      to="/my-friends"
-                    >
-                      Мои друзья
+                    <NavLink className="dropdown-item" to="/my-friends">
+                      <span
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse.show"
+                      >
+                        Мои друзья
+                      </span>
                     </NavLink>
                   </li>
 
@@ -197,13 +175,16 @@ const Navbar = () => {
                   <li>
                     {/* Выход из аккаунта с переходом на главную страницу */}
                     <Link
-                      data-bs-toggle="collapse"
-                      data-bs-target=".navbar-collapse.show"
                       className="dropdown-item"
                       onClick={() => signOut()}
                       to="/"
                     >
-                      Выйти
+                      <span
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse.show"
+                      >
+                        Выйти
+                      </span>
                     </Link>
                   </li>
                 </ul>

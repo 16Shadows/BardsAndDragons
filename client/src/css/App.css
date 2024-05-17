@@ -11,7 +11,7 @@
   margin: 0 auto;
   border-bottom: 1px solid #f2f2f2;
 }
-.navbar h1 {
+.navbar h1 span {
   color: #f0472a;
   margin-left: 6px;
 }
@@ -22,7 +22,7 @@
   text-decoration: none;
   padding: 6px;
 }
-.navbar a:hover {
+.navbar a:hover span:hover {
   color: #f0472a;
 }
 .content {
