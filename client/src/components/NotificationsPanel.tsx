@@ -10,9 +10,21 @@ import {
   NotificationObject,
   QueryNotificationObject,
 } from "../models/Notifications";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import EventSource from "eventsource";
 
 const NotificationsPanel = () => {
   const api = useApi();
+
+  const authHeader = useAuthHeader();
+  var eventSourceInitDict = { headers: { authorization: authHeader } };
+  const eventSource = new EventSource(
+    "api/v1/notifications/subscribe",
+    eventSourceInitDict
+  );
+  eventSource.onmessage = (event) => {
+    console.log(event.data);
+  };
   // Список уведомлений, каждое из которых нужно отрендерить через map
   const [notifications, setNotifications] = useState<NotificationObject[]>([]);
   const [gotNotifications, setGotNotifications] = useState(false);
@@ -73,6 +85,7 @@ const NotificationsPanel = () => {
 
   return (
     <div>
+      <script src="/eventsource-polyfill.js"></script>
       <a
         className="nav-link dropdown-toggle "
         // TODO при прочитывании уведов добавить запрос в бд - прочитаны
