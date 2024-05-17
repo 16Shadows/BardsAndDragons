@@ -13,6 +13,5 @@ export class FriendRequestNotification {
     @OneToOne(() => NotificationBase, {
         onDelete: 'CASCADE'
     })
-    @JoinColumn()
     parent: Promise<NotificationBase>;
 }
