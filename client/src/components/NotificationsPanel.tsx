@@ -76,10 +76,8 @@ const NotificationsPanel = () => {
         console.error(error);
       });
   };
-
   // Тестовый запрос для проверки EventSource
   const sendTestSourceEvent = async () => {
-    // GET запрос списка городов к серверу
     api
       .get("notifications/testSourceEvent", {})
       .then(async (response) => {
