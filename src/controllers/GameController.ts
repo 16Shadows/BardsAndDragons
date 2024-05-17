@@ -108,8 +108,7 @@ export class GameController extends Object {
         var repo = this._dbContext.getRepository(UsersGame);
 
         var result = await repo.createQueryBuilder('game')
-                               .where('game.gameId = :id', {id: game.id})
-                               .innerJoinAndSelect('game.user', 'user')
+                               .innerJoinAndSelect('game.user', 'user', 'game.gameId = :id', {id: game.id})
                                .skip(query.start)
                                .take(query.count)
                                .getMany();
