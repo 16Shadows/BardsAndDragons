@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import useApi from "../http-common";
-import { IntegerType } from "typeorm";
-import internal from "stream";
 import NotificationTemplate from "./NotificationTemplate";
 import notificationPic from "../resources/notification_50px.png";
 import notificationRedPic from "../resources/notification_red_50px.png";
@@ -11,20 +8,21 @@ import {
   QueryNotificationObject,
 } from "../models/Notifications";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
-import EventSource from "eventsource";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
 
 const NotificationsPanel = () => {
   const api = useApi();
 
   const authHeader = useAuthHeader();
-  var eventSourceInitDict = { headers: { authorization: authHeader } };
-  const eventSource = new EventSource(
-    "api/v1/notifications/subscribe",
-    eventSourceInitDict
-  );
-  eventSource.onmessage = (event) => {
-    console.log(event.data);
-  };
+  let headerList = {};
+  if (authHeader) headerList = { Authorization: authHeader };
+  fetchEventSource("api/v1/notifications/subscribe", {
+    onmessage(event) {
+      console.log(event.data);
+    },
+    headers: headerList,
+  });
+
   // Список уведомлений, каждое из которых нужно отрендерить через map
   const [notifications, setNotifications] = useState<NotificationObject[]>([]);
   const [gotNotifications, setGotNotifications] = useState(false);
@@ -64,6 +62,7 @@ const NotificationsPanel = () => {
           }
 
           if (!gotNotif && resultItem.seen === false) gotNotif = true;
+
           return resultItem;
         });
         const res = await Promise.all(resPromise);
