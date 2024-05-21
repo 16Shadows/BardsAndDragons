@@ -203,7 +203,7 @@ const Navbar = () => {
                     <Link
                       className="dropdown-item"
                       onClick={() => signOut()}
-                      to="/"
+                      to="#"
                     >
                       <span
                         data-bs-toggle="collapse"
