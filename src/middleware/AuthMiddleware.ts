@@ -71,6 +71,9 @@ export type AuthHeaderMiddlewareBag = OptionalAuthMiddlewareBag & {
     token: string
 }
 
+/**
+ * AuthHeaderMiddleware put the token in the AuthHeaderMiddlewareBag if token is correct
+ */
 @injectable()
 export class AuthHeaderMiddleware implements IMiddleware {
     async run(ctx: MiddlewareContext, bag: AuthHeaderMiddlewareBag): Promise<HTTPResponse | MiddlewareContext | undefined> {
