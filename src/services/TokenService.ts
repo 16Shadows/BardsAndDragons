@@ -80,16 +80,22 @@ export class TokenService {
         }
 
         // Получение пользователя по токену
-        const repo = this._dbContext.getRepository(Token);
-        const tokenEntity = await repo.findOne({
-            where: {token},
-            relations: ['user']
-        });
-        if (!tokenEntity) {
+        try {
+            const user = await this._dbContext
+                .createQueryBuilder()
+                .select('User')
+                .from('user', 'User')
+                .innerJoin('User.tokens', 'Token')
+                .where('Token.token = :token', {token})
+                .getOne() as User;
+
+            if (!user) {
+                return null;
+            }
+            return user;
+        } catch {
             return null;
         }
-
-        return tokenEntity.user;
     }
 
     /**
