@@ -158,7 +158,7 @@ const Navbar = () => {
                     <Link
                       className="dropdown-item"
                       onClick={() => signOut()}
-                      to="/"
+                      to="#"
                     >
                       Выйти
                     </Link>
