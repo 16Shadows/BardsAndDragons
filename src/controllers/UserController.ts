@@ -5,20 +5,30 @@ import {Middleware, MiddlewareBag} from "../modules/core/middleware/middleware";
 import {User} from "../model/user";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
 import bcrypt from "bcryptjs";
-import {AuthMiddleware, AuthMiddlewareBag, createAuthToken} from "../middleware/AuthMiddleware";
-import { QueryArgument, QueryBag } from "../modules/core/routing/query";
+import {
+    AuthHeaderMiddleware,
+    AuthHeaderMiddlewareBag,
+    AuthMiddleware,
+    AuthMiddlewareBag
+} from "../middleware/AuthMiddleware";
+import {QueryArgument, QueryBag} from "../modules/core/routing/query";
 import {badRequest, json, status} from "../modules/core/routing/response";
-import { City } from "../model/city";
-import { Image } from "../model/image";
+import {City} from "../model/city";
+import {Image} from "../model/image";
 import {validateEmail, validateNickname, validatePassword} from "../utils/userValidation";
 import {
     emailAlreadyUseError,
     invalidEmailError,
-    invalidNicknameError, invalidPasswordError, nicknameAlreadyUseError,
+    invalidNicknameError,
+    invalidPasswordError,
+    invalidTokenError,
+    logoutSuccessful,
+    nicknameAlreadyUseError,
     notFilledError,
     userNotFoundError,
     wrongPasswordError
 } from "../utils/errorMessages";
+import {TokenService} from "../services/TokenService";
 
 type UserInfo = {
     // TODO заменить на хранение на клиенте, не запрашивать
@@ -52,17 +62,19 @@ const saltRounds = 10;
 
 @Controller('api/v1/user')
 export class UserController extends Object {
-    protected readonly _dbContext: ModelDataSource;
+    private readonly _dbContext: ModelDataSource;
+    private readonly _tokenService: TokenService;
 
-    constructor(dbContext: ModelDataSource) {
+    constructor(dbContext: ModelDataSource, tokenService: TokenService) {
         super();
         this._dbContext = dbContext;
+        this._tokenService = tokenService;
     }
 
     @POST('register')
     @Accept('application/json')
     @Return('application/json')
-    async register(bag: MiddlewareBag, body: { nickname: string, email: string, password: string }) {
+    async register(_: MiddlewareBag, body: { nickname: string, email: string, password: string }) {
         const {nickname, email, password} = body;
 
         // Проверка заполнения полей
@@ -101,35 +113,39 @@ export class UserController extends Object {
         await repository.save(user);
 
         // Генерация токена
-        const token = await createAuthToken({
-            username: user.username
-        });
+        try {
+            const token = await this._tokenService.createAuthToken(user);
 
-        return json({
-            token: token,
-            userState: {
-                username: user.username
-            }
-        }, 201);
+            return json({
+                token: token,
+                userState: {
+                    username: user.username
+                }
+            }, 201);
+        } catch (e) {
+            return badRequest({message: invalidTokenError});
+        }
     }
 
-    async checkPasswordAndGenerateToken(password: string, user: User) {
+    private async checkPasswordAndGenerateToken(password: string, user: User) {
         // Проверка пароля
         if (!await bcrypt.compare(password, user.passwordHash)) {
             return badRequest({message: wrongPasswordError});
         }
-        // Генерация токена
-        const token = await createAuthToken({
-            username: user.username
-        });
 
-        return json({token: token, userState: {username: user.username}});
+        // Генерация токена
+        try {
+            const token = await this._tokenService.createAuthToken(user);
+            return json({token: token, userState: {username: user.username}});
+        } catch (e) {
+            return badRequest({message: invalidTokenError});
+        }
     }
 
     @POST('login-by-email')
     @Accept('application/json')
     @Return('application/json')
-    async loginByEmail(bag: MiddlewareBag, body: { email: string, password: string }) {
+    async loginByEmail(_: MiddlewareBag, body: { email: string, password: string }) {
         const {email, password} = body;
 
         // Проверка заполнения полей
@@ -155,7 +171,7 @@ export class UserController extends Object {
     @POST('login-by-nickname')
     @Accept('application/json')
     @Return('application/json')
-    async loginByNickname(bag: MiddlewareBag, body: { nickname: string, password: string }) {
+    async loginByNickname(_: MiddlewareBag, body: { nickname: string, password: string }) {
         const {nickname, password} = body;
 
         // Проверка заполнения полей
@@ -182,15 +198,21 @@ export class UserController extends Object {
     @Accept('application/json')
     @Return('application/json')
     @Middleware(AuthMiddleware)
-    async logout(bag: AuthMiddlewareBag, body: Object) {
-        return json({message: 'Logout successful'});
+    @Middleware(AuthHeaderMiddleware)
+    async logout(bag: AuthHeaderMiddlewareBag, _: Object) {
+        if (!bag.token) {
+            return badRequest({message: invalidTokenError});
+        }
+        const token = bag.token;
+        await this._tokenService.deleteToken(token);
+        return json({message: logoutSuccessful});
     }
 
     @POST('test-query-with-auth')
     @Accept('application/json')
     @Return('application/json')
     @Middleware(AuthMiddleware)
-    async testAuth(bag: AuthMiddlewareBag, body: Object) {
+    async testAuth(bag: AuthMiddlewareBag, _: Object) {
         return json({message: `Test query with auth successful. User: ${bag.user.username}`});
     }
 
@@ -210,19 +232,18 @@ export class UserController extends Object {
             shouldDisplayAge: bag.user.canDisplayAge
         };
     }
-    
+
     @POST('@current')
     @Middleware(AuthMiddleware)
     @Accept('application/json')
     async postMyInfo(bag: AuthMiddlewareBag, info: Partial<PersonalUserInfo>) {
-        var user = bag.user;
+        const user = bag.user;
 
-        var city: City;
-        var avatar: Image;
+        let city: City;
+        let avatar: Image;
 
-        if (info.city)
-        {
-            var cityRepo = this._dbContext.getRepository(City);
+        if (info.city) {
+            const cityRepo = this._dbContext.getRepository(City);
             city = await cityRepo.findOneBy({
                 name: info.city
             });
@@ -230,9 +251,8 @@ export class UserController extends Object {
                 return status(400);
         }
 
-        if (info.avatar)
-        {
-            var imageRepo = this._dbContext.getRepository(Image);
+        if (info.avatar) {
+            const imageRepo = this._dbContext.getRepository(Image);
             avatar = await imageRepo.findOneBy({
                 blob: info.avatar
             });
@@ -248,7 +268,7 @@ export class UserController extends Object {
 
         if (info.displayName != undefined)
             user.displayName = info.displayName;
-        
+
         if (info.description != undefined)
             user.profileDescription = info.description;
 
@@ -261,17 +281,16 @@ export class UserController extends Object {
         if (info.shouldDisplayAge != undefined)
             user.canDisplayAge = info.shouldDisplayAge;
     }
-  
+
+    // TODO: delete this unsafe function
     @GET('user-by-username')
     @QueryArgument('username', {
         canHaveMultipleValues: false,
         optional: false
     })
     @Return('application/json')
-    async getGamesNumber(bag: MiddlewareBag, query: QueryBag) {
+    async getGamesNumber(_: MiddlewareBag, query: QueryBag) {
         let repository = this._dbContext.getRepository(User);
-        
-        const user = await repository.findOneBy({username: query['username']});
-        return user;
+        return await repository.findOneBy({username: query['username']});
     }
 }
