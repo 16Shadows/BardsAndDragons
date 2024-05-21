@@ -5,7 +5,6 @@ import {Middleware, MiddlewareBag} from "../modules/core/middleware/middleware";
 import {User} from "../model/user";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
 import bcrypt from "bcryptjs";
-import {AuthMiddleware, AuthMiddlewareBag, createAuthToken} from "../middleware/AuthMiddleware";
 import {badRequest, json} from "../modules/core/routing/response";
 import { Game } from "../model/game";
 import { QueryArgument, QueryBag } from "../modules/core/routing/query";

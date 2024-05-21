@@ -10,7 +10,6 @@ import MyGamesPage from "../../pages/MyGamesPage";
 import MyFriendsPage from "../../pages/MyFriendsPage";
 import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
 import PlayersPage from "../../pages/PlayersPage";
-import SecureComponent from "../../pages/SecureComponent";
 import ProtectedRoutes from "./ProtectedRoutes";
 import TestPage from "../../pages/TestPage";
 
@@ -32,8 +31,6 @@ const RoutesComponent = () => {
                 <Route path={"/my-friends"} element={<MyFriendsPage/>}/>
 
                 <Route path={"/players"} element={<PlayersPage/>}/>
-
-                <Route path={"/secure"} element={<SecureComponent/>}/>
             </Route>
 
             {/* TODO: 404 page */}

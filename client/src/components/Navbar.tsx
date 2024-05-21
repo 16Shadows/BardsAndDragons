@@ -6,7 +6,7 @@ import notificationRedPic from "../resources/notification_red_50px.png";
 import NotificationsPanel from "./NotificationsPanel";
 import { useState, useEffect } from "react";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
-import useSignOut from "react-auth-kit/hooks/useSignOut";
+import useSignOut from "../utils/useSignOut";
 import useApi from "../http-common";
 
 const Navbar = () => {
@@ -20,7 +20,7 @@ const Navbar = () => {
   const [gotNotifications, setGotNotifications] = useState(false);
 
   const navigate = useNavigate();
-  const signOut = useSignOut();
+  const {signOut} = useSignOut();
 
   const api = useApi();
 
@@ -203,7 +203,7 @@ const Navbar = () => {
                     <Link
                       className="dropdown-item"
                       onClick={() => signOut()}
-                      to="/"
+                      to="#"
                     >
                       <span
                         data-bs-toggle="collapse"
