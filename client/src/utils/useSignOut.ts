@@ -9,7 +9,7 @@ const useSignOut = () => {
     const signOutReact = useSignOutReact();
     const signOutApi = () => api.post("user/logout", {});
     const signOut = () => {
-        signOutApi().then(() => signOutReact())//.catch();
+        signOutApi().then(() => signOutReact()).catch();
     }
     return {signOut};
 };
