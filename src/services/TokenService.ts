@@ -8,7 +8,13 @@ export type AuthToken = {
     username: string;
 }
 
+// Время жизни токена в днях
 const expirationDays = 7;
+
+function addDaysToDate(date: Date, days: number): Date {
+    date.setDate(date.getDate() + days);
+    return date;
+}
 
 @injectable()
 export class TokenService {
@@ -35,6 +41,8 @@ export class TokenService {
                     const repo = this._dbContext.getRepository(Token);
                     const token = new Token();
                     token.token = encoded;
+                    // Установка даты истечения токена
+                    token.expirationDate = addDaysToDate(new Date(), expirationDays);
                     token.user = user;
                     repo.save(token);
 

@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn} from 'typeorm';
+import {Entity, PrimaryGeneratedColumn, Column, ManyToOne} from 'typeorm';
 import {User} from './user';
 
 /**
@@ -14,8 +14,8 @@ export class Token {
     })
     token: string;
 
-    @CreateDateColumn()
-    createdAt: Date;
+    @Column({type: 'timestamp'})
+    expirationDate: Date;
 
     @ManyToOne(() => User, user => user.tokens, {
         onDelete: 'CASCADE'
