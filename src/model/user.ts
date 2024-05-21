@@ -3,6 +3,7 @@ import {Image} from './image';
 import {City} from './city';
 import {UsersGame} from './usersGame';
 import {NotificationBase} from './notifications/notificationBase';
+import {Token} from "./token";
 
 @Entity()
 export class User {
@@ -80,4 +81,10 @@ export class User {
 
     @OneToMany(() => NotificationBase, notif => notif.receiver)
     notifications: Promise<NotificationBase[]>;
+
+    // List of valid tokens for this user
+    @OneToMany(() => Token, token => token.user, {
+        cascade: true
+    })
+    tokens: Promise<Token[]>;
 }
