@@ -1,0 +1,66 @@
+/* Панель с описанием игры */
+.game-describe {
+    width: 80%;
+    margin: 2px 5px 5px 17px;
+}
+
+/* Картинка игры */
+.game-icon {
+    width: 15%;
+    margin: 8px 0px 8px 8px;
+    border: 1px solid black; 
+    max-width: 100px;
+    max-height: 100px; 
+    aspect-ratio: 1/1;
+}
+
+/* Контейнер с заголовком (названием) */
+.game-button-block {
+    width: 75%;
+    text-align: left;
+    display: inline-block;
+}
+
+/* Название игры (кнопка с переходом к игре) */
+.game-button {
+    border: 0px;
+    background: none;
+    color: rgb(87, 170, 247);
+    padding: 0 0 0 0;
+    font-weight: bolder;
+    font-size: 20px;
+    text-decoration: underline;
+}
+
+/* Верхнего компонент game-item */
+.game-item {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    background-color: white;
+    border-radius: 7px;
+}
+
+/* Кнопка отписки (в виде иконки) */
+.game-unsubscribe-button {
+    padding: 0 0 0 0;
+    background: none;
+    border: none;
+    margin: 0 0 0 0;
+}
+
+/* Кнопка подписки */
+.game-subscribe-button {
+    width: 100%;
+    padding: 0px 2px 1px 2px;
+    border: none;
+    background: rgb(77, 167, 250);
+}
+
+/* Конейнер с кнопкой подписки */
+.game-subscribing-panel {
+    width: 25%;
+    text-align: right;
+    display: inline-block;
+}

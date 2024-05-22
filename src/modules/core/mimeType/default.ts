@@ -3,16 +3,17 @@ import { IMimeTypeConverter, MimeTypeConverter, MimeTypeParams } from "./mimeTyp
 import { constructor } from "../types";
 import { streamToBuffer } from "./utils";
 import iconv from 'iconv-lite';
+import { pipeline } from 'stream';
 
 module DefaultMimeTypeConverters {
     @MimeTypeConverter('application/json')
     export class JsonMimeTypeConverter implements IMimeTypeConverter {
-        async convertFrom(input: NodeJS.ReadableStream, params?: MimeTypeParams): Promise<any> {
+        async convertFrom(input: Readable, params?: MimeTypeParams): Promise<any> {
             var encoding: string = params?.['charset'] ?? 'utf-8';
             if (encoding == 'utf-8')
                 return JSON.parse((await streamToBuffer(input)).toString('utf-8'));
             else
-                return JSON.parse((await streamToBuffer(input.pipe(iconv.decodeStream(encoding)))).toString());
+                return JSON.parse((await streamToBuffer(pipeline(input, iconv.decodeStream(encoding), () => {}))).toString());
         }
 
         async convertTo(value: any, params?: MimeTypeParams): Promise<NodeJS.ReadableStream> {
@@ -23,7 +24,7 @@ module DefaultMimeTypeConverters {
             if (encoding == 'utf-8')
                 return stream;
             else
-                return stream.pipe(iconv.encodeStream(encoding));
+                return pipeline(stream, iconv.encodeStream(encoding), () => {});
         }
         
     }
@@ -35,7 +36,7 @@ module DefaultMimeTypeConverters {
             if (encoding == 'utf-8')
                 return (await streamToBuffer(input)).toString('utf-8');
             else
-                return (await streamToBuffer(input.pipe(iconv.decodeStream(encoding)))).toString();
+                return (await streamToBuffer(pipeline(input, iconv.decodeStream(encoding))), () => {}).toString();
         }
 
         async convertTo(value: any, params?: MimeTypeParams): Promise<NodeJS.ReadableStream> {
@@ -46,7 +47,7 @@ module DefaultMimeTypeConverters {
             if (encoding == 'utf-8')
                 return stream;
             else
-                return stream.pipe(iconv.encodeStream(encoding));
+                return pipeline(stream, iconv.encodeStream(encoding), () => {});
         }
         
     }
