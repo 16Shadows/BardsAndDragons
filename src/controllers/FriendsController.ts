@@ -69,4 +69,45 @@ export class FriendsController {
             };
         }));
     }
+
+    @GET('incoming')
+    @Middleware(AuthMiddleware)
+    @QueryArgument('start', {
+        typeId: 'int',
+        optional: true,
+        canHaveMultipleValues: false
+    })
+    @QueryArgument('count', {
+        typeId: 'int',
+        optional: true,
+        canHaveMultipleValues: false
+    })
+    @Return('application/json')
+    async getIncomingRequestsList(bag: AuthMiddlewareBag, queryBag: ListQuery): Promise<HTTPResponseConvertBody | FriendData[]> {
+        const start = queryBag.start ?? 0;
+        const count = queryBag.count ?? FriendsController.MAX_QUERY_COUNT;
+
+        if (count < 0 || count > FriendsController.MAX_QUERY_COUNT)
+            return badRequest();
+
+        const repo = this._dbContext.getRepository(UsersFriend);
+        
+        const incomingRequests = await repo.createQueryBuilder('friendLink')
+                                       .leftJoin(UsersFriend, 'backwardsLink', 'friendLink.userId = backwardsLink.friendId')
+                                       .innerJoin('friendLink.user', 'friend', 'friendLink.friendId = :userId', {userId: bag.user.id})
+                                       .leftJoin('friend.avatar', 'avatar')
+                                       .where('backwardsLink.id IS NULL')
+                                       .skip(start)
+                                       .take(count)
+                                       .getMany();
+
+        return await Promise.all(incomingRequests.map(async x => {
+            let user = await x.user;
+            return {
+                username: user.username,
+                displayName: user.displayName ?? user.username,
+                avatarPath: (await user.avatar)?.blob
+            };
+        }));
+    }
 }
