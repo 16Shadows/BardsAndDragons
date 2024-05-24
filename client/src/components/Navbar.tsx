@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import useSignOut from "../utils/useSignOut";
 import useApi from "../http-common";
+import { getFriendsPageRoute } from "./routes/Navigation";
 
 const Navbar = () => {
   // Запрос, вошел ли пользователь в профиль или нет
@@ -185,7 +186,7 @@ const Navbar = () => {
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink className="dropdown-item" to="/my-friends">
+                    <NavLink className="dropdown-item" to={getFriendsPageRoute()}>
                       <span
                         data-bs-toggle="collapse"
                         data-bs-target=".navbar-collapse.show"

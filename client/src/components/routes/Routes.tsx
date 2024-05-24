@@ -12,6 +12,7 @@ import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
 import PlayersPage from "../../pages/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
 import TestPage from "../../pages/TestPage";
+import { getFriendsPageRoute } from "./Navigation";
 
 const RoutesComponent = () => {
     return (
@@ -28,7 +29,7 @@ const RoutesComponent = () => {
             <Route element={<ProtectedRoutes fallbackPath='/login'/>}>
                 <Route path={"/my-profile"} element={<ProfilePage/>}/>
                 <Route path={"/my-games"} element={<MyGamesPage/>}/>
-                <Route path={"/my-friends"} element={<MyFriendsPage/>}/>
+                <Route path={getFriendsPageRoute()} element={<MyFriendsPage/>}/>
 
                 <Route path={"/players"} element={<PlayersPage/>}/>
             </Route>
