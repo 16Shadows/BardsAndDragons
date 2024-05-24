@@ -1,6 +1,7 @@
 import { Tab, Tabs } from "react-bootstrap";
 import FriendsList from "./FriendsList";
 import IncomingFriendRequestsList from "./IncomingFriendRequestsList";
+import OutgoingFriendRequestsList from "./OutgoingFriendRequestsList";
 
 const MyFriendsPage = () => {
     return (
@@ -10,6 +11,9 @@ const MyFriendsPage = () => {
             </Tab>
             <Tab title='Входящие заявки' eventKey='incoming-list' className="p-2">
                 <IncomingFriendRequestsList />
+            </Tab>
+            <Tab title='Исходящие заявки' eventKey='outgoing-list' className="p-2">
+                <OutgoingFriendRequestsList />
             </Tab>
         </Tabs>
     );
