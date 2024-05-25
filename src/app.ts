@@ -8,6 +8,8 @@ import {getDefaultMimeTypes} from './modules/core/mimeType/default';
 import {ModelDataSource} from './model/dataSource';
 import {discoverMimeTypeConverters} from './modules/core/mimeType/mimeTypeConverter';
 import {TokenService} from "./services/TokenService";
+import {TestService} from "./services/TestService";
+import {MatchingService} from "./services/MatchingService";
 
 (async () => {
     const app = new KoaCoreApp();
@@ -15,8 +17,13 @@ import {TokenService} from "./services/TokenService";
     const dataSource: ModelDataSource = await new ModelDataSource().initialize();
 
     app.useSingleton(dataSource);
+
+    // TODO: delete test service in production
     app.useSingleton(ExampleService);
+    app.useSingleton(TestService);
+
     app.useSingleton(TokenService);
+    app.useSingleton(MatchingService);
 
     //Note: looks like serve doesn't interrupt middleware chain even if it finds a file to serve
     //May cause side effects, should find another package or implement it manually
