@@ -6,6 +6,7 @@ import {Middleware} from "../modules/core/middleware/middleware";
 import {MatchingService} from "../services/MatchingService";
 import {AuthMiddleware, AuthMiddlewareBag} from "../middleware/AuthMiddleware";
 import {TestService} from "../services/TestService";
+import {badRequest} from "../modules/core/routing/response";
 
 @Controller('api/v1/matching')
 export class MatchingController extends Object {
@@ -32,10 +33,10 @@ export class MatchingController extends Object {
             await this._testService.generateTestData();
         } catch (e) {
             console.error(e);
-            return {
+            return badRequest({
                 success: false,
                 message: e
-            };
+            });
         }
 
         console.log('Test data generated successfully.');
@@ -53,10 +54,26 @@ export class MatchingController extends Object {
             return await this._matchingService.getPotentialPlayers(bag.user);
         } catch (e) {
             console.error(e);
-            return {
+            return badRequest({
                 success: false,
                 message: e
-            };
+            });
+        }
+    }
+
+    @POST('ranked-players')
+    @Accept('application/json')
+    @Return('application/json')
+    @Middleware(AuthMiddleware)
+    async rankedPlayers(bag: AuthMiddlewareBag, _body: Object) {
+        try {
+            return await this._matchingService.getRankedPlayers(bag.user);
+        } catch (e) {
+            console.error(e);
+            return badRequest({
+                success: false,
+                message: e
+            });
         }
     }
 }

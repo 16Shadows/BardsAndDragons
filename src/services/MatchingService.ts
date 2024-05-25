@@ -14,12 +14,15 @@ export class MatchingService {
         this._dbContext = dbContext;
     }
 
-    /**
-     * Returns a list of potential players for the current user
-     */
-    async getPotentialPlayers(currentUser: User): Promise<User[]> {
-        const query = await this.getPotentialPlayersQuery(currentUser);
-        return await query.getMany();
+    async getPotentialPlayers(currentUser: User): Promise<any[]> {
+        const potentialPlayersQuery = await this.getPotentialPlayersQuery(currentUser);
+        return await potentialPlayersQuery.getRawMany();
+    }
+
+    async getRankedPlayers(currentUser: User): Promise<any[]> {
+        const potentialPlayersQuery = await this.getPotentialPlayersQuery(currentUser);
+        const rankedPlayersQuery = await this.getRankedPlayersQuery(currentUser, potentialPlayersQuery);
+        return await rankedPlayersQuery.getRawMany();
     }
 
     /**
@@ -27,14 +30,13 @@ export class MatchingService {
      */
     async getPotentialPlayersQuery(currentUser: User): Promise<SelectQueryBuilder<User>> {
         const repo = this._dbContext.getRepository(User);
-
         return repo
             .createQueryBuilder("user")
-            .leftJoinAndSelect("user.games", "usersGame")
-            .leftJoinAndSelect("user.avatar", "avatar")
-            .leftJoinAndSelect("user.city", "city")
+            // Select only user id
+            .select("user.id", "id")
+            .distinct(true)
 
-            .where("user.id != :userId", {userId: currentUser.id}) // exclude the current user
+            .where("user.id != :userId") // exclude the current user
             .andWhere("user.isDeleted = false") // only active users
 
             .andWhere("user.birthday IS NOT NULL") // only users with a birthday
@@ -51,7 +53,7 @@ export class MatchingService {
                     .from(UsersGame, "usersGame")
                     .where("usersGame.userId = user.id")
                     .getQuery();
-                return "EXISTS " + subQuery;
+                return `EXISTS ${subQuery}`;
             })
 
             // Exclude users who are already friends with the current user
@@ -62,8 +64,8 @@ export class MatchingService {
                     .where("usersFriend.userId = :userId")
                     .andWhere("usersFriend.friendId = user.id")
                     .getQuery();
-                return "NOT EXISTS " + subQuery;
-            }, {userId: currentUser.id})
+                return `NOT EXISTS ${subQuery}`;
+            })
 
             // Exclude users who have been rejected by or have rejected the current user
             .andWhere(qb => {
@@ -72,9 +74,40 @@ export class MatchingService {
                     .from(RejectedMatch, "rejectedMatch")
                     .where("(rejectedMatch.initiatorId = :userId AND rejectedMatch.receiverId = user.id) OR (rejectedMatch.initiatorId = user.id AND rejectedMatch.receiverId = :userId)")
                     .getQuery();
-                return "NOT EXISTS " + subQuery;
-            }, {userId: currentUser.id});
+                return `NOT EXISTS ${subQuery}`;
+            })
+
+            // Set the parameter for the current user
+            .setParameter("userId", currentUser.id);
     }
 
     // TODO: добавить подбор игроков по параметрам: теги игр
+    /**
+     * Returns a query builder for the list of ranked players for the current user. Rank is based on scores
+     */
+    async getRankedPlayersQuery(currentUser: User, potentialPlayersQuery: SelectQueryBuilder<User>): Promise<SelectQueryBuilder<UsersGame>> {
+        const repo = this._dbContext.getRepository(UsersGame);
+        return repo
+            .createQueryBuilder("usersGame")
+
+            .select("COUNT(usersGame.gameId)", "gamesScore")
+            .addSelect("usersGame.userId", "userId")
+
+            // Add table with potential players
+            .addCommonTableExpression(potentialPlayersQuery, "potentialPlayers")
+
+            .where(qb => {
+                // Get all games that the current user has played
+                const subQuery = qb.subQuery()
+                    .select("usersGame.gameId")
+                    .from(UsersGame, "usersGame")
+                    .where("usersGame.userId = :userId")
+                    .getQuery();
+                return `usersGame.gameId IN (${subQuery})`;
+            })
+
+            .andWhere(`usersGame.userId IN (SELECT "id" FROM "potentialPlayers")`)
+            .groupBy("usersGame.userId")
+            .orderBy(`"gamesScore"`, "DESC");
+    }
 }
