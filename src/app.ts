@@ -35,6 +35,7 @@ import { UserNotificationService } from './services/UserNotificationService';
     app.useControllers(discoverControllers('./controllers', __dirname));
     app.useControllers(discoverControllers('./images', __dirname));
     app.useTypeConverters(getDefaultConverters());
+    app.useTypeConverters(discoverConverters('./converters', __dirname));
     app.useMimeTypes(discoverMimeTypeConverters('./images', __dirname));
     app.useTypeConverters(discoverConverters('./converters', __dirname));
     app.useMimeTypes(getDefaultMimeTypes());
