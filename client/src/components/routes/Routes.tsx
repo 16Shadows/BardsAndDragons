@@ -9,10 +9,10 @@ import ProfilePage from "../../pages/ProfilePage";
 import MyGamesPage from "../../pages/MyGamesPage";
 import MyFriendsPage from "../../pages/FriendsPage/FriendsPage";
 import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
-import PlayersPage from "../../pages/PlayersPage";
+import PlayersPage from "../../pages/PlayersPage/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
 import TestPage from "../../pages/TestPage";
-import { getFriendsPageRoute } from "./Navigation";
+import {getFriendsPageRoute, getPlayersPageRoute} from "./Navigation";
 
 const RoutesComponent = () => {
     return (
@@ -31,7 +31,7 @@ const RoutesComponent = () => {
                 <Route path={"/my-games"} element={<MyGamesPage/>}/>
                 <Route path={getFriendsPageRoute()} element={<MyFriendsPage/>}/>
 
-                <Route path={"/players"} element={<PlayersPage/>}/>
+                <Route path={getPlayersPageRoute()} element={<PlayersPage/>}/>
             </Route>
 
             {/* TODO: 404 page */}

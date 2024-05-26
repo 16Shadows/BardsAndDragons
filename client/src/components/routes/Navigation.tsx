@@ -5,3 +5,7 @@ export function getFriendsPageRoute() {
 export function getUserProfileRoute(username: string) {
     return `/${username}`;
 }
+
+export function getPlayersPageRoute() {
+    return "/players";
+}
