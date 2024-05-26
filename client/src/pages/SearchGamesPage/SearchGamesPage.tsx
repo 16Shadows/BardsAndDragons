@@ -1,26 +1,13 @@
-import React, { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import GameItem, { IGameProps } from "../../components/GameItem/GameItem";
-import { Button, Col, Container, Form, Modal, Row } from "react-bootstrap";
+import { Button, Col, Form, Modal, Row } from "react-bootstrap";
 import useApi from '../../http-common'
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
+// import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 import "./SearchGamesPage.css"
-import { UserData } from "../../models/UserData";
-import Alert from "../../components/Alert";
-import Popup from "../../components/Popup";
-
-// interface IUser {
-//     id: number;
-//     username: string;
-//     passwordHash: string;
-//     email: string;
-//     isDeleted: boolean;
-//     birthday?: Date;
-//     displayName?: string;
-//     profileDescription?: string;
-//     contactInfo?: string;
-//     canDisplayAge: boolean;
-// }
+// import { UserData } from "../../models/UserData";
+// import Alert from "../../components/Alert";
+// import Popup from "../../components/Popup";
 
 const SearchGamesPage = () => {
 

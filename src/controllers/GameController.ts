@@ -2,15 +2,13 @@ import {Controller} from "../modules/core/controllers/decorators";
 import {ModelDataSource} from "../model/dataSource";
 import { GET, POST } from "../modules/core/routing/decorators";
 import {Middleware, MiddlewareBag} from "../modules/core/middleware/middleware";
-import {User} from "../model/user";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
-import bcrypt from "bcryptjs";
-import {badRequest, json} from "../modules/core/routing/response";
+// import {badRequest, json} from "../modules/core/routing/response";
 import { Game } from "../model/game";
 import { QueryArgument, QueryBag } from "../modules/core/routing/query";
-import { createQueryBuilder, DataSource, ILike, Like } from "typeorm"
+import { ILike } from "typeorm"
 import { UsersGame } from "../model/usersGame";
-import { AuthMiddleware, AuthMiddlewareBag, OptionalAuthMiddlewareBag } from "../middleware/AuthMiddleware";
+import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
 
 @Controller('api/v1/game')
 export class GameController extends Object {
@@ -37,7 +35,7 @@ export class GameController extends Object {
     })
     // Название
     @QueryArgument('name', {
-        canHaveMultipleValues: true,
+        canHaveMultipleValues: false,
         optional: true
     })
     // Параметр, по которому сортируем
@@ -239,7 +237,7 @@ export class GameController extends Object {
         let repository = this._dbContext.getRepository(UsersGame);
 
         // Удаление объекта из БД на основе id игры и пользователя
-        repository.delete({user: await this._dbContext.getRepository(User).findOneBy({id: bag.user.id}), game: game});
+        repository.delete({user: bag.user, game: game});
 
         return true;
     }
