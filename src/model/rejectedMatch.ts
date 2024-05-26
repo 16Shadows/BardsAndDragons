@@ -1,10 +1,13 @@
-import {Entity, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
 import {User} from "./user";
 
 @Entity()
 export class RejectedMatch {
     @PrimaryGeneratedColumn()
     id: number;
+
+    @CreateDateColumn()
+    rejectDate: Date;
 
     @ManyToOne(() => User, user => user.rejectedMatchesInitiator, {
         onDelete: 'CASCADE',
