@@ -90,13 +90,6 @@ const Navbar = () => {
                   >
                     Главная
                   </span>
-                >
-                  <span
-                    data-bs-toggle="collapse"
-                    data-bs-target=".navbar-collapse.show"
-                  >
-                    Главная
-                  </span>
                 </NavLink>
               </li>
 
@@ -108,24 +101,10 @@ const Navbar = () => {
                   >
                     Поиск игроков
                   </span>
-                <NavLink className="nav-link" to="/players">
-                  <span
-                    data-bs-toggle="collapse"
-                    data-bs-target=".navbar-collapse.show"
-                  >
-                    Поиск игроков
-                  </span>
                 </NavLink>
               </li>
 
               <li className="nav-item">
-                <NavLink className="nav-link" to="/games">
-                  <span
-                    data-bs-toggle="collapse"
-                    data-bs-target=".navbar-collapse.show"
-                  >
-                    Поиск игр
-                  </span>
                 <NavLink className="nav-link" to="/games">
                   <span
                     data-bs-toggle="collapse"
@@ -168,26 +147,12 @@ const Navbar = () => {
                       >
                         Профиль
                       </span>
-                    <NavLink className="dropdown-item" to="/my-profile">
-                      <span
-                        data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse.show"
-                      >
-                        Профиль
-                      </span>
                     </NavLink>
                   </li>
                   <li>
                     <hr className="dropdown-divider" />
                   </li>
                   <li>
-                    <NavLink className="dropdown-item" to="/my-games">
-                      <span
-                        data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse.show"
-                      >
-                        Мои игры
-                      </span>
                     <NavLink className="dropdown-item" to="/my-games">
                       <span
                         data-bs-toggle="collapse"
