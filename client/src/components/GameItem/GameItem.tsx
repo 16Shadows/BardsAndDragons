@@ -19,7 +19,7 @@ export interface IGameProps {
 
 // Функция подписки/отписки
 interface ISubscribe {
-    (game: IGameProps): void
+    (gameId: number): void
 }
 
 // Принимаемые параметры
@@ -49,12 +49,12 @@ const Game = ({game, logined=false, subscribe, unsubscribe}: IProps) => {
     // Функции подписки и отписки
     function subscribed() {
         setSubscribeState(true);
-        subscribe(game);
+        subscribe(game.id);
     }
 
     function unsubscribed() {
         setSubscribeState(false);
-        unsubscribe(game);
+        unsubscribe(game.id);
     }
 
     //console.log("Game")

@@ -97,8 +97,8 @@ const SearchGamesPage = () => {
     }
 
     // Подписка на игру
-    function subscribe(game: IGameProps) {
-        api.post(`game/${game.id}/subscribe`, {headers: {
+    function subscribe(gameId: number) {
+        api.post(`game/${gameId}/subscribe`, {headers: {
             'Content-Type': 'application/json'
         }}).then(function (response) {
             console.log("Subscribed");
@@ -107,8 +107,8 @@ const SearchGamesPage = () => {
     }
 
     // Отписка от игры
-    function unsubscribe(game: IGameProps) {
-        api.post(`game/${game.id}/unsubscribe`, {headers: {
+    function unsubscribe(gameId: number) {
+        api.post(`game/${gameId}/unsubscribe`, {headers: {
             'Content-Type': 'application/json'
         }}).then(function (response) {
             console.log("Unsubscribed");
