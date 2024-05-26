@@ -1,15 +1,34 @@
 import {Controller} from "../modules/core/controllers/decorators";
 import {ModelDataSource} from "../model/dataSource";
-import {POST} from "../modules/core/routing/decorators";
+import {GET, POST} from "../modules/core/routing/decorators";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
 import {Middleware} from "../modules/core/middleware/middleware";
 import {MatchingService} from "../services/MatchingService";
 import {AuthMiddleware, AuthMiddlewareBag} from "../middleware/AuthMiddleware";
 import {TestService} from "../services/TestService";
 import {badRequest} from "../modules/core/routing/response";
+import {QueryArgument} from "../modules/core/routing/query";
+import {HTTPResponseConvertBody} from "../modules/core/routing/core";
+
+type ListQuery = {
+    count?: number;
+};
+
+type PlayerData = {
+    matchId: number;
+    username: string;
+    displayName: string;
+    age?: number;
+    city?: string;
+    description: string;
+    avatarPath?: string;
+    games: string[];
+}
 
 @Controller('api/v1/matching')
 export class MatchingController extends Object {
+    private static readonly MAX_QUERY_COUNT: number = 10;
+
     private readonly _dbContext: ModelDataSource;
     private readonly _matchingService: MatchingService;
 
@@ -75,5 +94,43 @@ export class MatchingController extends Object {
                 message: e
             });
         }
+    }
+
+    @GET('get-players')
+    @Middleware(AuthMiddleware)
+    @QueryArgument('count', {
+        typeId: 'int',
+        optional: true,
+        canHaveMultipleValues: false
+    })
+    @Return('application/json')
+    async getPlayers(_bag: AuthMiddlewareBag, queryBag: ListQuery): Promise<HTTPResponseConvertBody | PlayerData[]> {
+        const count = queryBag.count ?? MatchingController.MAX_QUERY_COUNT;
+        if (count < 0 || count > MatchingController.MAX_QUERY_COUNT)
+            return badRequest();
+
+        const playerData1: PlayerData = {
+            matchId: 1,
+            username: 'player1',
+            displayName: 'Иван Иванов',
+            age: 25,
+            city: 'Москва',
+            description: 'Являюсь заядлым геймером с детства. Играю в различные игры от шутеров до стратегий.',
+            avatarPath: 'userimages/avatar2.png',
+            games: ['Dota 2', 'CS: GO', 'World of Warcraft'],
+        };
+
+        const playerData2: PlayerData = {
+            matchId: 2,
+            username: 'player2',
+            displayName: 'Елена Петрова',
+            age: 28,
+            city: 'Санкт-Петербург',
+            description: 'Люблю активный образ жизни и спорт. Увлекаюсь путешествиями, особенно по горным районам. В свободное время занимаюсь фотографией и готовкой. Обожаю проводить время на свежем воздухе и наслаждаться природой.',
+            avatarPath: 'userimages/avatar3.png',
+            games: ['The Witcher 3', 'Assassin\'s Creed', 'Skyrim'],
+        };
+
+        return [playerData1, playerData2];
     }
 }
