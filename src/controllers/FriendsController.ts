@@ -1,13 +1,16 @@
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
 import { ModelDataSource } from "../model/dataSource";
+import { NotificationBase } from "../model/notifications/notificationBase";
+import { User } from "../model/user";
 import { UsersFriend } from "../model/usersFriend";
 import { Controller } from "../modules/core/controllers/decorators";
 import { Middleware } from "../modules/core/middleware/middleware";
-import { Return } from "../modules/core/mimeType/decorators";
+import { Accept, Return } from "../modules/core/mimeType/decorators";
 import { HTTPResponseConvertBody } from "../modules/core/routing/core";
-import { GET } from "../modules/core/routing/decorators";
+import { GET, POST } from "../modules/core/routing/decorators";
 import { QueryArgument } from "../modules/core/routing/query";
-import { badRequest } from "../modules/core/routing/response";
+import { badRequest, conflict, notFound } from "../modules/core/routing/response";
+import { UserNotificationService } from "../services/UserNotificationService";
 
 type ListQuery = {
     start?: number;
@@ -20,17 +23,19 @@ type FriendData = {
     avatarPath?: string;
 };
 
-@Controller('api/v1/user/@current/friends')
+@Controller('api/v1/user')
 export class FriendsController {
     protected static readonly MAX_QUERY_COUNT : number = 100; 
 
     protected _dbContext: ModelDataSource;
+    protected _NotificationService: UserNotificationService;
 
-    constructor(dbContext: ModelDataSource) {
+    constructor(dbContext: ModelDataSource, notificationService: UserNotificationService) {
         this._dbContext = dbContext;
+        this._NotificationService = notificationService;
     }
 
-    @GET('current')
+    @GET('@current/friends/current')
     @Middleware(AuthMiddleware)
     @QueryArgument('start', {
         typeId: 'int',
@@ -70,7 +75,7 @@ export class FriendsController {
         }));
     }
 
-    @GET('incoming')
+    @GET('@current/friends/incoming')
     @Middleware(AuthMiddleware)
     @QueryArgument('start', {
         typeId: 'int',
@@ -111,7 +116,7 @@ export class FriendsController {
         }));
     }
 
-    @GET('outgoing')
+    @GET('@current/friends/outgoing')
     @Middleware(AuthMiddleware)
     @QueryArgument('start', {
         typeId: 'int',
@@ -150,5 +155,68 @@ export class FriendsController {
                 avatarPath: (await user.avatar)?.blob
             };
         }));
+    }
+
+    @POST('{friend:user}/addFriend')
+    @Middleware(AuthMiddleware)
+    @Accept('application/json', 'text/plain')
+    async addFriend(bag: AuthMiddlewareBag, friendUser: User) {
+        const repo = this._dbContext.getRepository(UsersFriend);
+
+        if (await repo.existsBy({user: bag.user,friend: friendUser}))
+            return conflict();
+
+        const friendLink = new UsersFriend();
+        friendLink.user = Promise.resolve(bag.user);
+        friendLink.friend = Promise.resolve(friendUser);
+        
+        await repo.save(friendLink);
+
+        await this._NotificationService.sendNotification(friendUser.username,
+            await repo.existsBy({user:friendUser,friend: bag.user})
+            ?
+            {
+                type: 'friendRequestAccepted',
+                friendRequestAcceptedBy: {
+                    username: bag.user.username,
+                    displayName: bag.user.displayName ?? bag.user.username
+                },
+                seen: false
+            }
+            :
+            {
+                type: 'friendRequest',
+                friendRequestSentBy: {
+                    username: bag.user.username,
+                    displayName: bag.user.displayName ?? bag.user.username
+                },
+                seen: false
+            }
+        )
+    }
+
+    @POST('{friend:user}/removeFriend')
+    @Middleware(AuthMiddleware)
+    @Accept('application/json', 'text/plain')
+    async removeFriend(bag: AuthMiddlewareBag, friendUser: User) {
+        const repo = this._dbContext.getRepository(UsersFriend);
+
+        const friendLink = await repo.findOneBy({
+            user: bag.user,
+            friend: friendUser
+        });
+
+        if (!friendLink)
+            return notFound();
+
+        await repo.remove(friendLink);
+
+        const notifRepo = this._dbContext.getRepository(NotificationBase);
+        await notifRepo.remove(
+            await notifRepo.createQueryBuilder('notif')
+                            .innerJoinAndSelect('notif.friendRequest', 'friendRequest')
+                            .where('friendRequest.userId = :userId', {userId: bag.user.id})
+                            .getMany()
+        );
     }
 }

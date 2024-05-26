@@ -1,8 +1,113 @@
 import { Button, Tab, Tabs } from "react-bootstrap";
 import FriendsList from "./FriendsList";
 import FriendItem from "./FriendItem";
+import { useCallback, useState } from "react";
+import useApi from "../../http-common";
+import FriendData from "./FriendData";
 
-const MyFriendsPage = () => {
+function FriendButtons({friend}: {friend: FriendData}) {
+    const api = useApi();
+    const [justDeleted, setJustDeleted] = useState(false);
+
+    const addFriend = useCallback(async () => {
+        try {
+            await api.post(`user/${friend.username}/addFriend`);
+            setJustDeleted(false);
+        }
+        catch {}
+    }, [api, friend]);
+
+    const deleteFriend = useCallback(async () => {
+        try {
+            await api.post(`user/${friend.username}/removeFriend`);
+            setJustDeleted(true);
+        }
+        catch {}
+    }, [api, friend]);
+
+    if (justDeleted)
+        return (
+            <Button onClick={addFriend} variant='outline-success'>
+                Принять
+            </Button>
+        );
+    else
+        return (
+            <Button onClick={deleteFriend} variant='outline-danger'>
+                Удалить
+            </Button>
+        );
+}
+
+function IncomingRequestButtons({friend}: {friend: FriendData}) {
+    const api = useApi();
+    const [justDeleted, setJustDeleted] = useState(true);
+
+    const addFriend = useCallback(async () => {
+        try {
+            await api.post(`user/${friend.username}/addFriend`);
+            setJustDeleted(false);
+        }
+        catch {}
+    }, [api, friend]);
+
+    const deleteFriend = useCallback(async () => {
+        try {
+            await api.post(`user/${friend.username}/removeFriend`);
+            setJustDeleted(true);
+        }
+        catch {}
+    }, [api, friend]);
+
+    if (justDeleted)
+        return (
+            <Button onClick={addFriend} variant='outline-success'>
+                Принять
+            </Button>
+        );
+    else
+        return (
+            <Button onClick={deleteFriend} variant='outline-danger'>
+                Удалить
+            </Button>
+        );
+}
+
+function OutgoingRequestButtons({friend}: {friend: FriendData}) {
+    const api = useApi();
+    const [justDeleted, setJustDeleted] = useState(false);
+
+    const addFriend = useCallback(async () => {
+        try {
+            await api.post(`user/${friend.username}/addFriend`);
+            setJustDeleted(false);
+        }
+        catch {}
+    }, [api, friend]);
+
+    const deleteFriend = useCallback(async () => {
+        try {
+            await api.post(`user/${friend.username}/removeFriend`);
+            setJustDeleted(true);
+        }
+        catch {}
+    }, [api, friend]);
+
+    if (justDeleted)
+        return (
+            <Button onClick={addFriend} variant='outline-success'>
+                Отправить
+            </Button>
+        );
+    else
+        return (
+            <Button onClick={deleteFriend} variant='outline-danger'>
+                Отозвать
+            </Button>
+        );
+}
+
+function MyFriendsPage() {
     return (
         <Tabs>
             <Tab title='Мои друзья' eventKey='friends-list' className="p-2">
@@ -10,7 +115,7 @@ const MyFriendsPage = () => {
                     friendItemTemplate={(x) => {
                         return (
                             <FriendItem friend={x} key={x.username}>
-                                <Button variant='outline-danger'>Удалить</Button>
+                                <FriendButtons friend={x} />
                             </FriendItem>
                         )
                     }}
@@ -22,7 +127,7 @@ const MyFriendsPage = () => {
                     friendItemTemplate={(x) => {
                         return (
                             <FriendItem friend={x} key={x.username}>
-                                <Button variant='outline-success'>Принять</Button>
+                                <IncomingRequestButtons friend={x} />
                             </FriendItem>
                         )
                     }}
@@ -34,7 +139,7 @@ const MyFriendsPage = () => {
                     friendItemTemplate={(x) => {
                         return (
                             <FriendItem friend={x} key={x.username}>
-                                <Button variant='outline-danger'>Отменить</Button>
+                                <OutgoingRequestButtons friend={x} />
                             </FriendItem>
                         )
                     }}
