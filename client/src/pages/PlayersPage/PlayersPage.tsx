@@ -1,38 +1,62 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {Col, Row} from "react-bootstrap";
 import PlayerCard from "./PlayerCard";
+import {PlayerData} from "./PlayerData";
+import usePlayersApi from "./usePlayersApi";
 
 const PlayersPage = () => {
-    const handleAccept = () => {
-        console.log('Player accepted');
+    const [matches, setMatches] = useState<PlayerData[]>([]);
+    const [currentMatchId, setCurrentMatchId] = useState(0);
+
+    const {getMatches} = usePlayersApi();
+
+    useEffect(() => {
+        getMatches().then((data) => {
+            setMatches(data);
+            setCurrentMatchId(0);
+        });
+    }, []);
+
+    const handleAccept = (username: string) => {
+        console.log(`Player accepted: ${username}`);
+
+        // Обработка принятия мэтча
+        if (currentMatchId < matches.length - 1) {
+            setCurrentMatchId(currentMatchId + 1);
+        } else {
+            // Если это последний мэтч, выполнить соответствующую обработку
+            alert('All players accepted!');
+            setCurrentMatchId(0);
+        }
+
     };
 
-    const handleReject = () => {
-        console.log('Player rejected');
-    };
+    const handleReject = (username: string) => {
+        console.log(`Player rejected ${username}`);
 
-    const playerData = {
-        name: 'Иван Иванов',
-        age: 25,
-        city: 'Москва',
-        description: 'Являюсь заядлым геймером с детства. Играю в различные игры от шутеров до стратегий.',
-        avatarUrl: 'http://localhost:3000/userimages/avatar2.png',
-        games: ['Dota 2', 'CS: GO', 'World of Warcraft'],
+        // Обработка отклонения мэтча
+        if (currentMatchId < matches.length - 1) {
+            setCurrentMatchId(currentMatchId + 1);
+        } else {
+            // Если это последний мэтч, выполнить соответствующую обработку
+            alert('All players rejected!');
+            setCurrentMatchId(0);
+        }
     };
 
     return (
         <Row className="justify-content-md-center">
             <Col md="8">
-                <PlayerCard
-                    name={playerData.name}
-                    age={playerData.age}
-                    city={playerData.city}
-                    description={playerData.description}
-                    avatarUrl={playerData.avatarUrl}
-                    games={playerData.games}
-                    onAccept={handleAccept}
-                    onReject={handleReject}
-                />
+                {matches[currentMatchId] && (() => {
+                    const playerData = matches[currentMatchId];
+                    return (
+                        <PlayerCard
+                            {...playerData}
+                            onAccept={handleAccept}
+                            onReject={handleReject}
+                        />
+                    );
+                })()}
             </Col>
         </Row>
     );
