@@ -1,11 +1,13 @@
 import React, { FormEvent, useEffect, useRef, useState } from "react";
 import GameItem, { IGameProps } from "../../components/GameItem/GameItem";
-import { Button, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Col, Container, Form, Modal, Row } from "react-bootstrap";
 import useApi from '../../http-common'
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 import "./SearchGamesPage.css"
 import { UserData } from "../../models/UserData";
+import Alert from "../../components/Alert";
+import Popup from "../../components/Popup";
 
 // interface IUser {
 //     id: number;
@@ -26,11 +28,10 @@ const SearchGamesPage = () => {
     // Проверка, авторизован ли пользователь
     const isAuthenticated = useIsAuthenticated()
 
-    // Имя пользователя
-    const username = useAuthUser<UserData>()?.username
+    const gameRequestName = isAuthenticated ? 'game/subscribes' : 'game/games'
 
-    // Id пользователя (если был выполнен вход)
-    const [userId, setUserId] = useState<number>()
+    // Имя пользователя
+    // const username = useAuthUser<UserData>()?.username
 
     // ===Пагинация===
     // Количество запрашиваемых за раз игр
@@ -82,6 +83,8 @@ const SearchGamesPage = () => {
         setSearchQueryEvent(searchQuery);
     }
 
+    const [modalIsShow, setModalIsShow] = useState(false)
+
     // Если изменится сортировка или строка запроса - делаем запрос игр из БД
     useEffect(getTotalNumber, [searchQueryEvent, selectedSort])
     
@@ -103,12 +106,14 @@ const SearchGamesPage = () => {
                 // Для анимации
                 setTimeout(() => setGames([]), 750);
             }
-        })
+        }).catch(() => alert('Не удалось получить список игр'))
     }
 
     // Подписка на игру
     function subscribe(game: IGameProps) {
-        api.post('user-games/subscribe', { userId: userId,  game: game}).then(function (response) {
+        api.post(`game/${game.id}/subscribe`, {headers: {
+            'Content-Type': 'application/json'
+        }}).then(function (response) {
             console.log("Subscribed");
             //console.log(response.data);
         })
@@ -116,7 +121,9 @@ const SearchGamesPage = () => {
 
     // Отписка от игры
     function unsubscribe(game: IGameProps) {
-        api.post('user-games/unsubscribe', { userId: userId,  game: game}).then(function (response) {
+        api.post(`game/${game.id}/unsubscribe`, {headers: {
+            'Content-Type': 'application/json'
+        }}).then(function (response) {
             console.log("Unsubscribed");
             //console.log(response.data);
         })
@@ -131,13 +138,6 @@ const SearchGamesPage = () => {
         setRequestSize(Math.round(document.documentElement.clientHeight / 100));
         //console.log(`requestSize: ${requestSize}`);
 
-        // Если вход выполнен, то получаем id пользователя по его имени
-        if (isAuthenticated) {
-            api.get('user/user-by-username', { params: {username: username} }).then(function (response) {
-                setUserId(response.data.id)
-            })
-        }
-
         // Запрашиваем игры из БД
         setFetching(true);
 
@@ -151,8 +151,9 @@ const SearchGamesPage = () => {
         if (fetching) {
             //console.log("fetching games");
             //console.log(`Current: ${currentGameNumberRef.current}`);
+
             // Запрашиваем игры, передаём лимит, стартовую позицию, искомое имя, id пользователя и тип сортировки
-            api.get('game/games', { params: {limit: requestSize, start: currentGameNumberRef.current, name: searchQueryEvent, userid: userId, sort: sortTypes.get(selectedSort)} }).then(function (response) {
+            api.get(gameRequestName, { params: {limit: requestSize, start: currentGameNumberRef.current, name: searchQueryEvent, sort: sortTypes.get(selectedSort)} }).then(function (response) {
                 if (!games) {
                     //setGames((response.data as IGameProps[]).sort((a, b) => a["id"] - b["id"]));
                     setGames(response.data);
@@ -163,7 +164,7 @@ const SearchGamesPage = () => {
                 
                 // Увеличиваем текущую позицию
                 currentGameNumberRef.current += requestSize ?? 0;
-            }).finally(() => setFetching(false))
+            }).catch(() => alert('Не удалось получить список игр')).finally(() => setFetching(false))
         }
     }, [fetching])
 
@@ -180,7 +181,7 @@ const SearchGamesPage = () => {
 
                         <div style={{marginTop: "15px", textAlign: "center"}}>
                             {/* Сортировка */}
-                            <span style={{width: "48%", display: "inline-block"}}>
+                            <span style={{width: "48%", display: "inline-block", verticalAlign: "middle"}}>
                                 <span style={{fontWeight: "bolder", fontSize: "20px"}}>Сортировка:</span>
                                 <select id="select-list" value={selectedSort} onChange={event => setSelectedSort(event.target.value)}>
                                     <option disabled value={""}>Сортировка</option>
@@ -222,6 +223,12 @@ const SearchGamesPage = () => {
                     }
                 </div>
             </Col>
+            <Modal show={modalIsShow} onHide={() => setModalIsShow(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title style={{ color: "red" }}>{"Произошла ошибка"}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{"Сообщение"}</Modal.Body>
+            </Modal>
         </Row>
     );
 };

@@ -10,6 +10,7 @@ import { Game } from "../model/game";
 import { QueryArgument, QueryBag } from "../modules/core/routing/query";
 import { createQueryBuilder, DataSource, ILike, Like } from "typeorm"
 import { UsersGame } from "../model/usersGame";
+import { AuthMiddleware, AuthMiddlewareBag, OptionalAuthMiddlewareBag } from "../middleware/AuthMiddleware";
 
 @Controller('api/v1/game')
 export class GameController extends Object {
@@ -39,12 +40,6 @@ export class GameController extends Object {
         canHaveMultipleValues: true,
         optional: true
     })
-    // Id пользователя для проверки подписки
-    @QueryArgument('userid', {
-        typeId: 'int',
-        canHaveMultipleValues: false,
-        optional: true
-    })
     // Параметр, по которому сортируем
     @QueryArgument('sort', {
         canHaveMultipleValues: false,
@@ -63,75 +58,109 @@ export class GameController extends Object {
         // Базовая сортировка - по id игры
         let sort = query['sort'] ?? "id"
 
-        // Если нет id пользователя
-        if (!query['userid']) {
-            // Поиск по имени
-            if (query['name'] && query['name'] != "") {
-                games = await repository.find({
-                    take: limit,
-                    skip: query['start'] ?? 0,
-                    where: {
-                        name: ILike('%'+query['name']+'%')
-                    },
-                    order: {
-                        [sort]: 'ASC'
-                    }
-                });
-            }
-            // Запрос без поиска
-            else {
-                games = await repository.find({
-                    take: limit,
-                    skip: query['start'] ?? 0,
-                    order: {
-                        [sort]: 'ASC'
-                    }
-                });
-            }
-        } else {
-            // Поиск по имени с проверкой подписки на игры
-            if (query['name'] && query['name'] != "") {
-                games = await repository.createQueryBuilder("game")
-                .where("game.name ilike :name", { name:`%${query['name']}%` } )
-                .leftJoinAndSelect('game.users', 'user', 'user.userId = :userId', {userId: query['userid']})
-                .take(limit)
-                .skip(query['start'] ?? 0)
-                .orderBy(`game.${sort}`, 'ASC')
-                .getMany()
-            }
-            // Поиск без имени
-            else {
-                games = await repository.createQueryBuilder("game")
-                .leftJoinAndSelect('game.users', 'user', 'user.userId = :userId', {userId: query['userid']})
-                .take(limit)
-                .skip(query['start'] ?? 0)
-                .orderBy(`game.${sort}`, 'ASC')
-                .getMany()
-            }
-
-            // Создание поле с информацией о подписке для каждой игры
-            for (let i = 0; i < games.length; i++) {
-            
-                if ((await games[i].users).length > 0)
-                    games[i]['subscribed'] = true;
-                else
-                    games[i]['subscribed'] = false;
-    
-                delete games[i]['__users__'];
-            }
-
-
-            // if (query['name'] && query['name'] != "") {
-            //     games = await this._dbContext.manager.query('select "game".*, "users_game"."userId" from "game" left join "users_game" ON "game".id = "users_game"."gameId" AND "users_game"."userId" = 1')
-            // }
-            // else {
-            //     games = await this._dbContext.manager.query('select "game".*, "users_game"."userId" from "game" left join "users_game" ON "game".id = "users_game"."gameId" AND "users_game"."userId" = 1')
-            // }
+        // Поиск по имени
+        if (query['name'] && query['name'] != "") {
+            games = await repository.find({
+                take: limit,
+                skip: query['start'] ?? 0,
+                where: {
+                    name: ILike('%'+query['name']+'%')
+                },
+                order: {
+                    [sort]: 'ASC'
+                }
+            });
+        }
+        // Запрос без поиска
+        else {
+            games = await repository.find({
+                take: limit,
+                skip: query['start'] ?? 0,
+                order: {
+                    [sort]: 'ASC'
+                }
+            });
         }
 
         console.log(Date.now());
         console.log("games");
         //console.log(games);
+
+        // Задержка для тестирования
+        // const date = Date.now();        
+        // let currentDate = null;       
+        // do {               
+        //    currentDate = Date.now();      
+        // } while (currentDate - date < 500); 
+
+        return games;
+    }
+
+    // Получение списка игр из БД
+    @GET('subscribes')
+    // Лимит игр
+    @QueryArgument('limit', {
+        typeId: 'int',
+        canHaveMultipleValues: false,
+        optional: true
+    })
+    // Стартовая позицция
+    @QueryArgument('start', {
+        typeId: 'int',
+        canHaveMultipleValues: false,
+        optional: true
+    })
+    // Название
+    @QueryArgument('name', {
+        canHaveMultipleValues: true,
+        optional: true
+    })
+    // Параметр, по которому сортируем
+    @QueryArgument('sort', {
+        canHaveMultipleValues: false,
+        optional: true
+    })
+    @Middleware(AuthMiddleware)
+    @Return('application/json')
+    async getGamesSubscribe(bag: AuthMiddlewareBag, query: QueryBag) {
+        let repository = this._dbContext.getRepository(Game);
+        let games;
+        let userId = bag.user.id;
+
+        // Базовый лимит - 1000
+        let limit = 1000;
+        if (query['limit'])
+            limit = query['limit'];
+
+        // Базовая сортировка - по id игры
+        let sort = query['sort'] ?? "id"
+
+        games = repository.createQueryBuilder("game")
+
+        //  Поиск по имени с проверкой подписки на игры
+        if (query['name'] && query['name'] != "") 
+                games = games.where("game.name ilike :name", { name: `%${query['name']}%` })
+
+        games = await games.leftJoinAndSelect('game.users', 'user', 'user.userId = :userId', { userId: userId })
+            .take(limit)
+            .skip(query['start'] ?? 0)
+            .orderBy(`game.${sort}`, 'ASC')
+            .getMany()
+
+        // Создание поля с информацией о подписке для каждой игры
+        for (let i = 0; i < games.length; i++) {
+
+            if ((await games[i].users).length > 0)
+                games[i]['subscribed'] = true;
+            else
+                games[i]['subscribed'] = false;
+
+            delete games[i]['__users__'];
+        }
+
+        console.log(Date.now());
+        console.log("games");
+        // console.log(games);
 
         // Задержка для тестирования
         // const date = Date.now();        
@@ -175,4 +204,43 @@ export class GameController extends Object {
         return games;
     }
 
+    // Подписка на игру
+    @POST('{gameId:int}/subscribe')
+    @Accept('application/json')
+    @Return('application/json')
+    @Middleware(AuthMiddleware)
+    async subscribe(bag: AuthMiddlewareBag, gameId:number) {
+        const game = new Game()
+        game.id = gameId;
+
+        let repository = this._dbContext.getRepository(UsersGame);
+
+        // Создание объекта для БД с получением данных
+        const newPair = new UsersGame();
+
+        newPair.user = Promise.resolve(bag.user);
+        newPair.game = Promise.resolve(game)
+        newPair.playsOnline = false;
+
+        repository.save(newPair);
+
+        return newPair;
+    }
+
+    // Отписка от игры
+    @POST('{gameId:int}/unsubscribe')
+    @Accept('application/json')
+    @Return('application/json')
+    @Middleware(AuthMiddleware)
+    async unsubscribe(bag: AuthMiddlewareBag, gameId:number) {
+        const game = new Game()
+        game.id = gameId;
+
+        let repository = this._dbContext.getRepository(UsersGame);
+
+        // Удаление объекта из БД на основе id игры и пользователя
+        repository.delete({user: await this._dbContext.getRepository(User).findOneBy({id: bag.user.id}), game: game});
+
+        return true;
+    }
 }
