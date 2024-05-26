@@ -8,6 +8,7 @@ import Container from 'react-bootstrap/Container';
 
 // Components
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 const store = createStore({
     authName: "_auth",
@@ -26,6 +27,9 @@ function App() {
                         <RoutesComponent/>
                     </Container>
                 </main>
+                <footer>
+                    <Footer />
+                </footer>
             </BrowserRouter>
         </AuthProvider>
     );
