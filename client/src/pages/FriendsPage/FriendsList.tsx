@@ -1,21 +1,32 @@
 import { useCallback } from "react";
-import useDynamicList, { ListStateConversionResult } from "../../utils/useDynamicList";
+import useDynamicList from "../../utils/useDynamicList";
 import FriendData from "./FriendData";
-import useApi from "../../http-common";
 import useScroll from "../../utils/useScroll";
-import FriendItem from "./FriendItem";
+import useApi from "../../http-common";
 
+export type FriendsListProps = {
+    friendItemTemplate: (friend: FriendData) => JSX.Element;
+    friendListUrlBuilder: (currentLength: number) => string;
+}
 
-const FriendsList = () => {
+const FriendsList = ({ friendItemTemplate, friendListUrlBuilder }: FriendsListProps) => {
     const api = useApi();
 
-    const friendsListLoader = useCallback((oldArr: ReadonlyArray<FriendData>): Promise<ListStateConversionResult<FriendData>> => {
-        return api.get(`user/@current/friends/current?start=${oldArr.length}`)
-                .then(response => {return {
-                    list: oldArr.concat(response.data),
-                    isFinal: response.data.length === 0
-                }});
-    }, [api]);
+    const friendsListLoader = useCallback(async (oldArr: ReadonlyArray<FriendData>) => {
+        try {
+            const response = await api.get(friendListUrlBuilder(oldArr.length));
+            return {
+                list: oldArr.concat(response.data),
+                isFinal: response.data.length === 0
+            };
+        }
+        catch {
+            return {
+                list: oldArr,
+                isFinal: false
+            };
+        }
+    }, [api, friendListUrlBuilder]);
 
     const [friendsList, loadFriendsList] = useDynamicList(friendsListLoader);
 
@@ -30,9 +41,7 @@ const FriendsList = () => {
         <div className="bg-secondary-subtle p-2">
         {
             friendsList ? 
-            friendsList.map(x => {
-                return <FriendItem friend={x} key={x.username}/>;
-            }) :
+            friendsList.map(friendItemTemplate) :
             <span>Загрузка...</span>
         }
         </div>
