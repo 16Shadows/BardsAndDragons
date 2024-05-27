@@ -6,9 +6,11 @@ import {Middleware} from "../modules/core/middleware/middleware";
 import {MatchingService} from "../services/MatchingService";
 import {AuthMiddleware, AuthMiddlewareBag} from "../middleware/AuthMiddleware";
 import {TestService} from "../services/TestService";
-import {badRequest} from "../modules/core/routing/response";
+import {badRequest, conflict} from "../modules/core/routing/response";
 import {QueryArgument} from "../modules/core/routing/query";
 import {HTTPResponseConvertBody} from "../modules/core/routing/core";
+import {RejectedMatch} from "../model/rejectedMatch";
+import {User} from "../model/user";
 
 type ListQuery = {
     count?: number;
@@ -133,4 +135,42 @@ export class MatchingController extends Object {
 
         return [playerData1, playerData2];
     }
+
+    @POST('{receiver}/rejectMatch')
+    @Middleware(AuthMiddleware)
+    @Accept('application/json', 'text/plain')
+    async rejectMatch(bag: AuthMiddlewareBag, receiver: string) {
+        console.log(`Rejecting match between ${bag.user.username} and ${receiver}`);
+    }
+
+    // @POST('{receiver:user}/rejectMatch')
+    // @Middleware(AuthMiddleware)
+    // @Accept('application/json', 'text/plain')
+    // async rejectMatch(bag: AuthMiddlewareBag, receiver: User) {
+    //     const repo = this._dbContext.getRepository(RejectedMatch);
+    //     const initiator = bag.user;
+    //
+    //     // Check if match already exists
+    //     const match = await repo.createQueryBuilder('rejectedMatch')
+    //         .where('(rejectedMatch.initiator = :initiator AND rejectedMatch.receiver = :receiver)', {
+    //             initiator,
+    //             receiver
+    //         })
+    //         .orWhere('(rejectedMatch.initiator = :receiver AND rejectedMatch.receiver = :initiator)', {
+    //             initiator: receiver,
+    //             receiver: initiator
+    //         })
+    //         .getOne();
+    //
+    //     if (match)
+    //         return conflict();
+    //
+    //     // Create the rejected match
+    //     const rejectedMatch = new RejectedMatch();
+    //     rejectedMatch.initiator = Promise.resolve(initiator);
+    //     rejectedMatch.receiver = Promise.resolve(receiver);
+    //
+    //     // Save the rejected match
+    //     await repo.save(rejectedMatch);
+    // }
 }
