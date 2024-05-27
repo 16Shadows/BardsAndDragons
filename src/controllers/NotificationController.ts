@@ -8,7 +8,7 @@ import { GET, POST } from "../modules/core/routing/decorators";
 import { QueryArgument } from "../modules/core/routing/query";
 import { badRequest, forbidden } from "../modules/core/routing/response";
 import { HTTPResponse } from "../modules/core/routing/core";
-import { LastEventIDBag, ParseLastEventID } from "../modules/sse/middleware";
+import { SSEEndpointMiddlewareBag, SSEEndpointMiddleware } from "../modules/sse/middleware";
 import { NotificationData, UserNotificationService } from "../services/UserNotificationService";
 
 type GetNotificationsQueryBag = {
@@ -104,9 +104,9 @@ export class NotificationController {
     }
 
     @GET('subscribe')
-    @Middleware(ParseLastEventID)
+    @Middleware(SSEEndpointMiddleware)
     @Middleware(AuthMiddleware)
-    async subscribeToNotificationEvents(middlewareBag: AuthMiddlewareBag & LastEventIDBag) {
+    async subscribeToNotificationEvents(middlewareBag: AuthMiddlewareBag & SSEEndpointMiddlewareBag) {
         var stream = this._NotificationController.createSubscriber(middlewareBag.user.username);
 
         var lastNotifId = +middlewareBag.lastEventID;
@@ -147,11 +147,10 @@ export class NotificationController {
     @Middleware(AuthMiddleware)
     async sendTestSourceEvent(middlewareBag: AuthMiddlewareBag) {
 
-        const UserService = new UserNotificationService(this._dbContext);
-        UserService.sendNotification(middlewareBag.user.username, 
-            {type:"friendRequest", 
+        this._NotificationController.sendNotification(middlewareBag.user.username, 
+            {id:4,
+            type:"friendRequest", 
             seen:false, 
-            friendRequestSentBy:{username:"123"}});
-
+            friendRequestSentBy:{username:"123"}});    
     }
 }

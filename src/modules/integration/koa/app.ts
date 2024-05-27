@@ -127,7 +127,8 @@ class KoaCoreApp<
                 body: ctx.req,
                 method: getHttpMethodFromString(ctx.method),
                 path: sanitizeRoute(decodeURI(ctx.path)),
-                query: ctx.query
+                query: ctx.query,
+                res: ctx.res
             }
 
             //Use router to find an endpoint

@@ -14,14 +14,16 @@ const NotificationsPanel = () => {
   const api = useApi();
 
   const authHeader = useAuthHeader();
-  let headerList = {};
-  if (authHeader) headerList = { Authorization: authHeader };
-  fetchEventSource("api/v1/notifications/subscribe", {
-    onmessage(event) {
-      console.log(event.data);
-    },
-    headers: headerList,
-  });
+
+  // Подписка на уведомления от сервера, новые уведомления пользователю
+  if (authHeader) {
+    fetchEventSource("api/v1/notifications/subscribe", {
+      onmessage(event) {
+        setGotNotifications(true);
+      },
+      headers: { Authorization: authHeader },
+    });
+  }
 
   // Список уведомлений, каждое из которых нужно отрендерить через map
   const [notifications, setNotifications] = useState<NotificationObject[]>([]);
@@ -74,13 +76,12 @@ const NotificationsPanel = () => {
         console.error(error);
       });
   };
+  // Тестовый запрос для проверки EventSource
   const sendTestSourceEvent = async () => {
-    // GET запрос списка городов к серверу
     api
-      // TODO - добавить запрос только части уведомлений, например 10 штук, кнопку "загрузить еще"
-      .get("testSourceEvent", {})
+      .get("notifications/testSourceEvent", {})
       .then(async (response) => {
-        console.log(response);
+        console.log("Тестовая отправка уведомления от сервиса", response);
       })
       .catch((error) => {
         console.error(error);
@@ -90,6 +91,7 @@ const NotificationsPanel = () => {
   useEffect(
     () => {
       getNotificationsQuery();
+      sendTestSourceEvent();
     },
     [] // Запуск только после первого рендера
   );
