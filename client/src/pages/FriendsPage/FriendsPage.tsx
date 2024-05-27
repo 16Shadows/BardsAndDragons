@@ -8,32 +8,37 @@ import FriendData from "./FriendData";
 function FriendButtons({friend}: {friend: FriendData}) {
     const api = useApi();
     const [justDeleted, setJustDeleted] = useState(false);
+    const [disabled, setDisabled] = useState(false);
 
     const addFriend = useCallback(async () => {
         try {
+            setDisabled(true);
             await api.post(`user/${friend.username}/addFriend`);
             setJustDeleted(false);
+            setDisabled(false);
         }
         catch {}
     }, [api, friend]);
 
     const deleteFriend = useCallback(async () => {
         try {
+            setDisabled(true);
             await api.post(`user/${friend.username}/removeFriend`);
             setJustDeleted(true);
+            setDisabled(false);
         }
         catch {}
     }, [api, friend]);
 
     if (justDeleted)
         return (
-            <Button onClick={addFriend} variant='outline-success'>
+            <Button disabled={disabled} onClick={addFriend} variant='outline-success'>
                 Принять
             </Button>
         );
     else
         return (
-            <Button onClick={deleteFriend} variant='outline-danger'>
+            <Button disabled={disabled} onClick={deleteFriend} variant='outline-danger'>
                 Удалить
             </Button>
         );
@@ -43,31 +48,37 @@ function IncomingRequestButtons({friend}: {friend: FriendData}) {
     const api = useApi();
     const [justDeleted, setJustDeleted] = useState(true);
 
+    const [disabled, setDisabled] = useState(false);
+
     const addFriend = useCallback(async () => {
         try {
+            setDisabled(true);
             await api.post(`user/${friend.username}/addFriend`);
             setJustDeleted(false);
+            setDisabled(false);
         }
         catch {}
     }, [api, friend]);
 
     const deleteFriend = useCallback(async () => {
         try {
+            setDisabled(true);
             await api.post(`user/${friend.username}/removeFriend`);
             setJustDeleted(true);
+            setDisabled(false);
         }
         catch {}
     }, [api, friend]);
 
     if (justDeleted)
         return (
-            <Button onClick={addFriend} variant='outline-success'>
+            <Button disabled={disabled} onClick={addFriend} variant='outline-success'>
                 Принять
             </Button>
         );
     else
         return (
-            <Button onClick={deleteFriend} variant='outline-danger'>
+            <Button disabled={disabled} onClick={deleteFriend} variant='outline-danger'>
                 Удалить
             </Button>
         );
@@ -76,32 +87,37 @@ function IncomingRequestButtons({friend}: {friend: FriendData}) {
 function OutgoingRequestButtons({friend}: {friend: FriendData}) {
     const api = useApi();
     const [justDeleted, setJustDeleted] = useState(false);
+    const [disabled, setDisabled] = useState(false);
 
     const addFriend = useCallback(async () => {
         try {
+            setDisabled(true);
             await api.post(`user/${friend.username}/addFriend`);
             setJustDeleted(false);
+            setDisabled(false);
         }
         catch {}
     }, [api, friend]);
 
     const deleteFriend = useCallback(async () => {
         try {
+            setDisabled(true);
             await api.post(`user/${friend.username}/removeFriend`);
             setJustDeleted(true);
+            setDisabled(false);
         }
         catch {}
     }, [api, friend]);
 
     if (justDeleted)
         return (
-            <Button onClick={addFriend} variant='outline-success'>
+            <Button disabled={disabled} onClick={addFriend} variant='outline-success'>
                 Отправить
             </Button>
         );
     else
         return (
-            <Button onClick={deleteFriend} variant='outline-danger'>
+            <Button disabled={disabled} onClick={deleteFriend} variant='outline-danger'>
                 Отозвать
             </Button>
         );
