@@ -12,6 +12,7 @@ import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
 import PlayersPage from "../../pages/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
 import TestPage from "../../pages/TestPage";
+import NotFoundPage from "../../pages/NotFoundPage/NotFoundPage";
 
 const RoutesComponent = () => {
     return (
@@ -33,8 +34,8 @@ const RoutesComponent = () => {
                 <Route path={"/players"} element={<PlayersPage/>}/>
             </Route>
 
-            {/* TODO: 404 page */}
-            <Route path={"*"} element={<div>404 Not found </div>}/>
+            {/* 404 page */}
+            <Route path={"*"} element={<NotFoundPage/>}/>
         </Routes>)
 }
 

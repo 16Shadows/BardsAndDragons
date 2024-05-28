@@ -1,0 +1,18 @@
+
+.not-found-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+    min-height: 90vh;
+  }
+
+  .not-found-text {
+    text-align: center;
+  }
+  
+  .not-found-text h1 {
+    font-size: 2em;
+    color: #ff6347; /* Coral color */
+  }
