@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useApi from "../http-common";
 import NotificationTemplate from "./NotificationTemplate";
 import notificationPic from "../resources/notification_50px.png";
@@ -15,6 +15,10 @@ const NotificationsPanel = () => {
 
   const authHeader = useAuthHeader();
 
+  // Список уведомлений, каждое из которых нужно отрендерить через map
+  const [notifications, setNotifications] = useState<NotificationObject[]>([]);
+  const [gotNotifications, setGotNotifications] = useState(false);
+
   // Подписка на уведомления от сервера, новые уведомления пользователю
   if (authHeader) {
     fetchEventSource("api/v1/notifications/subscribe", {
@@ -25,14 +29,11 @@ const NotificationsPanel = () => {
     });
   }
 
-  // Список уведомлений, каждое из которых нужно отрендерить через map
-  const [notifications, setNotifications] = useState<NotificationObject[]>([]);
-  const [gotNotifications, setGotNotifications] = useState(false);
-
-  const getNotificationsQuery = async () => {
+  const getNotificationsQuery = useCallback(() => {
     // GET запрос списка городов к серверу
     api
-      // TODO - добавить запрос только части уведомлений, например 10 штук, кнопку "загрузить еще"
+      // TODO - добавить запрос только части уведомлений, например 10 штук,
+      // кнопку "загрузить еще"
       .get("notifications", {})
       .then(async (response) => {
         let gotNotif = false;
@@ -75,9 +76,10 @@ const NotificationsPanel = () => {
       .catch((error) => {
         console.error(error);
       });
-  };
+  }, [api]);
+
   // Тестовый запрос для проверки EventSource
-  const sendTestSourceEvent = async () => {
+  const sendTestSourceEvent = useCallback(() => {
     api
       .get("notifications/testSourceEvent", {})
       .then(async (response) => {
@@ -86,10 +88,20 @@ const NotificationsPanel = () => {
       .catch((error) => {
         console.error(error);
       });
-  };
+  }, [api]);
 
   useEffect(
     () => {
+      // Подписка на уведомления от сервера, новые уведомления пользователю
+      if (authHeader) {
+        fetchEventSource("api/v1/notifications/subscribe", {
+          onmessage(event) {
+            setGotNotifications(true);
+          },
+          headers: { Authorization: authHeader },
+        });
+      }
+
       getNotificationsQuery();
       sendTestSourceEvent();
     },
