@@ -66,13 +66,17 @@ body {
   bottom: 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .footer-content {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: flex-start;
   flex-wrap: wrap;
+  width: 100%;
+  max-width: 1200px;
+  gap: 2rem;
 }
 
 .footer-content div {
@@ -103,6 +107,7 @@ body {
   text-align: center;
   margin-top: 1rem;
   color: gray;
+  width: 100%;
 }
 
 @media (max-width: 720px) {
