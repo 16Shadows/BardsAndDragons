@@ -135,7 +135,7 @@ function MyFriendsPage() {
                             </FriendItem>
                         )
                     }}
-                    friendListUrlBuilder={(len) => `user/@current/friends/current?start=${len}`}
+                    friendListUrlBuilder={(len, sortBy, sortOrder) => `user/@current/friends/current?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
                 />
             </Tab>
             <Tab title='Входящие заявки' eventKey='incoming-list' className="p-2">
@@ -147,7 +147,7 @@ function MyFriendsPage() {
                             </FriendItem>
                         )
                     }}
-                    friendListUrlBuilder={(len) => `user/@current/friends/incoming?start=${len}`}
+                    friendListUrlBuilder={(len, sortBy, sortOrder) => `user/@current/friends/incoming?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
                 />
             </Tab>
             <Tab title='Исходящие заявки' eventKey='outgoing-list' className="p-2">
@@ -159,7 +159,7 @@ function MyFriendsPage() {
                             </FriendItem>
                         )
                     }}
-                    friendListUrlBuilder={(len) => `user/@current/friends/outgoing?start=${len}`}
+                    friendListUrlBuilder={(len, sortBy, sortOrder) => `user/@current/friends/outgoing?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
                 />
             </Tab>
         </Tabs>

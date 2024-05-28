@@ -12,9 +12,11 @@ import { QueryArgument } from "../modules/core/routing/query";
 import { badRequest, conflict, notFound } from "../modules/core/routing/response";
 import { UserNotificationService } from "../services/UserNotificationService";
 
-type ListQuery = {
+type SortedListQuery = {
     start?: number;
     count?: number;
+    sortBy?: string;
+    sortOrder?: string;
 };
 
 type FriendData = {
@@ -25,7 +27,9 @@ type FriendData = {
 
 @Controller('api/v1/user')
 export class FriendsController {
-    protected static readonly MAX_QUERY_COUNT : number = 100; 
+    protected static readonly MAX_QUERY_COUNT : number = 100;
+    protected static readonly SORT_OPTIONS : Set<string> = new Set(['name']);
+    protected static readonly SORT_ORDER_OPTIONS : Set<string> = new Set(['ASC', 'DESC']);
 
     protected _dbContext: ModelDataSource;
     protected _NotificationService: UserNotificationService;
@@ -47,12 +51,22 @@ export class FriendsController {
         optional: true,
         canHaveMultipleValues: false
     })
+    @QueryArgument('sortBy', {
+        optional: true,
+        canHaveMultipleValues: false
+    })
+    @QueryArgument('sortOrder', {
+        optional: true,
+        canHaveMultipleValues: false
+    })
     @Return('application/json')
-    async getFriendsList(bag: AuthMiddlewareBag, queryBag: ListQuery): Promise<HTTPResponseConvertBody | FriendData[]> {
+    async getFriendsList(bag: AuthMiddlewareBag, queryBag: SortedListQuery): Promise<HTTPResponseConvertBody | FriendData[]> {
         const start = queryBag.start ?? 0;
         const count = queryBag.count ?? FriendsController.MAX_QUERY_COUNT;
+        const sortBy = queryBag.sortBy ?? FriendsController.SORT_OPTIONS.keys().next().value;
+        const sortOrder = queryBag.sortOrder ?? FriendsController.SORT_ORDER_OPTIONS.keys().next().value;
 
-        if (count < 0 || count > FriendsController.MAX_QUERY_COUNT)
+        if (count < 0 || count > FriendsController.MAX_QUERY_COUNT || !FriendsController.SORT_OPTIONS.has(sortBy) || !FriendsController.SORT_ORDER_OPTIONS.has(sortOrder))
             return badRequest();
 
         const repo = this._dbContext.getRepository(UsersFriend);
@@ -61,6 +75,8 @@ export class FriendsController {
                                        .innerJoin(UsersFriend, 'backwardsLink', 'friendLink.userId = :userId AND backwardsLink.userId = friendLink.friendId', {userId: bag.user.id})
                                        .innerJoin('friendLink.friend', 'friend')
                                        .leftJoin('friend.avatar', 'avatar')
+                                       .addSelect('COALESCE(friend.displayName, friend.username)', 'name')
+                                       .orderBy(sortBy, sortOrder)
                                        .skip(start)
                                        .take(count)
                                        .getMany();
@@ -87,12 +103,22 @@ export class FriendsController {
         optional: true,
         canHaveMultipleValues: false
     })
+    @QueryArgument('sortBy', {
+        optional: true,
+        canHaveMultipleValues: false
+    })
+    @QueryArgument('sortOrder', {
+        optional: true,
+        canHaveMultipleValues: false
+    })
     @Return('application/json')
-    async getIncomingRequestsList(bag: AuthMiddlewareBag, queryBag: ListQuery): Promise<HTTPResponseConvertBody | FriendData[]> {
+    async getIncomingRequestsList(bag: AuthMiddlewareBag, queryBag: SortedListQuery): Promise<HTTPResponseConvertBody | FriendData[]> {
         const start = queryBag.start ?? 0;
         const count = queryBag.count ?? FriendsController.MAX_QUERY_COUNT;
+        const sortBy = queryBag.sortBy ?? FriendsController.SORT_OPTIONS.keys().next().value;
+        const sortOrder = queryBag.sortOrder ?? FriendsController.SORT_ORDER_OPTIONS.keys().next().value;
 
-        if (count < 0 || count > FriendsController.MAX_QUERY_COUNT)
+        if (count < 0 || count > FriendsController.MAX_QUERY_COUNT || !FriendsController.SORT_OPTIONS.has(sortBy) || !FriendsController.SORT_ORDER_OPTIONS.has(sortOrder))
             return badRequest();
 
         const repo = this._dbContext.getRepository(UsersFriend);
@@ -102,6 +128,8 @@ export class FriendsController {
                                        .innerJoin('friendLink.user', 'friend', 'friendLink.friendId = :userId', {userId: bag.user.id})
                                        .leftJoin('friend.avatar', 'avatar')
                                        .where('backwardsLink.id IS NULL')
+                                       .addSelect('COALESCE(friend.displayName, friend.username)', 'name')
+                                       .orderBy(sortBy, sortOrder)
                                        .skip(start)
                                        .take(count)
                                        .getMany();
@@ -128,12 +156,22 @@ export class FriendsController {
         optional: true,
         canHaveMultipleValues: false
     })
+    @QueryArgument('sortBy', {
+        optional: true,
+        canHaveMultipleValues: false
+    })
+    @QueryArgument('sortOrder', {
+        optional: true,
+        canHaveMultipleValues: false
+    })
     @Return('application/json')
-    async getOutgoingRequestsList(bag: AuthMiddlewareBag, queryBag: ListQuery): Promise<HTTPResponseConvertBody | FriendData[]> {
+    async getOutgoingRequestsList(bag: AuthMiddlewareBag, queryBag: SortedListQuery): Promise<HTTPResponseConvertBody | FriendData[]> {
         const start = queryBag.start ?? 0;
         const count = queryBag.count ?? FriendsController.MAX_QUERY_COUNT;
+        const sortBy = queryBag.sortBy ?? FriendsController.SORT_OPTIONS.keys().next().value;
+        const sortOrder = queryBag.sortOrder ?? FriendsController.SORT_ORDER_OPTIONS.keys().next().value;
 
-        if (count < 0 || count > FriendsController.MAX_QUERY_COUNT)
+        if (count < 0 || count > FriendsController.MAX_QUERY_COUNT || !FriendsController.SORT_OPTIONS.has(sortBy) || !FriendsController.SORT_ORDER_OPTIONS.has(sortOrder))
             return badRequest();
 
         const repo = this._dbContext.getRepository(UsersFriend);
@@ -143,6 +181,8 @@ export class FriendsController {
                                        .innerJoin('friendLink.friend', 'friend')
                                        .leftJoin('friend.avatar', 'avatar')
                                        .where('backwardsLink.id IS NULL AND friendLink.userId = :userId', {userId: bag.user.id})
+                                       .addSelect('COALESCE(friend.displayName, friend.username)', 'name')
+                                       .orderBy(sortBy, sortOrder)
                                        .skip(start)
                                        .take(count)
                                        .getMany();
