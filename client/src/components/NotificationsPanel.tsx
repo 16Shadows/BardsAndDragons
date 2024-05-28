@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import useApi from "../http-common";
 import NotificationTemplate from "./NotificationTemplate";
 import notificationPic from "../resources/notification_50px.png";
@@ -9,6 +9,7 @@ import {
 } from "../models/Notifications";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
+import React from "react";
 
 const NotificationsPanel = () => {
   const api = useApi();
@@ -25,6 +26,7 @@ const NotificationsPanel = () => {
       fetchEventSource("api/v1/notifications/subscribe", {
         onmessage(event) {
           setGotNotifications(true);
+          getNotificationsQuery();
         },
         headers: { Authorization: authHeader },
         signal: abortSignal.current.signal,
@@ -43,9 +45,9 @@ const NotificationsPanel = () => {
   // Список уведомлений, каждое из которых нужно отрендерить через map
   const [notifications, setNotifications] = useState<NotificationObject[]>([]);
   const [gotNotifications, setGotNotifications] = useState(false);
+  const [openState, setOpenState] = useState(false);
 
   const getNotificationsQuery = async () => {
-    // GET запрос списка городов к серверу
     api
       // TODO - добавить запрос только части уведомлений, например 10 штук,
       // кнопку "загрузить еще"
@@ -93,30 +95,40 @@ const NotificationsPanel = () => {
       });
   };
 
-  useEffect(
-    () => {
-      // Подписка на уведомления от сервера, новые уведомления пользователю
-      if (authHeader) {
-        fetchEventSource("api/v1/notifications/subscribe", {
-          onmessage(event) {
-            setGotNotifications(true);
-          },
-          headers: { Authorization: authHeader },
-        });
-      }
-
-      getNotificationsQuery();
-    },
-    [] // Запуск только после первого рендера
-  );
+  const setSeenNotifications = (event: any) => {
+    // При открытии меню отправляем в БД запрос на изменение статуса уведомлений
+    if (event.target.classList.contains("show")) {
+      setOpenState(true);
+      notifications.forEach((notif) => {
+        if (!notif.seen) {
+          api
+            .post("notifications/" + notif.id + "/seen", {})
+            .then(async (response) => {
+              console.log(response);
+            })
+            .catch((error) => {
+              console.error(error);
+            });
+        }
+      });
+    } // При закрытии - обновляем поле seen и рамку вокруг прочитанных объектов
+    else {
+      setOpenState(false);
+      notifications.forEach((notif) => {
+        notif.seen = true;
+      });
+    }
+  };
 
   return (
     <div>
-      <script src="/eventsource-polyfill.js"></script>
       <a
+        id="notification_dropdown_toggle"
         className="nav-link dropdown-toggle "
-        // TODO при прочитывании уведов добавить запрос в бд - прочитаны
-        onClick={() => setGotNotifications(false)}
+        onClick={(event) => {
+          setGotNotifications(false);
+          setSeenNotifications(event);
+        }}
         role="button"
         data-bs-toggle="dropdown"
         data-bs-auto-close="outside"
@@ -138,13 +150,10 @@ const NotificationsPanel = () => {
       </a>
       <ul
         className={
-          false
-            ? "overflow-auto dropdown-menu notifications-menu dropdown-menu-end "
-            : "overflow-auto dropdown-menu notifications-menu dropdown-menu-end "
+          "overflow-auto dropdown-menu notifications-menu dropdown-menu-end "
         }
       >
-        {/* TODO Добавить изменение стиля в зависимости от дропдауна уведов */}
-        <div className={"" + (true ? "a" : "b")}>
+        <div>
           {notifications
             ? notifications.map((item, index) => (
                 <NotificationTemplate

@@ -6,6 +6,12 @@ import Button from "./Button";
 import { NavLink, useNavigate } from "react-router-dom";
 import TestPage from "../pages/TestPage";
 import { userInfo } from "os";
+import { useEffect, useState } from "react";
+import useApi from "../http-common";
+
+interface NotifProps extends NotificationObject {
+  onSeenChange: (newState: boolean) => void;
+}
 
 const NotificationTemplate = (props: NotificationObject) => {
   const navigate = useNavigate();
@@ -16,10 +22,11 @@ const NotificationTemplate = (props: NotificationObject) => {
 
   return (
     <div
+      id={"notification_" + props.id}
       className={
         props.seen
-          ? "notification-template d-flex border border-3 border-info rounded m-2"
-          : "notification-template d-flex border border-3 rounded m-2"
+          ? "notification-template d-flex border border-3 rounded m-2"
+          : "notification-template d-flex border border-3 border-info rounded m-2"
       }
     >
       <div className="row ms-1 w-100">
@@ -37,7 +44,7 @@ const NotificationTemplate = (props: NotificationObject) => {
             <div>
               <p className="mt-2">
                 {/* TODO добавить ссылку на страницу профиля */}
-                Пользователь{" "}
+                Пользователь
                 <a href="/" className="text-decoration-none">
                   {senderName}
                 </a>
@@ -52,23 +59,13 @@ const NotificationTemplate = (props: NotificationObject) => {
                     console.log("ddd");
                   }}
                 ></Button>
-                {/* <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    navigate("/my-friends");
-                    console.log("ddd");
-                  }}
-                >
-                  Мои друзья
-                  <FontAwesomeIcon icon="fa-solid fa-arrow-right" />
-                </button> */}
               </div>
             </div>
           ) : (
             <div>
               <p className="mt-2">
                 {/* TODO добавить ссылку на страницу профиля */}
-                Пользователь{" "}
+                Пользователь
                 <a href="/" className="text-decoration-none">
                   {senderName}
                 </a>
