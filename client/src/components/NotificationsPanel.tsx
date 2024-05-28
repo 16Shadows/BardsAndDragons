@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useApi from "../http-common";
 import NotificationTemplate from "./NotificationTemplate";
 import notificationPic from "../resources/notification_50px.png";
@@ -15,21 +15,36 @@ const NotificationsPanel = () => {
 
   const authHeader = useAuthHeader();
 
+  const abortSignal = useRef(new AbortController());
+
+  useEffect(() => {
+    abortSignal.current.abort();
+    abortSignal.current = new AbortController();
+    // Подписка на уведомления от сервера, новые уведомления пользователю
+    if (authHeader) {
+      fetchEventSource("api/v1/notifications/subscribe", {
+        onmessage(event) {
+          setGotNotifications(true);
+        },
+        headers: { Authorization: authHeader },
+        signal: abortSignal.current.signal,
+      });
+      api
+        .get("notifications/testSourceEvent", {})
+        .then(async (response) => {
+          console.log("Тестовая отправка уведомления от сервиса", response);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  }, [authHeader, abortSignal, api]);
+
   // Список уведомлений, каждое из которых нужно отрендерить через map
   const [notifications, setNotifications] = useState<NotificationObject[]>([]);
   const [gotNotifications, setGotNotifications] = useState(false);
 
-  // Подписка на уведомления от сервера, новые уведомления пользователю
-  if (authHeader) {
-    fetchEventSource("api/v1/notifications/subscribe", {
-      onmessage(event) {
-        setGotNotifications(true);
-      },
-      headers: { Authorization: authHeader },
-    });
-  }
-
-  const getNotificationsQuery = useCallback(() => {
+  const getNotificationsQuery = async () => {
     // GET запрос списка городов к серверу
     api
       // TODO - добавить запрос только части уведомлений, например 10 штук,
@@ -76,19 +91,7 @@ const NotificationsPanel = () => {
       .catch((error) => {
         console.error(error);
       });
-  }, [api]);
-
-  // Тестовый запрос для проверки EventSource
-  const sendTestSourceEvent = useCallback(() => {
-    api
-      .get("notifications/testSourceEvent", {})
-      .then(async (response) => {
-        console.log("Тестовая отправка уведомления от сервиса", response);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }, [api]);
+  };
 
   useEffect(
     () => {
@@ -103,7 +106,6 @@ const NotificationsPanel = () => {
       }
 
       getNotificationsQuery();
-      sendTestSourceEvent();
     },
     [] // Запуск только после первого рендера
   );
