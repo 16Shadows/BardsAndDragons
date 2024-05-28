@@ -13,7 +13,7 @@ import React from "react";
 import { Int32 } from "typeorm";
 import Button from "./Button";
 import { start } from "repl";
-// import useDynamicList from "../../utils/useDynamicList";
+import useDynamicList from "../utils/useDynamicList";
 
 const NotificationsPanel = () => {
   const api = useApi();
@@ -30,7 +30,7 @@ const NotificationsPanel = () => {
       fetchEventSource("api/v1/notifications/subscribe", {
         onmessage(event) {
           setGotNotifications(true);
-          getNotificationsQuery();
+          getNotificationsQuery(notifications ? notifications : []);
         },
         headers: { Authorization: authHeader },
         signal: abortSignal.current.signal,
@@ -46,31 +46,13 @@ const NotificationsPanel = () => {
     }
   }, [authHeader, abortSignal, api]);
 
-  // Список уведомлений
-  const [notifications, setNotifications] = useState<NotificationObject[]>([]);
+  const getNotificationsQuery = useCallback(
+    async (oldArr: ReadonlyArray<NotificationObject>) => {
+      try {
+        const response = await api.get("notifications", {
+          params: { start: oldArr.length, count: notifOnPageCount },
+        });
 
-  // Индикатор наличия уведомлений
-  const [gotNotifications, setGotNotifications] = useState(false);
-
-  // Индикатор открытости списка панели уведомлений
-  const [openState, setOpenState] = useState(false);
-
-  // Состояние для кнопки "загрузить еще" уведомления. false, когда больше загрузить нельзя
-  const [canLoadMoreNotif, setCanLoadMoreNotif] = useState(true);
-
-  // Количество уведомлений, отображаемых/добавляемых за раз
-  const notifOnPageCount = 5;
-
-  const getNotificationsQuery = async (
-    startNotif = 0,
-    countNotif = notifOnPageCount
-  ) => {
-    let count = 0;
-    api
-      .get("notifications", {
-        params: { start: startNotif, count: countNotif },
-      })
-      .then(async (response) => {
         let gotNotif = false;
         const items = response.data;
 
@@ -101,26 +83,52 @@ const NotificationsPanel = () => {
 
           if (!gotNotif && resultItem.seen === false) gotNotif = true;
 
-          count += 1;
           return resultItem;
         });
         const res = await Promise.all(resPromise);
 
-        setNotifications(notifications.concat(res));
         setGotNotifications(gotNotif);
-        console.log("c", count);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-    return count;
-  };
+
+        console.log(items.length);
+        return {
+          list: oldArr.concat(res),
+          isFinal: items.length === 0,
+        };
+      } catch {
+        return {
+          list: oldArr,
+          isFinal: false,
+        };
+      }
+    },
+    [api] // ????
+  );
+
+  // Список уведомлений
+  // TODO понять, почему надо два раза вызывать без новых уведов, чтобы кнопку отключило, починить
+  const [notifications, setNotifications, isNotificationsFinal] =
+    useDynamicList(getNotificationsQuery);
+
+  // Индикатор наличия уведомлений
+  const [gotNotifications, setGotNotifications] = useState(false);
+
+  // Индикатор открытости списка панели уведомлений
+  const [openState, setOpenState] = useState(false);
+
+  // Состояние для кнопки "загрузить еще" уведомления. false, когда больше загрузить нельзя
+  const [canLoadMoreNotif, setCanLoadMoreNotif] = useState(true);
+
+  // Количество уведомлений, отображаемых/добавляемых за раз
+  const notifOnPageCount = 2;
+
+  //const pomogite = useRef(isNotificationsFinal);
 
   const setSeenNotifications = (event: any) => {
     // При открытии меню отправляем в БД запрос на изменение статуса уведомлений
     if (event.target.classList.contains("show")) {
       setOpenState(true);
-      notifications.forEach((notif) => {
+      console.log(notifications);
+      notifications?.forEach((notif) => {
         if (!notif.seen) {
           api
             .post("notifications/" + notif.id + "/seen", {})
@@ -135,17 +143,17 @@ const NotificationsPanel = () => {
     else {
       setCanLoadMoreNotif(true);
       setOpenState(false);
-      notifications.forEach((notif) => {
+      notifications?.forEach((notif) => {
         notif.seen = true;
       });
     }
   };
 
   async function loadMoreNotificationsHandler() {
-    console.log("загружаем", notifications.length);
-
-    let returnedCount = await getNotificationsQuery(notifications.length);
-    if (returnedCount < notifOnPageCount) setCanLoadMoreNotif(false);
+    setNotifications();
+    if (isNotificationsFinal) {
+      setCanLoadMoreNotif(false);
+    }
   }
 
   return (

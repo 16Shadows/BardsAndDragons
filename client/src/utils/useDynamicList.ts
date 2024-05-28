@@ -14,7 +14,7 @@ export type ListStateConverter<ItemType> = {
  * @param nextState A function converting the current list into its next state
  * @returns The result of converting to the next state which contains list - new list state - and isFinal - indicating whether this is the final state of the list with no further changes
  */
-function useDynamicList<ItemType>(nextState: ListStateConverter<ItemType>): [ReadonlyArray<ItemType> | null, () => void] {
+function useDynamicList<ItemType>(nextState: ListStateConverter<ItemType>): [ReadonlyArray<ItemType> | null, () => void, boolean] {
     const [items, setItems] = useState<ReadonlyArray<ItemType> | null>(null);
     const requestChain = useRef<Promise<ReadonlyArray<ItemType>>>(Promise.resolve([]));
     const version = useRef(0);
@@ -51,7 +51,7 @@ function useDynamicList<ItemType>(nextState: ListStateConverter<ItemType>): [Rea
         });
     }, [nextState]);
 
-    return [items, requestNextBatch];
+    return [items, requestNextBatch, listFinalized.current];
 }
 
 export default useDynamicList;
