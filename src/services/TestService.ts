@@ -166,6 +166,7 @@ export class TestService {
         const usersGame4 = new UsersGame();
         usersGame4.user = Promise.resolve(user3);
         usersGame4.game = Promise.resolve(game2);
+        usersGame4.playsOnline = true;
         await usersGameRepository.save(usersGame4);
 
         const usersGame5 = new UsersGame();
