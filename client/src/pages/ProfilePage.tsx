@@ -6,12 +6,11 @@ import defaultAvatarPic from "../resources/EmptyProfileAvatar_200px.png";
 
 // Select - https://react-select.com/home
 import Select, { OptionsOrGroups, SingleValue } from "react-select";
-// Datepicker - https://reactdatepicker.com/
-// import DatePickerInput from "../components/DatePicker";
 import DatePicker from "react-datepicker";
 import PopupButton from "../interfaces/PopupButtonInterface";
 import Popup from "../components/Popup";
 import Button from "../components/Button";
+import useSignOut from "../utils/useSignOut";
 
 import { useNavigate } from "react-router-dom";
 import TooltipComponent from "../components/TooltipComponent";
@@ -89,6 +88,7 @@ const ProfilePage = () => {
   };
 
   const navigate = useNavigate();
+  const { signOut } = useSignOut();
   const api = useApi();
 
   const getCitiesQuery = async () => {
@@ -129,6 +129,7 @@ const ProfilePage = () => {
         response.data.birthday && setBirthDate(response.data.birthday);
         response.data.shouldDisplayAge &&
           setIsShowingAge(response.data.shouldDisplayAge);
+        console.log(response);
       })
       .catch((error) => {
         console.error(error);
@@ -186,10 +187,15 @@ const ProfilePage = () => {
       });
   };
 
-  const deleteProfile = () => {
-    navigate("/");
-    console.log("Ох НЕТ! Профиль был удален");
-    // TODO Добавить запрос на удаление профиля
+  const DeleteProfile = () => {
+    signOut();
+    api
+      .post("user/@current/delete", {})
+      .then((response) => {})
+      .catch((error) => {
+        console.error(error);
+        alert(error.message);
+      });
   };
   const [modalShow, setModalShow] = useState(false);
 
@@ -197,17 +203,14 @@ const ProfilePage = () => {
     {
       text: "Удалить",
       action: () => {
-        console.log("Профиль удален.");
-        deleteProfile();
+        DeleteProfile();
       },
       variant: "danger",
     } as PopupButton,
 
     {
       text: "Отмена",
-      action: () => {
-        console.log("Удаление отменено.");
-      },
+      action: () => {},
       variant: "primary",
     } as PopupButton,
   ];

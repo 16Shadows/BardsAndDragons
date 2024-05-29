@@ -207,6 +207,7 @@ export class UserController extends Object {
 
     @POST('@current/delete')
     @Middleware(AuthMiddleware)
+    @Accept('application/json')
     async deleteMe(bag: AuthMiddlewareBag) {
         const repo = this._dbContext.getRepository(User);
         await repo.softRemove(bag.user);
