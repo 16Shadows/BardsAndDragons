@@ -38,21 +38,28 @@ export class TestService {
         game2.ageRating = '8+';
         await gameRepository.save(game2);
 
+        const game3 = new Game();
+        game3.name = 'Poker';
+        game3.description = 'A game of chance';
+        game3.playerCount = '2-6';
+        game3.ageRating = '10+';
+        await gameRepository.save(game3);
+
         // Создание аватаров и городов
         const avatar1 = new Image();
-        avatar1.blob = 'public/userimages/avatar1.png';
+        avatar1.blob = 'userimages/avatar1.png';
         await imageRepository.save(avatar1);
 
         const avatar2 = new Image();
-        avatar2.blob = 'public/userimages/avatar2.png';
+        avatar2.blob = 'userimages/avatar2.png';
         await imageRepository.save(avatar2);
 
         const avatar3 = new Image();
-        avatar3.blob = 'public/userimages/avatar3.png';
+        avatar3.blob = 'userimages/avatar3.png';
         await imageRepository.save(avatar3);
 
         const avatar4 = new Image();
-        avatar4.blob = 'public/userimages/avatar4.png';
+        avatar4.blob = 'userimages/avatar4.png';
         await imageRepository.save(avatar4);
 
         const city1 = new City();
@@ -63,14 +70,18 @@ export class TestService {
         city2.name = 'Yekaterinburg';
         await cityRepository.save(city2);
 
+        const city3 = new City();
+        city3.name = 'Moscow';
+        await cityRepository.save(city3);
+
         // Создание пользователей
         const user1 = new User();
         user1.username = 'user1';
         user1.passwordHash = '$2a$10$Q1CIRFhtIi0YYMBjj15lzeLIKyQkshYU8kiaKXktSn70CltYHXop2'; // 123456
         user1.email = 'user1@example.com';
-        user1.displayName = 'User One';
+        user1.displayName = 'Иван Иванов';
         user1.avatar = Promise.resolve(avatar1);
-        user1.profileDescription = 'Loves playing chess';
+        user1.profileDescription = 'Являюсь заядлым геймером с детства. Играю в различные игры от шутеров до стратегий.';
         user1.birthday = new Date(1990, 1, 1);
         user1.contactInfo = 'user1@example.com';
         user1.city = Promise.resolve(city1);
@@ -82,7 +93,7 @@ export class TestService {
         user2.email = 'user2@example.com';
         user2.displayName = 'User Two';
         user2.avatar = Promise.resolve(avatar2);
-        user2.profileDescription = 'Enjoys board games';
+        user2.profileDescription = 'Enjoys board games. Likes to play with friends. Likes to spend time with family. Likes to travel.';
         user2.birthday = new Date(1985, 5, 15);
         user2.contactInfo = 'user2@example.com';
         user2.city = Promise.resolve(city2);
@@ -92,12 +103,12 @@ export class TestService {
         user3.username = 'user3';
         user3.passwordHash = '$2a$10$Q1CIRFhtIi0YYMBjj15lzeLIKyQkshYU8kiaKXktSn70CltYHXop2';
         user3.email = 'user3@example.com';
-        user3.displayName = 'User Three';
+        user3.displayName = 'Елена Петрова';
         user3.avatar = Promise.resolve(avatar3);
-        user3.profileDescription = 'Avid gamer';
+        user3.profileDescription = 'Люблю активный образ жизни и спорт. Увлекаюсь путешествиями, особенно по горным районам. В свободное время занимаюсь фотографией и готовкой. Обожаю проводить время на свежем воздухе и наслаждаться природой. Играю в различные игры от шутеров до стратегий. 300 симв. 5 мая 1980 года. Москва. Россия. 8+';
         user3.birthday = new Date(2000, 10, 30);
         user3.contactInfo = 'user3@example.com';
-        user3.city = Promise.resolve(city1);
+        user3.city = Promise.resolve(city3);
         await userRepository.save(user3);
 
         const user4 = new User();
@@ -124,6 +135,18 @@ export class TestService {
         user5.city = Promise.resolve(city1);
         await userRepository.save(user5);
 
+        const user6 = new User();
+        user6.username = 'user6';
+        user6.passwordHash = '$2a$10$Q1CIRFhtIi0YYMBjj15lzeLIKyQkshYU8kiaKXktSn70CltYHXop2';
+        user6.email = 'user6@example.com';
+        user6.displayName = '';
+        user6.avatar = Promise.resolve(avatar2);
+        user6.profileDescription = 'Empty display name';
+        user6.birthday = new Date(2005, 6, 5);
+        user6.contactInfo = 'user6@example.com';
+        user6.city = Promise.resolve(city3);
+        await userRepository.save(user6);
+
         // Связь пользователей и игр
         const usersGame1 = new UsersGame();
         usersGame1.user = Promise.resolve(user1);
@@ -144,6 +167,11 @@ export class TestService {
         usersGame4.user = Promise.resolve(user3);
         usersGame4.game = Promise.resolve(game2);
         await usersGameRepository.save(usersGame4);
+
+        const usersGame5 = new UsersGame();
+        usersGame5.user = Promise.resolve(user6);
+        usersGame5.game = Promise.resolve(game3);
+        await usersGameRepository.save(usersGame5);
 
         // Связь друзей
         const usersFriend1 = new UsersFriend();
