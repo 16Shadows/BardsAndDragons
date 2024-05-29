@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import "../css/App.css";
 import "../css/ProfilePage.css";
 import "../css/react-datepicker.css";
-import avatarpic from "../resources/EmptyProfileAvatar_200px.png";
+import defaultAvatarPic from "../resources/EmptyProfileAvatar_200px.png";
 
 // Select - https://react-select.com/home
 import Select, { OptionsOrGroups, SingleValue } from "react-select";
@@ -32,6 +32,7 @@ const ProfilePage = () => {
   // setUsername setEmail используются при запросе данных из бд, они не меняют данные в бд
   // TODO сохранить на клиенте почту и никнейм, сделать константами и не запрашивать их
   // TODO поля город и аватар нельзя поставить null, контакты должны быть заполнены
+  const [avatarPic, setAvatarPic] = useState<string | null>(null);
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [townList, setTownList] = useState<
@@ -106,11 +107,11 @@ const ProfilePage = () => {
         alert(error.message);
       });
   };
+
   const getProfileInfoQuery = async () => {
     api
       .get("user/@current", {})
-      .then((response) => {
-        console.log(response.data);
+      .then(async (response) => {
         // TODO заменить на хранение на клиенте, не запрашивать
         setUsername(response.data.username);
         setEmail(response.data.email);
@@ -124,7 +125,7 @@ const ProfilePage = () => {
         response.data.city &&
           setTown({ value: response.data.city, label: response.data.city });
         // TODO обработка установки картинки
-        // response.data.avatar && set...
+        response.data.avatar && setAvatarPic(response.data.avatar);
         response.data.birthday && setBirthDate(response.data.birthday);
         response.data.shouldDisplayAge &&
           setIsShowingAge(response.data.shouldDisplayAge);
@@ -135,12 +136,42 @@ const ProfilePage = () => {
       });
   };
 
-  const SaveChangesToDB = () => {
-    console.log("Все изменения были сохранены в БД.");
+  const UploadImageToDB = async (blob: URL | string) => {
+    if (avatarPic) {
+      let blobImage = await fetch(blob).then((res) => res.blob());
+      console.log(blobImage);
+
+      const path = await api
+        .post("images/upload", blobImage, {
+          headers: { "Content-Type": blobImage.type },
+        })
+        .then((response) => {
+          return response.data.path;
+        })
+        .catch((error) => {
+          console.error(error);
+          alert(error.message);
+        });
+
+      return path;
+    }
+  };
+
+  const SaveChangesToDB = async () => {
+    let imagePath = null;
+
+    // Проверка, уже ли картинка из бд. Да, если перед / userimages, нет, если "blob:http:
+    if (avatarPic) {
+      let res = avatarPic.split("/");
+      if (res[0] !== "userimages") {
+        imagePath = await UploadImageToDB(avatarPic);
+        setAvatarPic(imagePath);
+      }
+    }
 
     api
       .post("user/@current", {
-        // avatar
+        avatar: imagePath,
         displayName: name,
         city: town.value,
         birthday: birthDate,
@@ -148,9 +179,7 @@ const ProfilePage = () => {
         description: profileDescription,
         contactInfo: profileContacts,
       })
-      .then((response) => {
-        console.log(response);
-      })
+      .then((response) => {})
       .catch((error) => {
         console.error(error);
         alert(error.message);
@@ -188,6 +217,13 @@ const ProfilePage = () => {
     getProfileInfoQuery();
   }, []); // [] - Запросы идут только при первом рендере страницы
 
+  // Превью загруженной аватарки
+  async function onAvatarUpload(event: any) {
+    // Временный юрл, после обновления страницы сотрет данные о картинке
+    let st = URL.createObjectURL(event.target.files[0]);
+    setAvatarPic(st);
+  }
+
   return (
     <div className="d-flex flex-column content">
       <div className="bg-white row">
@@ -196,19 +232,17 @@ const ProfilePage = () => {
             id="profile_pic"
             className="profile_image mb-2"
             alt="Profile avatar"
-            src={avatarpic}
+            src={avatarPic ? "/" + avatarPic : defaultAvatarPic}
           />
           <div className="row">
-            {/* <input type="file"></input> */}
             {isEditing && (
-              <Button
-                key={"changeAvatarButton"}
-                color="primary"
-                children="Выбрать изображение..."
-                onClick={() => {
-                  console.log("DDD");
-                }}
-              ></Button>
+              <div className="col">
+                <input
+                  type="file"
+                  accept=".jpeg,.png"
+                  onChange={onAvatarUpload}
+                ></input>
+              </div>
             )}
           </div>
         </div>
@@ -277,11 +311,6 @@ const ProfilePage = () => {
 
               <div className="row">
                 <div className="col DatePicker">
-                  {/* <DatePickerInput
-                    disabled={!isEditing}
-                    date={birthDate ? birthDate.toString() : null}
-                    onChangeListener={handleBirthDateChange}
-                  ></DatePickerInput> */}
                   <DatePicker
                     wrapperClassName="datePicker"
                     disabled={!isEditing}
@@ -369,7 +398,6 @@ const ProfilePage = () => {
         <hr style={{ marginTop: 15 }} />
 
         <div className="row mb-2">
-          {/* TODO сдвинуть кнопки в центр строки хоть как нибудь */}
           {isEditing ? (
             <Button
               key={"doneRedactingButton"}
