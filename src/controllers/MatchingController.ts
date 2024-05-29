@@ -56,7 +56,6 @@ export class MatchingController extends Object {
     }
 
     @GET('get-players')
-    @Accept('application/json', 'text/plain')
     @Middleware(AuthMiddleware)
     @QueryArgument('count', {
         typeId: 'int',

@@ -165,6 +165,7 @@ export class MatchingService {
                 COALESCE("gameScoreSubquery"."gameScore", 0) +
                 COALESCE("friendScoreSubquery"."friendScore", 0)
             `, "totalScore")
+            // TODO: check total score and delete repeated counters
             .addSelect(`
                 ROW_NUMBER() OVER (ORDER BY 
                     COALESCE("potentialPlayers"."cityScore", 0) +
