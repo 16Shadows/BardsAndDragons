@@ -3,7 +3,7 @@ import {ModelDataSource} from "../model/dataSource";
 import {GET, POST} from "../modules/core/routing/decorators";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
 import {Middleware} from "../modules/core/middleware/middleware";
-import {MatchingService} from "../services/MatchingService";
+import {MatchingService, PlayerData} from "../services/MatchingService";
 import {AuthMiddleware, AuthMiddlewareBag} from "../middleware/AuthMiddleware";
 import {TestService} from "../services/TestService";
 import {badRequest, conflict} from "../modules/core/routing/response";
@@ -15,17 +15,6 @@ import {User} from "../model/user";
 type ListQuery = {
     count?: number;
 };
-
-type PlayerData = {
-    matchId: number;
-    username: string;
-    displayName: string;
-    age?: number;
-    city?: string;
-    description: string;
-    avatarPath?: string;
-    games: string[];
-}
 
 @Controller('api/v1/matching')
 export class MatchingController extends Object {
@@ -66,39 +55,8 @@ export class MatchingController extends Object {
         };
     }
 
-    @POST('players')
-    @Accept('application/json')
-    @Return('application/json')
-    @Middleware(AuthMiddleware)
-    async players(bag: AuthMiddlewareBag, _body: Object) {
-        try {
-            return await this._matchingService.getPotentialPlayers(bag.user);
-        } catch (e) {
-            console.error(e);
-            return badRequest({
-                success: false,
-                message: e
-            });
-        }
-    }
-
-    @POST('ranked-players')
-    @Accept('application/json')
-    @Return('application/json')
-    @Middleware(AuthMiddleware)
-    async rankedPlayers(bag: AuthMiddlewareBag, _body: Object) {
-        try {
-            return await this._matchingService.getRankedPlayers(bag.user);
-        } catch (e) {
-            console.error(e);
-            return badRequest({
-                success: false,
-                message: e
-            });
-        }
-    }
-
     @GET('get-players')
+    @Accept('application/json', 'text/plain')
     @Middleware(AuthMiddleware)
     @QueryArgument('count', {
         typeId: 'int',
@@ -106,34 +64,16 @@ export class MatchingController extends Object {
         canHaveMultipleValues: false
     })
     @Return('application/json')
-    async getPlayers(_bag: AuthMiddlewareBag, queryBag: ListQuery): Promise<HTTPResponseConvertBody | PlayerData[]> {
+    async getPlayers(bag: AuthMiddlewareBag, queryBag: ListQuery): Promise<HTTPResponseConvertBody | PlayerData[]> {
         const count = queryBag.count ?? MatchingController.MAX_QUERY_COUNT;
         if (count < 0 || count > MatchingController.MAX_QUERY_COUNT)
             return badRequest();
 
-        const playerData1: PlayerData = {
-            matchId: 1,
-            username: 'player1',
-            displayName: 'Иван Иванов',
-            age: 25,
-            city: 'Москва',
-            description: 'Являюсь заядлым геймером с детства. Играю в различные игры от шутеров до стратегий.',
-            avatarPath: 'userimages/avatar2.png',
-            games: ['Dota 2', 'CS: GO', 'World of Warcraft'],
-        };
-
-        const playerData2: PlayerData = {
-            matchId: 2,
-            username: 'player2',
-            displayName: 'Елена Петрова',
-            age: 28,
-            city: 'Санкт-Петербург',
-            description: 'Люблю активный образ жизни и спорт. Увлекаюсь путешествиями, особенно по горным районам. В свободное время занимаюсь фотографией и готовкой. Обожаю проводить время на свежем воздухе и наслаждаться природой.',
-            avatarPath: 'userimages/avatar3.png',
-            games: ['The Witcher 3', 'Assassin\'s Creed', 'Skyrim'],
-        };
-
-        return [playerData1, playerData2];
+        try {
+            return await this._matchingService.getRankedPlayersForMatching(bag.user, count);
+        } catch (e) {
+            return badRequest({message: e});
+        }
     }
 
     @POST('{receiver}/rejectMatch')
