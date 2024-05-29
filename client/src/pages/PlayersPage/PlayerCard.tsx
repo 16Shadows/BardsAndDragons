@@ -38,7 +38,7 @@ const PlayerCard = ({
                     <strong>Игры:</strong>
                     <ul>
                         {games.map((game, index) => (
-                            <li key={index}>{game}</li>
+                            <li key={index}>{game.name}, {game.playsOnline ? 'онлайн' : 'оффлайн'}</li>
                         ))}
                     </ul>
                 </Card.Text>

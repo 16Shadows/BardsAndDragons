@@ -9,7 +9,7 @@
 
 .player-card .card-img {
     height: 20rem;
-    width: auto;
+    width: 20rem;
     object-fit: contain;
     margin-right: 1rem;
 }
