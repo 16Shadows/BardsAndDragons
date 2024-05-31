@@ -14,12 +14,14 @@ const Navbar = () => {
   const isAuthenticated = useIsAuthenticated();
 
   // TODO Добавить запрос на данные профиля
-  const [profileName, setProfileName] = useState("Имя профиля");
+  const [profileName, setProfileName] = useState("Тестовое имя профиля");
+
   const [profileAvatar, setProfileAvatar] = useState(avatar);
   // TODO Добавить запрос на наличие уведомлений
   const [gotNotifications, setGotNotifications] = useState(false);
 
   const navigate = useNavigate();
+
   const {signOut} = useSignOut();
 
   const api = useApi();
@@ -66,7 +68,6 @@ const Navbar = () => {
         >
           <span className="navbar-toggler-icon"></span>
         </button>
-
         <div
           className="links collapse navbar-collapse"
           id="navbarSupportedContent"
@@ -145,7 +146,6 @@ const Navbar = () => {
                   <NotificationsPanel />
                 </ul>
               </li>
-
               <li className="nav-item dropdown">
                 <a
                   className="nav-link dropdown-toggle"
@@ -194,7 +194,6 @@ const Navbar = () => {
                       </span>
                     </NavLink>
                   </li>
-
                   <li>
                     <hr className="dropdown-divider" />
                   </li>

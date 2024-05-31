@@ -1,5 +1,5 @@
 import React from "react";
-import {Route, Routes} from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 // Pages
 import Home from "../../pages/Home";
@@ -24,13 +24,13 @@ const RoutesComponent = () => {
 
             <Route path={"test-page"} element={<TestPage/>}/>
 
-            {/* Protected routes */}
-            <Route element={<ProtectedRoutes fallbackPath='/login'/>}>
-                <Route path={"/my-profile"} element={<ProfilePage/>}/>
-                <Route path={"/my-games"} element={<MyGamesPage/>}/>
-                <Route path={"/my-friends"} element={<MyFriendsPage/>}/>
-
+      {/* Protected routes */}
+      <Route element={<ProtectedRoutes fallbackPath="/login" />}>
+        <Route path={"/my-profile"} element={<ProfilePage />} />
+        <Route path={"/my-games"} element={<MyGamesPage />} />
+        <Route path={"/my-friends"} element={<MyFriendsPage />} />
                 <Route path={"/players"} element={<PlayersPage/>}/>
+                <Route path={"/secure"} element={<SecureComponent/>} />
             </Route>
 
             {/* TODO: 404 page */}
@@ -38,4 +38,4 @@ const RoutesComponent = () => {
         </Routes>)
 }
 
-export default RoutesComponent
+export default RoutesComponent;
