@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Button from "react-bootstrap/Button";
+import Button from "./Button";
 import Modal from "react-bootstrap/Modal";
 import { IntegerType } from "typeorm";
 import PopupButton from "../interfaces/PopupButtonInterface";
@@ -10,9 +10,9 @@ function Popup(props: {
   disabled: boolean;
   buttons: PopupButton[];
   title: string;
-  message: string;
-  popupButtonText: string;
-  popupButtonVariant: "primary" | "secondary" | "danger" | "success";
+  message: React.ReactNode;
+  popupButtonText?: string;
+  popupButtonVariant?: "primary" | "secondary" | "danger" | "success";
 }) {
   const buttons = props.buttons;
   const [show, setShow] = useState(false);
@@ -22,9 +22,11 @@ function Popup(props: {
 
   return (
     <>
-      <Button variant={props.popupButtonVariant} onClick={handleShow}>
-        {props.popupButtonText}
-      </Button>
+      <Button
+        color={props.popupButtonVariant}
+        onClick={handleShow}
+        children={props.popupButtonText ? props.popupButtonText : ""}
+      />
 
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
@@ -37,25 +39,18 @@ function Popup(props: {
               return (
                 <>
                   <Button
-                    variant={button.variant}
+                    color={button.variant}
                     onClick={() => {
                       handleClose();
                       button.action();
                     }}
-                  >
-                    {button.text}
-                  </Button>
+                    children={button.text}
+                    outline={button.outline}
+                  ></Button>
                 </>
               );
             })}
           </>
-
-          {/* <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleClose}>
-            Save Changes
-          </Button> */}
         </Modal.Footer>
       </Modal>
     </>

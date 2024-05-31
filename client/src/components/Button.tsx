@@ -3,7 +3,8 @@ import { IntegerType } from "typeorm";
 
 interface Props {
   children: string;
-  onClick: () => void;
+  onClick?: () => void;
+  action?: () => {};
   color?: "primary" | "secondary" | "danger" | "success";
   outline?: boolean;
 }

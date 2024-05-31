@@ -5,6 +5,7 @@ interface PopupButton {
   text: string;
   action: () => {};
   variant: "primary" | "secondary" | "danger" | "success";
+  outline?: boolean;
 }
 
 export default PopupButton;

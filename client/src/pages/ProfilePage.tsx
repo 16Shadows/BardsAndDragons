@@ -1,4 +1,9 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, {
+  ChangeEvent,
+  TextareaHTMLAttributes,
+  useEffect,
+  useState,
+} from "react";
 import "../css/App.css";
 import "../css/ProfilePage.css";
 import "../css/react-datepicker.css";
@@ -115,7 +120,6 @@ const ProfilePage = () => {
         // TODO заменить на хранение на клиенте, не запрашивать
         setUsername(response.data.username);
         setEmail(response.data.email);
-        //
         response.data.displayName && setName(response.data.displayName);
         response.data.description &&
           setProfileDescription(response.data.description);
@@ -129,7 +133,6 @@ const ProfilePage = () => {
         response.data.birthday && setBirthDate(response.data.birthday);
         response.data.shouldDisplayAge &&
           setIsShowingAge(response.data.shouldDisplayAge);
-        console.log(response);
       })
       .catch((error) => {
         console.error(error);
@@ -140,7 +143,7 @@ const ProfilePage = () => {
   const UploadImageToDB = async (blob: URL | string) => {
     if (avatarPic) {
       let blobImage = await fetch(blob).then((res) => res.blob());
-      console.log(blobImage);
+      //console.log(blobImage);
 
       const path = await api
         .post("images/upload", blobImage, {
@@ -174,7 +177,7 @@ const ProfilePage = () => {
       .post("user/@current", {
         avatar: imagePath,
         displayName: name,
-        city: town.value,
+        city: town.value === "" ? null : town.value,
         birthday: birthDate,
         shouldDisplayAge: isShowingAge,
         description: profileDescription,
@@ -197,7 +200,8 @@ const ProfilePage = () => {
         alert(error.message);
       });
   };
-  const [modalShow, setModalShow] = useState(false);
+  const [modalShowDeleteProfile, setModalShowDeleteProfile] = useState(false);
+  const [modalShowSaveProfile, setModalShowSaveProfile] = useState(false);
 
   const DeleteProfileButtons = [
     {
@@ -212,6 +216,24 @@ const ProfilePage = () => {
       text: "Отмена",
       action: () => {},
       variant: "primary",
+    } as PopupButton,
+  ];
+
+  const SaveProfileButtons = [
+    {
+      text: "Сохранить",
+      action: () => {
+        setIsEditing(false);
+        SaveChangesToDB();
+      },
+      variant: "primary",
+    } as PopupButton,
+
+    {
+      text: "Отмена",
+      action: () => {},
+      variant: "primary",
+      outline: true,
     } as PopupButton,
   ];
 
@@ -237,6 +259,15 @@ const ProfilePage = () => {
             alt="Profile avatar"
             src={avatarPic ? "/" + avatarPic : defaultAvatarPic}
           />
+          {avatarPic ? (
+            ""
+          ) : (
+            <div>
+              <small className="form-text text-red">
+                Необходимо добавить изображение
+              </small>
+            </div>
+          )}
           <div className="row">
             {isEditing && (
               <div className="col">
@@ -257,7 +288,11 @@ const ProfilePage = () => {
             </div>
 
             <div className="row">
-              <label className="col-form-label">Отображаемое имя:</label>
+              <label
+                className={name ? "col-form-label" : "col-form-label text-red"}
+              >
+                Отображаемое имя:
+              </label>
             </div>
 
             <div className="row">
@@ -265,11 +300,25 @@ const ProfilePage = () => {
             </div>
 
             <div className="row">
-              <label className="col-form-label">Город:</label>
+              <label
+                className={
+                  !(town.value === "")
+                    ? "col-form-label"
+                    : "col-form-label text-red"
+                }
+              >
+                Город:
+              </label>
             </div>
 
             <div className="row">
-              <label className="col-form-label">Дата рождения:</label>
+              <label
+                className={
+                  birthDate ? "col-form-label" : "col-form-label text-red"
+                }
+              >
+                Дата рождения:
+              </label>
             </div>
           </div>
         </div>
@@ -284,6 +333,7 @@ const ProfilePage = () => {
           <div className="row">
             <div className="col col-form-label">
               <input
+                className=" form-conrol"
                 required={true}
                 disabled={!isEditing}
                 name="name"
@@ -311,7 +361,6 @@ const ProfilePage = () => {
                 placeholder={"Не выбран"}
                 value={town ? town : null}
               />
-
               <div className="row">
                 <div className="col DatePicker">
                   <DatePicker
@@ -330,9 +379,18 @@ const ProfilePage = () => {
                     }}
                   />
                 </div>
-              </div>
+              </div>{" "}
             </div>
           </div>
+          {birthDate && name && town.value !== "" ? (
+            ""
+          ) : (
+            <div>
+              <small className="form-text text-red">
+                Необходимо заполнить все поля профиля
+              </small>
+            </div>
+          )}
         </div>
 
         <hr style={{ marginTop: 15 }} />
@@ -369,9 +427,18 @@ const ProfilePage = () => {
               onChange={handleDescriptionChange}
               placeholder="Опишите ваши интересы, предпочтения в играх и т.п."
             ></textarea>
-            <small id="DescriptionHelpText" className="form-text text-red">
+            <small id="DescriptionHelpText" className="form-text">
               Описание профиля видно всем пользователям
             </small>
+            {profileDescription ? (
+              ""
+            ) : (
+              <div>
+                <small className="form-text text-red">
+                  Необходимо заполнить описание профиля
+                </small>
+              </div>
+            )}
           </div>
         </div>
 
@@ -389,30 +456,78 @@ const ProfilePage = () => {
               onChange={handleContactsChange}
               placeholder="Например, ссылка на аккаунт в Телеграме, ВКонтакте, адрес электронной почты..."
             ></textarea>
-            <small id="DescriptionHelpText" className="form-text text-red">
-              <>
-                Пожалуйста, оставьте актуальные контакты, по которым другие
-                игроки смогут с вами связаться и позвать поиграть!
-              </>
-              <>Контакты видны только вашим друзьям</>
+            <small className="form-text">
+              Контакты видны только вашим друзьям <br />
             </small>
+            <small className="form-text text-red">
+              Пожалуйста, оставьте{" "}
+              <strong className="text-red">актуальные</strong> контакты, по
+              которым другие игроки смогут с вами связаться и позвать поиграть!
+            </small>
+            {profileContacts ? (
+              ""
+            ) : (
+              <div>
+                <small className="form-text text-red">
+                  Необходимо заполнить контакты
+                </small>
+              </div>
+            )}
           </div>
         </div>
         <hr style={{ marginTop: 15 }} />
 
         <div className="row mb-2">
           {isEditing ? (
-            <Button
-              key={"doneRedactingButton"}
-              color="primary"
-              children="Сохранить изменения"
-              onClick={() => {
-                setIsEditing(false);
-                SaveChangesToDB();
-              }}
-            ></Button>
+            false ? (
+              <Button
+                key={"doneRedactingButton"}
+                color="primary"
+                children="Сохранить изменения"
+                onClick={() => {
+                  // Такие же действия у кнопки в SaveProfileButtons, при изменении учитывать
+                  setIsEditing(false);
+                  SaveChangesToDB();
+                }}
+              ></Button>
+            ) : (
+              <Popup
+                popupButtonText="Сохранить изменения"
+                popupButtonVariant="primary"
+                show={modalShowSaveProfile}
+                onHide={() => setModalShowSaveProfile(false)}
+                disabled={false}
+                title="Сохранение изменений профиля"
+                message={
+                  <div>
+                    Внимание, вы не заполнили поля:
+                    <ul>
+                      {[
+                        avatarPic ? null : "Изображение профиля",
+                        name ? null : "Отображаемое имя",
+                        town.value !== "" ? null : "Город",
+                        birthDate ? null : "Дата рождения",
+                        profileDescription ? null : "Описание профиля",
+                        profileContacts ? null : "Контакты",
+                      ]
+                        .filter(function (e) {
+                          return e;
+                        })
+                        .map((obj) => (
+                          <li>{obj}</li>
+                        ))}
+                    </ul>
+                    Вы <strong>не сможете</strong> участвовать в поиске друзей и
+                    другие не смогут вас найти через него.
+                    <br />
+                    Вы уверены, что хотите сохранить изменения профиля?
+                  </div>
+                }
+                buttons={SaveProfileButtons}
+              />
+            )
           ) : (
-            // TODO добавить отключение кнопки, если есть незаполненные необходимые поля (town, contacts), подсвечивать поля
+            // TODO добавить вызов модала, если есть незаполненные необходимые поля (town, contacts), подсвечивать поля
             <Button
               key={"startRedactingButton"}
               color="primary"
@@ -423,18 +538,21 @@ const ProfilePage = () => {
           )}
         </div>
 
-        <div className="row">
+        <div className="row mb-2">
           <Popup
             popupButtonText="Удалить профиль"
             popupButtonVariant="danger"
-            show={modalShow}
-            onHide={() => setModalShow(false)}
+            show={modalShowDeleteProfile}
+            onHide={() => setModalShowDeleteProfile(false)}
             disabled={false}
             title="Удаление профиля"
             message={
-              'Вы уверены, что хотите удалить профиль "' +
-              username +
-              '"? \nОтменить это действие будет невозможно!'
+              <div>
+                {" "}
+                Вы уверены, что хотите удалить профиль{" "}
+                <strong>{username}</strong>?
+                <br /> Отменить это действие будет невозможно!
+              </div>
             }
             buttons={DeleteProfileButtons}
           />
