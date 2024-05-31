@@ -42,7 +42,7 @@ const PlayerCard = ({
                         </Col>
 
                         <Col>
-                            <Card.Title>{displayName}, {age ?? 'возраст не указан'}</Card.Title>
+                            <Card.Title>{displayName}{age && `, ${age}`}</Card.Title>
                             <Card.Subtitle
                                 className="mb-2 text-muted">{city ?? 'город не указан'}</Card.Subtitle>
                             <Card.Text>{description}</Card.Text>
@@ -54,9 +54,9 @@ const PlayerCard = ({
                     </Card.Text>
 
                     <div className={"d-flex justify-content-between"}>
-                        <Button variant="danger" size="lg"
+                        <Button variant="danger" className={"round-button cross-size"}
                                 onClick={() => onReject(username)}><ImCross/></Button>
-                        <Button variant="success" size="lg"
+                        <Button variant="success" className={"round-button"}
                                 onClick={() => onAccept(username)}><FaHeart/></Button>
                     </div>
                 </>

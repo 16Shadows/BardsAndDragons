@@ -1,6 +1,6 @@
 import React, {useCallback, useMemo, useState} from "react";
 import {FaChevronLeft, FaChevronRight} from "react-icons/fa";
-import {Button, Row, Col, Badge} from "react-bootstrap";
+import {Button, Row, Col, Badge, Card} from "react-bootstrap";
 import {GameData} from "./PlayerData";
 import {MdGames} from "react-icons/md";
 import "./GameList.css";
@@ -12,14 +12,14 @@ interface GameListProps {
 
 const OnlineItem = React.memo(() => {
     return (
-        <Badge pill className="onlineItemBadge">online</Badge>
+        <Badge pill className="online-item-badge">online</Badge>
     )
 });
 
 const GameItem = React.memo(({name, playsOnline}: GameData) => {
     return (
-        <Badge className="gameItemBadge mb-1 mt-1">
-            <MdGames className="gameItemIcon"/>&nbsp;
+        <Badge className="game-item-badge mb-1 mt-1">
+            <MdGames className="game-item-icon"/>&nbsp;
             {name}&nbsp;
             {playsOnline ? <OnlineItem/> : null}
         </Badge>
@@ -50,8 +50,9 @@ const GameList = ({games, gamesPerPage}: GameListProps) => {
 
     return (
         <div>
-            <h4 className={"mt-2"}>Игры</h4>
-            <div className={"d-flex justify-content-between align-items-center"}>
+            <div className={"border-top mt-2"}></div>
+            <Card.Title className={"text-center mt-2"}>Игры</Card.Title>
+            <div className={"d-flex justify-content-between align-items-center game-items"}>
                 <Button variant={"link"} onClick={handlePrevious} disabled={currentPage === 0}>
                     <FaChevronLeft/>
                 </Button>

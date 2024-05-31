@@ -76,7 +76,7 @@ const PlayersPage = () => {
                             Посмотреть, кого можно позвать поиграть!
                         </Button>
                     </Row>
-                    <Row className="justify-content-center">
+                    <Row className="justify-content-center mb-5">
                         <Button variant="primary" className="w-50" onClick={() => navigate(getGamesPageRoute())}>
                             Поискать новые интересные игры!
                         </Button>

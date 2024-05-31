@@ -1,4 +1,4 @@
-.gameItemBadge {
+.game-item-badge {
     background-color: #e5e5e5 !important;
     color: #000000 !important;
     font-size: 16px !important;
@@ -10,11 +10,15 @@
     align-items: center;
 }
 
-.gameItemIcon {
+.game-item-icon {
     font-size: 16px !important;
 }
 
-.onlineItemBadge {
+.online-item-badge {
     background-color: #346c52 !important;
     color: #ffffff !important;
+}
+
+.game-items {
+    min-height: 10rem !important;
 }
