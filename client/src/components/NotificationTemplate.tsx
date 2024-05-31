@@ -1,5 +1,5 @@
 import { NotificationObject } from "../models/Notifications";
-import avatar from "../resources/EmptyProfileAvatar_50px.png";
+import defaultAvatarPic from "../resources/EmptyProfileAvatar_50px.png";
 import "../css/Notifications.css";
 import "../css/App.css";
 import Button from "./Button";
@@ -15,8 +15,6 @@ interface NotifProps extends NotificationObject {
 
 const NotificationTemplate = (props: NotificationObject) => {
   const navigate = useNavigate();
-  // TODO запросить аватарку отправившего увед юзера
-  const profileAvatar = avatar;
   // TODO добавить к имени юзера ссылку на его профиль
   const senderName = props.displayName ? props.displayName : props.username;
 
@@ -35,7 +33,7 @@ const NotificationTemplate = (props: NotificationObject) => {
             <img
               className="rounded-circle"
               alt="ProfileAvatar"
-              src={profileAvatar}
+              src={props.avatar ? "/" + props.avatar : defaultAvatarPic}
             />
           </div>
         </div>
@@ -51,7 +49,6 @@ const NotificationTemplate = (props: NotificationObject) => {
                 отправил вам заявку в друзья!
               </p>
               <div className="d-flex justify-content-evenly mb-2">
-                {/* TODO добавить иконку стрелки */}
                 <Button
                   children={"Мои друзья >>"}
                   onClick={() => {

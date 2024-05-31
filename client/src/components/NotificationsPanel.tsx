@@ -63,6 +63,7 @@ const NotificationsPanel = () => {
             seen: item.seen,
             displayName: null,
             username: null,
+            avatar: null,
           };
 
           if (resultItem.type === "friendRequest") {
@@ -72,12 +73,16 @@ const NotificationsPanel = () => {
             resultItem.displayName = item.friendRequestSentBy
               ? item.friendRequestSentBy.displayName
               : null;
+            resultItem.avatar = item.friendRequestSentBy ? item.avatar : null;
           } else if (resultItem.type === "friendRequestAccepted") {
             resultItem.username = item.friendRequestAcceptedBy
               ? item.friendRequestAcceptedBy.username
               : null;
             resultItem.displayName = item.friendRequestAcceptedBy
               ? item.friendRequestAcceptedBy.displayName
+              : null;
+            resultItem.avatar = item.friendRequestAcceptedBy
+              ? item.avatar
               : null;
           }
 
@@ -89,7 +94,7 @@ const NotificationsPanel = () => {
 
         setGotNotifications(gotNotif);
 
-        console.log(items.length);
+        // console.log(items.length);
         return {
           list: oldArr.concat(res),
           isFinal: items.length === 0,
@@ -101,7 +106,7 @@ const NotificationsPanel = () => {
         };
       }
     },
-    [api] // ????
+    [api]
   );
 
   // Список уведомлений
@@ -127,7 +132,7 @@ const NotificationsPanel = () => {
     // При открытии меню отправляем в БД запрос на изменение статуса уведомлений
     if (event.target.classList.contains("show")) {
       setOpenState(true);
-      console.log(notifications);
+      // console.log(notifications);
       notifications?.forEach((notif) => {
         if (!notif.seen) {
           api
@@ -199,6 +204,7 @@ const NotificationsPanel = () => {
                   seen={item.seen}
                   displayName={item.displayName}
                   username={item.username}
+                  avatar={item.avatar}
                 />
               ))
             : "Уведомлений пока нет"}

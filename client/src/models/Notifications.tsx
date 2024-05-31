@@ -8,6 +8,7 @@ export interface QueryNotificationObject {
   seen: boolean;
   friendRequestAcceptedBy?: { username: string; displayName: string | null };
   friendRequestSentBy?: { username: string; displayName: string | null };
+  avatar: string | null;
 }
 
 export interface NotificationObject {
@@ -16,4 +17,5 @@ export interface NotificationObject {
   seen: boolean;
   displayName: string | null;
   username: string | null;
+  avatar: string | null;
 }
