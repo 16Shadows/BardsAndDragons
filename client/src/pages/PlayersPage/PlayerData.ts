@@ -1,4 +1,4 @@
-type GameData = {
+export type GameData = {
     name: string;
     playsOnline: boolean;
 }

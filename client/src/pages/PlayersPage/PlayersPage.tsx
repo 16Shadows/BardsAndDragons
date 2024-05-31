@@ -2,7 +2,7 @@ import React from "react";
 import PlayerCard from "./PlayerCard";
 import usePlayersPage from "./usePlayersPage";
 import {getFriendsPageRoute, getGamesPageRoute, getMyProfilePageRoute} from "../../components/routes/Navigation";
-import {Button, Row} from "react-bootstrap";
+import {Button, Row, Spinner} from "react-bootstrap";
 import {useNavigate} from "react-router-dom";
 import CenteredCardWithItem from "../../components/CenteredCardWithItem";
 
@@ -25,8 +25,10 @@ const PlayersPage = () => {
             title={title}
             columnWidth={8}
             cardBody={
-                <div>
-                    <h4 className="text-center mt-5 mb-5">Загрузка...</h4>
+                <div className="text-center mt-5 mb-5">
+                    <Spinner animation="border" role="status">
+                        <span className="visually-hidden">Загрузка...</span>
+                    </Spinner>
                 </div>
             }/>);
     }
