@@ -1,3 +1,7 @@
+export function getLoginPageRoute() {
+    return "/login";
+}
+
 export function getFriendsPageRoute() {
     return "/my-friends";
 }
