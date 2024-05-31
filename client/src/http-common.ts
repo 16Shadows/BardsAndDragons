@@ -33,8 +33,6 @@ const useApi = (): AxiosInstance => {
         api.defaults.headers.Authorization = authHeader;
     }, [authHeader]);
 
-    // TODO: check handling of unauthorized responses
-
     useEffect(() => {
         // Add an interceptor to handle unauthorized responses
         const interceptor = api.interceptors.response.use(
@@ -44,9 +42,8 @@ const useApi = (): AxiosInstance => {
                 if (error.response?.status === 401) {
                     signOut();
                     navigate(getLoginPageRoute(), {state: {from: location}});
-                } else {
-                    return Promise.reject(error);
                 }
+                return Promise.reject(error);
             }
         );
         // Eject the interceptor when the component is unmounted to prevent memory leaks
