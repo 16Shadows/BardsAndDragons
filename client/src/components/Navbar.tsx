@@ -20,30 +20,28 @@ const Navbar = () => {
   const navigate = useNavigate();
   const signOut = useSignOut();
 
-    // Для запроса уведомлений при рендере навбара
-    useEffect(
-        () => {
-            console.log("Надо сделать запрос к уведомлениям, прочитанным и новым");
-        }
-        //[] // Запуск только после первого рендера страницы/объекта navbar
-    );
+  // Для запроса уведомлений при рендере навбара
+  useEffect(
+    () => {}
+    //[] // Запуск только после первого рендера страницы/объекта navbar
+  );
 
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary bg-white">
       <div className="container-fluid">
         <img src={logo} className="BD-logo" alt="logo" />
 
-                <button
-                    className="navbar-toggler"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
-                >
-                    <span className="navbar-toggler-icon"></span>
-                </button>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
 
         <div
           className="links collapse navbar-collapse"
@@ -71,8 +69,8 @@ const Navbar = () => {
             </ul>
           </div>
 
-                    {/* Я думаю это не MVP */}
-                    {/* <ul className="navbar-nav">
+          {/* Я думаю это не MVP */}
+          {/* <ul className="navbar-nav">
             <li className="nav-item search">
               <form className="d-flex" role="search">
                 <input

@@ -127,7 +127,7 @@ const ProfilePage = () => {
         // Создаем объект города, TODO добавить локализацию  label
         response.data.city &&
           setTown({ value: response.data.city, label: response.data.city });
-        response.data.avatar && setAvatarPic(response.data.avatar);
+        response.data.avatar && setAvatarPic("/" + response.data.avatar);
         response.data.birthday && setBirthDate(response.data.birthday);
         response.data.shouldDisplayAge &&
           setIsShowingAge(response.data.shouldDisplayAge);
@@ -162,10 +162,11 @@ const ProfilePage = () => {
   const SaveChangesToDB = async () => {
     let imagePath = null;
 
-    // Проверка, уже ли картинка из бд. Да, если перед / userimages, нет, если "blob:http:
+    // Проверка, уже ли картинка из бд. Да, если перед / "" и userimages, нет, если "blob:http:
     if (avatarPic) {
       let res = avatarPic.split("/");
-      if (res[0] !== "userimages") {
+      console.log(res);
+      if (res[0] === "blob:http:") {
         imagePath = await UploadImageToDB(avatarPic);
         setAvatarPic(imagePath);
       }
@@ -244,6 +245,7 @@ const ProfilePage = () => {
   async function onAvatarUpload(event: any) {
     // Временный юрл, после обновления страницы сотрет данные о картинке
     let st = URL.createObjectURL(event.target.files[0]);
+    console.log(event.target.files[0]);
     setAvatarPic(st);
   }
 
@@ -255,7 +257,7 @@ const ProfilePage = () => {
             id="profile_pic"
             className="profile_image mb-2"
             alt="Profile avatar"
-            src={avatarPic ? "/" + avatarPic : defaultAvatarPic}
+            src={avatarPic ? avatarPic : defaultAvatarPic}
           />
           {avatarPic ? (
             ""
