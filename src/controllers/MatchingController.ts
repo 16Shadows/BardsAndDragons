@@ -62,7 +62,7 @@ export class MatchingController extends Object {
         try {
             return await this._matchingService.isUserValidForMatching(bag.user.id);
         } catch (e) {
-            return badRequest({message: e});
+            return badRequest();
         }
     }
 
@@ -82,7 +82,7 @@ export class MatchingController extends Object {
         try {
             return await this._matchingService.getRankedPlayersForMatching(bag.user, count);
         } catch (e) {
-            return badRequest({message: e});
+            return badRequest();
         }
     }
 
