@@ -55,6 +55,17 @@ export class MatchingController extends Object {
         };
     }
 
+    @GET('is-valid-for-matching')
+    @Middleware(AuthMiddleware)
+    @Return('application/json')
+    async isValidForMatching(bag: AuthMiddlewareBag): Promise<HTTPResponseConvertBody | boolean> {
+        try {
+            return await this._matchingService.isUserValidForMatching(bag.user.id);
+        } catch (e) {
+            return badRequest({message: e});
+        }
+    }
+
     @GET('get-players')
     @Middleware(AuthMiddleware)
     @QueryArgument('count', {

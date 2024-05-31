@@ -52,6 +52,21 @@ export class MatchingService {
     }
 
     /**
+     * Checks if a user with the given ID meets the matching criteria.
+     */
+    async isUserValidForMatching(userId: number): Promise<boolean> {
+        const repo = this._dbContext.getRepository(User);
+        const qb = repo
+            .createQueryBuilder("user")
+            .where("user.id = :userId", {userId});
+
+        this.applyMatchingCriteria(qb);
+
+        const user = await qb.getOne();
+        return !!user;
+    }
+
+    /**
      * Returns a query builder for the list of users who are allowed to participate in matching for the current user.
      * Chooses players with required data. Excludes friends and rejected matches.
      */
@@ -95,21 +110,6 @@ export class MatchingService {
                     .getQuery();
                 return `NOT EXISTS ${subQuery}`;
             })
-    }
-
-    /**
-     * Checks if a user with the given ID meets the matching criteria.
-     */
-    private async isUserValidForMatching(userId: number): Promise<boolean> {
-        const repo = this._dbContext.getRepository(User);
-        const qb = repo
-            .createQueryBuilder("user")
-            .where("user.id = :userId", {userId});
-
-        this.applyMatchingCriteria(qb);
-
-        const user = await qb.getOne();
-        return !!user;
     }
 
     /**
