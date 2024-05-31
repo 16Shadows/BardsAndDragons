@@ -12,31 +12,53 @@ const usePlayersPage = () => {
     const api = useApi();
 
     // Function to show error message
-    const showError = (message: string) => {
-        alert(message);
-    };
+    const showError = useCallback((error: any, message: string) => {
+        if (error.response?.status !== 401) {
+            alert(message);
+        }
+    }, []);
 
     // Function to get whether user is valid for matching from API
     const getIsUserValidForMatching = useCallback(async () => {
-        const response = await api.get('matching/is-valid-for-matching');
-        setIsUserValidForMatching(response.data);
-    }, [api]);
+        try {
+            setIsLoading(true);
+            const response = await api.get('matching/is-valid-for-matching');
+            const isUserValidForMatching: boolean = response.data;
+            if (isUserValidForMatching) {
+                // Continue state is loading
+                setIsUserValidForMatching(true);
+            } else {
+                // Stop state is loading
+                setIsLoading(false);
+            }
+        } catch (error) {
+            showError(error, errorLoadingData);
+            setIsLoading(false);
+        }
+    }, [api, showError]);
 
     // TODO: check handling error in matching
     // Function to get matches from API
     const getMatches = useCallback(async () => {
-        setIsLoading(true);
-        const response = await api.get('matching/get-players');
-        setMatches(response.data);
-        setCurrentMatchId(0);
-        setIsLoading(false);
-    }, [api]);
+        if (isUserValidForMatching) {
+            try {
+                setIsLoading(true);
+                const response = await api.get('matching/get-players');
+                setMatches(response.data);
+                setCurrentMatchId(0);
+            } catch (error) {
+                showError(error, errorLoadingData);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+    }, [api, isUserValidForMatching, showError]);
 
     // Function to handle next match
     const handleNextMatch = useCallback(async () => {
         if (currentMatchId < matches.length - 1) {
             // Move to the next match
-            setCurrentMatchId(currentMatchId + 1);
+            setCurrentMatchId(prevId => prevId + 1);
         } else {
             // If it's the last match, fetch new matches
             await getMatches();
@@ -49,8 +71,8 @@ const usePlayersPage = () => {
             // Send friend request
             await api.post(`user/${username}/addFriend`);
             await handleNextMatch();
-        } catch {
-            showError(errorLoadingData);
+        } catch (error) {
+            showError(error, errorLoadingData);
         }
     }, [api, handleNextMatch, showError]);
 
@@ -60,17 +82,20 @@ const usePlayersPage = () => {
             // Send friend request
             await api.post(`matching/${username}/rejectMatch`);
             await handleNextMatch();
-        } catch {
-            showError(errorLoadingData);
+        } catch (error) {
+            showError(error, errorLoadingData);
         }
     }, [api, handleNextMatch, showError]);
 
+    // Get is user valid for matching on page load
+    useEffect(() => {
+        getIsUserValidForMatching().catch();
+    }, [getIsUserValidForMatching]);
+
     // Get matches on page load
     useEffect(() => {
-        getIsUserValidForMatching()
-            .then(() => getMatches())
-            .catch(() => showError(errorLoadingData));
-    }, []);
+        getMatches().catch();
+    }, [getMatches]);
 
     return {
         matches,
