@@ -158,28 +158,21 @@ export class MatchingService {
 
         const query = repo
             .createQueryBuilder("user")
-            // Sum all scores
+            // Number the rows according to the total score in descending order
             .select(`
-                COALESCE("potentialPlayers"."cityScore", 0) +
-                COALESCE("potentialPlayers"."ageScore", 0) +
-                COALESCE("gameScoreSubquery"."gameScore", 0) +
-                COALESCE("friendScoreSubquery"."friendScore", 0)
-            `, "totalScore")
-            // TODO: check total score and delete repeated counters
-            .addSelect(`
                 ROW_NUMBER() OVER (ORDER BY 
-                    COALESCE("potentialPlayers"."cityScore", 0) +
-                    COALESCE("potentialPlayers"."ageScore", 0) +
+                    COALESCE("matchingCandidates"."cityScore", 0) +
+                    COALESCE("matchingCandidates"."ageScore", 0) +
                     COALESCE("gameScoreSubquery"."gameScore", 0) +
                     COALESCE("friendScoreSubquery"."friendScore", 0)
                         DESC)`, "matchId")
-            .innerJoin(`(${matchingCandidatesQuery.getQuery()})`, "potentialPlayers", `"potentialPlayers"."id" = "user"."id"`);
+            .innerJoin(`(${matchingCandidatesQuery.getQuery()})`, "matchingCandidates", `"matchingCandidates"."id" = "user"."id"`);
 
         // Add subqueries for game and friend scores
         const gameScoreSubquery = this.getGameScoreSubquery(query, currentUserId);
         const friendScoreSubquery = this.getFriendScoreSubquery(query, currentUserId);
 
-        this.selectPlayerData(query);
+        this.selectPlayerData(query, currentUserId);
 
         return query
             .leftJoin(`(${gameScoreSubquery.getQuery()})`, "gameScoreSubquery", `"gameScoreSubquery"."userId" = "user"."id"`)
@@ -193,7 +186,7 @@ export class MatchingService {
     /**
      * Adds the player data to the query builder.
      */
-    private selectPlayerData(qb: SelectQueryBuilder<User>): SelectQueryBuilder<User> {
+    private selectPlayerData(qb: SelectQueryBuilder<User>, currentUserId: number): SelectQueryBuilder<User> {
         return qb
             .leftJoin('user.games', 'usersGame')
             .leftJoin('usersGame.game', 'game')
@@ -203,13 +196,18 @@ export class MatchingService {
             .addSelect([
                 'user.username AS "username"',
                 'user.displayName AS "displayName"',
-                `EXTRACT(YEAR FROM AGE(user.birthday)) AS "age"`,
+                // When it isn't allowed to show age, the age is null
+                `CASE WHEN user.canDisplayAge = true THEN EXTRACT(YEAR FROM AGE(user.birthday)) ELSE NULL END AS "age"`,
                 'city.name AS "city"',
                 'user.profileDescription AS "description"',
                 'avatar.blob AS "avatarPath"'
             ])
-            .addSelect(`json_agg(json_build_object('name', game.name, 'playsOnline', usersGame.playsOnline))`, 'games')
-            .groupBy('user.id, avatar.blob, city.name, "totalScore"')
+
+            // Show first games that are the same as the current user, then others
+            .addSelect(`json_agg(json_build_object('name', game.name, 'playsOnline', usersGame.playsOnline)
+                ORDER BY CASE WHEN usersGame.gameId IN (SELECT users_game."gameId" FROM users_game WHERE users_game."userId" = :currentUserId) THEN 0 ELSE 1 END)`, 'games')
+            .groupBy('user.id, avatar.blob, city.name, "matchingCandidates"."cityScore", "matchingCandidates"."ageScore", "gameScoreSubquery"."gameScore", "friendScoreSubquery"."friendScore"')
+            .setParameter("currentUserId", currentUserId)
     }
 
     /**
