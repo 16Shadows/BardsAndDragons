@@ -35,10 +35,9 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   // setUsername setEmail используются при запросе данных из бд, они не меняют данные в бд
   // TODO сохранить на клиенте почту и никнейм, сделать константами и не запрашивать их
-  // TODO поля город и аватар нельзя поставить null, контакты должны быть заполнены
-  const [avatarPic, setAvatarPic] = useState<string | null>(null);
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+  const [avatarPic, setAvatarPic] = useState<string | null>(null);
   const [townList, setTownList] = useState<
     OptionsOrGroups<TownForSelect, any> | undefined
   >([]);
@@ -128,7 +127,6 @@ const ProfilePage = () => {
         // Создаем объект города, TODO добавить локализацию  label
         response.data.city &&
           setTown({ value: response.data.city, label: response.data.city });
-        // TODO обработка установки картинки
         response.data.avatar && setAvatarPic(response.data.avatar);
         response.data.birthday && setBirthDate(response.data.birthday);
         response.data.shouldDisplayAge &&
@@ -479,7 +477,12 @@ const ProfilePage = () => {
 
         <div className="row mb-2">
           {isEditing ? (
-            false ? (
+            avatarPic !== null &&
+            name !== null &&
+            town.value !== "" &&
+            birthDate !== null &&
+            profileDescription !== null &&
+            profileContacts !== null ? (
               <Button
                 key={"doneRedactingButton"}
                 color="primary"
@@ -527,7 +530,6 @@ const ProfilePage = () => {
               />
             )
           ) : (
-            // TODO добавить вызов модала, если есть незаполненные необходимые поля (town, contacts), подсвечивать поля
             <Button
               key={"startRedactingButton"}
               color="primary"
