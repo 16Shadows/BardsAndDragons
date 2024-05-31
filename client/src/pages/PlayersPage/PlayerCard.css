@@ -1,44 +1,4 @@
-.player-card {
-}
-
-.player-card .card-body {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
 .player-card .card-img {
-    height: 20rem;
-    width: 20rem;
+    max-height: 20rem;
     object-fit: contain;
-    margin-right: 1rem;
-}
-
-.player-card .card-content {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-}
-
-.player-card .card-text {
-    flex: 1;
-}
-
-.player-card .card-buttons {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-}
-
-.player-card .card-buttons .btn {
-    flex: 1;
-    margin: 0 25%;
-}
-
-.player-card .card-buttons .btn:first-child {
-    margin-left: 0;
-}
-
-.player-card .card-buttons .btn:last-child {
-    margin-right: 0;
 }
