@@ -6,28 +6,54 @@ import notificationRedPic from "../resources/notification_red_50px.png";
 import NotificationsPanel from "./NotificationsPanel";
 import { useState, useEffect } from "react";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
-import useSignOut from "react-auth-kit/hooks/useSignOut";
+import useSignOut from "../utils/useSignOut";
+import useApi from "../http-common";
 
 const Navbar = () => {
   // Запрос, вошел ли пользователь в профиль или нет
   const isAuthenticated = useIsAuthenticated();
+
   // TODO Добавить запрос на данные профиля
   const [profileName, setProfileName] = useState("Тестовое имя профиля");
+
   const [profileAvatar, setProfileAvatar] = useState(avatar);
   // TODO Добавить запрос на наличие уведомлений
   const [gotNotifications, setGotNotifications] = useState(false);
 
   const navigate = useNavigate();
-  const signOut = useSignOut();
 
-  // Для запроса уведомлений при рендере навбара
+  const {signOut} = useSignOut();
+
+  const api = useApi();
+
+  const getProfileInfoQuery = async () => {
+    // GET запрос списка городов к серверу
+    api
+      .get("user/@current", {})
+      .then((response) => {
+        console.log(response.data);
+        // TODO заменить на хранение на клиенте, не запрашивать
+        if (response.data.displayName)
+          setProfileName(response.data.displayName);
+        else setProfileName(response.data.username);
+
+        // TODO обработка установки картинки
+        // response.data.avatar && set...
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
   useEffect(
-    () => {}
-    //[] // Запуск только после первого рендера страницы/объекта navbar
+    () => {
+      if (isAuthenticated) getProfileInfoQuery();
+    },
+    [] // Запуск только после первого рендера страницы/объекта navbar
   );
 
   return (
-    <nav className="navbar navbar-expand-lg bg-body-tertiary bg-white">
+    <nav className="navbar navbar-expand-lg bg-body-tertiary bg-white mb-4">
       <div className="container-fluid">
         <img src={logo} className="BD-logo" alt="logo" />
 
@@ -42,7 +68,6 @@ const Navbar = () => {
         >
           <span className="navbar-toggler-icon"></span>
         </button>
-
         <div
           className="links collapse navbar-collapse"
           id="navbarSupportedContent"
@@ -50,41 +75,45 @@ const Navbar = () => {
           <div>
             <ul className="navbar-nav mb-2 mb-lg-0">
               <li className="nav-item">
-                <NavLink className="nav-link" aria-current="page" to="/">
-                  Главная
+                <NavLink
+                  // data-bs-toggle="collapse"
+                  // data-bs-target=".navbar-collapse.show"
+                  className="nav-link"
+                  aria-current="page"
+                  to="/"
+                >
+                  <span
+                    data-bs-toggle="collapse"
+                    data-bs-target=".navbar-collapse.show"
+                  >
+                    Главная
+                  </span>
                 </NavLink>
               </li>
 
               <li className="nav-item">
                 <NavLink className="nav-link" to="/players">
-                  Поиск игроков
+                  <span
+                    data-bs-toggle="collapse"
+                    data-bs-target=".navbar-collapse.show"
+                  >
+                    Поиск игроков
+                  </span>
                 </NavLink>
               </li>
 
               <li className="nav-item">
                 <NavLink className="nav-link" to="/games">
-                  Поиск игр
+                  <span
+                    data-bs-toggle="collapse"
+                    data-bs-target=".navbar-collapse.show"
+                  >
+                    Поиск игр
+                  </span>
                 </NavLink>
               </li>
             </ul>
           </div>
-
-          {/* Я думаю это не MVP */}
-          {/* <ul className="navbar-nav">
-            <li className="nav-item search">
-              <form className="d-flex" role="search">
-                <input
-                  className="form-control me-2"
-                  type="search"
-                  placeholder="Поиск"
-                  aria-label="Search"
-                />
-                <button className="btn btn-outline-success" type="submit">
-                  Поиск
-                </button>
-              </form>
-            </li>
-          </ul> */}
 
           {isAuthenticated ? (
             // Кнопка профиля, если пользователь вошел в аккаунт
@@ -117,7 +146,6 @@ const Navbar = () => {
                   <NotificationsPanel />
                 </ul>
               </li>
-
               <li className="nav-item dropdown">
                 <a
                   className="nav-link dropdown-toggle"
@@ -134,18 +162,36 @@ const Navbar = () => {
                 </a>
                 <ul className="dropdown-menu">
                   <li>
+                    <NavLink className="dropdown-item" to="/my-profile">
+                      <span
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse.show"
+                      >
+                        Профиль
+                      </span>
+                    </NavLink>
+                  </li>
+                  <li>
+                    <hr className="dropdown-divider" />
+                  </li>
+                  <li>
                     <NavLink className="dropdown-item" to="/my-games">
-                      Мои игры
+                      <span
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse.show"
+                      >
+                        Мои игры
+                      </span>
                     </NavLink>
                   </li>
                   <li>
                     <NavLink className="dropdown-item" to="/my-friends">
-                      Мои друзья
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink className="dropdown-item" to="/my-profile">
-                      Профиль
+                      <span
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse.show"
+                      >
+                        Мои друзья
+                      </span>
                     </NavLink>
                   </li>
                   <li>
@@ -158,7 +204,12 @@ const Navbar = () => {
                       onClick={() => signOut()}
                       to="#"
                     >
-                      Выйти
+                      <span
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse.show"
+                      >
+                        Выйти
+                      </span>
                     </Link>
                   </li>
                 </ul>
@@ -168,6 +219,8 @@ const Navbar = () => {
             // Кнопки входа/регистрации, если пользователь не вошел в аккаунт
             <div className="nav-item login_reg_bundle ms-auto">
               <button
+                data-bs-toggle="collapse"
+                data-bs-target=".navbar-collapse.show"
                 type="button"
                 onClick={() => navigate("/login")}
                 className="btn btn-primary me-2"
@@ -175,6 +228,8 @@ const Navbar = () => {
                 Вход
               </button>
               <button
+                data-bs-toggle="collapse"
+                data-bs-target=".navbar-collapse.show"
                 type="button"
                 onClick={() => navigate("/register")}
                 className="btn btn-outline-primary"

@@ -7,14 +7,11 @@ interface Props {
   action?: () => {};
   color?: "primary" | "secondary" | "danger" | "success";
   outline?: boolean;
+  style?: {};
 }
-
-const Button = ({ children, onClick, color = "primary", outline }: Props) => {
+const Button = ({ children, onClick, color = "primary", style={} }: Props) => {
   return (
-    <button
-      className={outline ? "btn btn-outline-" + color : "btn btn-" + color}
-      onClick={onClick}
-    >
+    <button className={outline ? "btn btn-outline-" + color : "btn btn-" + color} onClick={onClick} style={style}>
       {children}
     </button>
   );
