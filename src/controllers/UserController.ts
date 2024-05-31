@@ -181,25 +181,25 @@ export class UserController extends Object {
                 return status(400);
         }
 
-        if (city != undefined)
+        if (city !== undefined)
             user.city = Promise.resolve(city);
 
-        if (avatar != undefined)
+        if (avatar !== undefined)
             user.avatar = Promise.resolve(avatar);
 
-        if (info.displayName != undefined)
+        if (info.displayName !== undefined)
             user.displayName = info.displayName;
         
-        if (info.description != undefined)
+        if (info.description !== undefined)
             user.profileDescription = info.description;
 
-        if (info.contactInfo != undefined)
+        if (info.contactInfo !== undefined)
             user.contactInfo = info.contactInfo;
 
-        if (info.birthday != undefined)
+        if (info.birthday !== undefined)
             user.birthday = info.birthday;
 
-        if (info.shouldDisplayAge != undefined)
+        if (info.shouldDisplayAge !== undefined)
             user.canDisplayAge = info.shouldDisplayAge;
 
         await this._dbContext.getRepository(User).save(user);
