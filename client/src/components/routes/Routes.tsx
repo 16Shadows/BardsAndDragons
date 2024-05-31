@@ -14,28 +14,28 @@ import ProtectedRoutes from "./ProtectedRoutes";
 import TestPage from "../../pages/TestPage";
 
 const RoutesComponent = () => {
-    return (
-        <Routes>
-            {/* Public routes */}
-            <Route path={"/"} element={<Home/>}/>
-            <Route path={"/login"} element={<Login/>}/>
-            <Route path={"/register"} element={<Registration/>}/>
-            <Route path={"/games"} element={<SearchGamesPage/>}/>
+  return (
+    <Routes>
+      {/* Public routes */}
+      <Route path={"/"} element={<Home />} />
+      <Route path={"/login"} element={<Login />} />
+      <Route path={"/register"} element={<Registration />} />
+      <Route path={"/games"} element={<SearchGamesPage />} />
 
-            <Route path={"test-page"} element={<TestPage/>}/>
+      <Route path={"test-page"} element={<TestPage />} />
 
       {/* Protected routes */}
       <Route element={<ProtectedRoutes fallbackPath="/login" />}>
         <Route path={"/my-profile"} element={<ProfilePage />} />
         <Route path={"/my-games"} element={<MyGamesPage />} />
         <Route path={"/my-friends"} element={<MyFriendsPage />} />
-                <Route path={"/players"} element={<PlayersPage/>}/>
-                <Route path={"/secure"} element={<SecureComponent/>} />
-            </Route>
+        <Route path={"/players"} element={<PlayersPage />} />
+      </Route>
 
-            {/* TODO: 404 page */}
-            <Route path={"*"} element={<div>404 Not found </div>}/>
-        </Routes>)
-}
+      {/* TODO: 404 page */}
+      <Route path={"*"} element={<div>404 Not found </div>} />
+    </Routes>
+  );
+};
 
 export default RoutesComponent;

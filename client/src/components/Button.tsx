@@ -9,10 +9,18 @@ interface Props {
   outline?: boolean;
   style?: {};
 }
-const Button = ({ children, onClick, color = "primary", style={} }: Props) => {
+const Button = (props: Props) => {
   return (
-    <button className={outline ? "btn btn-outline-" + color : "btn btn-" + color} onClick={onClick} style={style}>
-      {children}
+    <button
+      className={
+        props.outline
+          ? "btn btn-outline-" + props.color
+          : "btn btn-" + props.color
+      }
+      onClick={props.onClick}
+      style={props.style}
+    >
+      {props.children}
     </button>
   );
 };

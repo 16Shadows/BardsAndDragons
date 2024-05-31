@@ -7,7 +7,6 @@ import {Accept, Return} from "../modules/core/mimeType/decorators";
 import bcrypt from "bcryptjs";
 import {
     AuthHeaderMiddleware,
-    createAuthToken,
     AuthHeaderMiddlewareBag,
     AuthMiddleware,
     AuthMiddlewareBag
@@ -289,7 +288,7 @@ export class UserController extends Object {
     @POST('@current/delete')
     @Middleware(AuthMiddleware)
     @Accept('application/json')
-    async deleteMe(bag: AuthMiddlewareBag) {
+    async deleteMe(bag: AuthHeaderMiddlewareBag) {
         const repo = this._dbContext.getRepository(User);
         await repo.softRemove(bag.user);
         return this.logout(bag, {});
