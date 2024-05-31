@@ -9,6 +9,24 @@ import { QueryArgument, QueryBag } from "../modules/core/routing/query";
 import { ILike } from "typeorm"
 import { UsersGame } from "../model/usersGame";
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
+import { badRequest } from "../modules/core/routing/response";
+import { SelectQueryBuilder } from "typeorm/browser";
+
+// Список опций сортировки
+const sortTypes = new Set(["id", "name"])
+
+// Лимит получаемых в запросе объектов
+const defaultRequestLimit = 50
+
+export interface GameData 
+{ 
+    id: number; 
+    name: string; 
+    description: string; 
+    playerCount: string;
+    ageRating: string;
+    subscribed?: boolean; 
+}
 
 @Controller('api/v1/game')
 export class GameController extends Object {
@@ -48,21 +66,24 @@ export class GameController extends Object {
         let repository = this._dbContext.getRepository(Game);
         let games;
 
-        // Базовый лимит - 1000
-        let limit = 1000;
-        if (query['limit'])
-            limit = query['limit'];
+        // Базовый лимит - requestLimit
+        let limit = defaultRequestLimit;
+        if (query.limit && query.limit > 0)
+            limit = query.limit;
 
         // Базовая сортировка - по id игры
-        let sort = query['sort'] ?? "id"
+        let sort = query.sort ?? "id"
+
+        if (!sortTypes.has(sort))
+            return badRequest();
 
         // Поиск по имени
-        if (query['name'] && query['name'] != "") {
+        if (query.name && query.name != "") {
             games = await repository.find({
                 take: limit,
-                skip: query['start'] ?? 0,
+                skip: query.start ?? 0,
                 where: {
-                    name: ILike('%'+query['name']+'%')
+                    name: ILike('%'+query.name+'%')
                 },
                 order: {
                     [sort]: 'ASC'
@@ -73,7 +94,7 @@ export class GameController extends Object {
         else {
             games = await repository.find({
                 take: limit,
-                skip: query['start'] ?? 0,
+                skip: query.start ?? 0,
                 order: {
                     [sort]: 'ASC'
                 }
@@ -110,7 +131,7 @@ export class GameController extends Object {
     })
     // Название
     @QueryArgument('name', {
-        canHaveMultipleValues: true,
+        canHaveMultipleValues: false,
         optional: true
     })
     // Параметр, по которому сортируем
@@ -122,52 +143,67 @@ export class GameController extends Object {
     @Return('application/json')
     async getGamesSubscribe(bag: AuthMiddlewareBag, query: QueryBag) {
         let repository = this._dbContext.getRepository(Game);
-        let games;
+        let games: SelectQueryBuilder<Game>;
         let userId = bag.user.id;
 
-        // Базовый лимит - 1000
-        let limit = 1000;
-        if (query['limit'])
-            limit = query['limit'];
+        // Базовый лимит - requestLimit
+        let limit = defaultRequestLimit;
+        if (query.limit && query.limit > 0)
+            limit = query.limit;
 
         // Базовая сортировка - по id игры
-        let sort = query['sort'] ?? "id"
+        let sort = query.sort ?? "id"
+
+        if (!sortTypes.has(sort))
+            return badRequest();
 
         games = repository.createQueryBuilder("game")
 
         //  Поиск по имени с проверкой подписки на игры
-        if (query['name'] && query['name'] != "") 
-                games = games.where("game.name ilike :name", { name: `%${query['name']}%` })
+        if (query.name && query.name != "") 
+                games = games.where("game.name ilike :name", { name: `%${query.name}%` })
 
-        games = await games.leftJoinAndSelect('game.users', 'user', 'user.userId = :userId', { userId: userId })
-            .take(limit)
-            .skip(query['start'] ?? 0)
-            .orderBy(`game.${sort}`, 'ASC')
-            .getMany()
+        // Если при дальнейшей разработке проблем выявлено не будет, то этот код будет вырезан.
+        {
+        // games = await games.leftJoinAndSelect('game.users', 'user', 'user.userId = :userId', { userId: userId })
+        //     .take(limit)
+        //     .skip(query.start ?? 0)
+        //     .orderBy(`game.${sort}`, 'ASC')
+        //     .getMany()
+        
+        // // Создание поля с информацией о подписке для каждой игры
+        // for (let i = 0; i < games.length; i++) {
 
-        // Создание поля с информацией о подписке для каждой игры
-        for (let i = 0; i < games.length; i++) {
+        //     if ((await games[i].users).length > 0)
+        //         games[i]['subscribed'] = true;
+        //     else
+        //         games[i]['subscribed'] = false;
 
-            if ((await games[i].users).length > 0)
-                games[i]['subscribed'] = true;
-            else
-                games[i]['subscribed'] = false;
+        //     console.log(games[i]['__users__'])
 
-            delete games[i]['__users__'];
+        //     delete games[i]['__users__'];
+        // }
         }
+
+        let result = await games
+            .leftJoinAndSelect('game.users', 'usersGame', 'usersGame.userId = :userId', {userId})
+            .select([ 'game.id AS "id"', 'game.name AS "name"', 'game.description AS "description"', 
+            'game.playerCount AS "playerCount"', 'game.ageRating AS "ageRating"', 'CASE WHEN usersGame.id IS NOT NULL THEN true ELSE false END AS "subscribed"' ])
+            .offset(query.start) .limit(query.limit)
+            .orderBy(`game.${sort}`, 'ASC')
+            .getRawMany<GameData>();
 
         console.log(Date.now());
         console.log("games");
-        // console.log(games);
+        console.log(result);
+
+        return result;
 
         // Задержка для тестирования
-        // const date = Date.now();        
-        // let currentDate = null;       
-        // do {               
-        //    currentDate = Date.now();      
-        // } while (currentDate - date < 500); 
-
-        return games;
+        // await new Promise((resolve) => setTimeout(resolve, 3000)).then(() => {
+        //     // Код
+        //     }
+        // );
     }
 
     // Получение количества игр
@@ -183,10 +219,10 @@ export class GameController extends Object {
         let games;
 
         // Получаем количество найденных по названию игр
-        if (query['name'] && query['name'] != "") {
+        if (query.name && query.name != "") {
             games = await repository.count({
                 where: {
-                    name: ILike('%'+query['name']+'%')
+                    name: ILike('%'+query.name+'%')
                 }
             });
         }
@@ -204,7 +240,7 @@ export class GameController extends Object {
 
     // Подписка на игру
     @POST('{gameId:int}/subscribe')
-    @Accept('application/json')
+    @Accept('application/json', 'text/plain')
     @Return('application/json')
     @Middleware(AuthMiddleware)
     async subscribe(bag: AuthMiddlewareBag, gameId:number) {
@@ -220,14 +256,14 @@ export class GameController extends Object {
         newPair.game = Promise.resolve(game)
         newPair.playsOnline = false;
 
-        repository.save(newPair);
+        await repository.save(newPair);
 
         return newPair;
     }
 
     // Отписка от игры
     @POST('{gameId:int}/unsubscribe')
-    @Accept('application/json')
+    @Accept('application/json', 'text/plain')
     @Return('application/json')
     @Middleware(AuthMiddleware)
     async unsubscribe(bag: AuthMiddlewareBag, gameId:number) {
@@ -237,7 +273,7 @@ export class GameController extends Object {
         let repository = this._dbContext.getRepository(UsersGame);
 
         // Удаление объекта из БД на основе id игры и пользователя
-        repository.delete({user: bag.user, game: game});
+        await repository.delete({user: bag.user, game: game});
 
         return true;
     }

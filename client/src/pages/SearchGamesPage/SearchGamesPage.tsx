@@ -22,7 +22,7 @@ const SearchGamesPage = () => {
 
     // ===Пагинация===
     // Количество запрашиваемых за раз игр
-    const [requestSize, setRequestSize] = useState<number>()
+    const [requestSize, setRequestSize] = useState<number>(0)
 
     // Общее число игр, которые соответствуют текущим условиям выбора
     const totalGamesNumberRef = useRef(0)
@@ -33,6 +33,8 @@ const SearchGamesPage = () => {
     // ===Запрос данных из БД===
     // Индикатор, что нужно выполнить запрос игр из БД
     const [fetching, setFetching] = useState(false)
+    
+    const inputForm = useRef(null)
 
     // Строка запроса для поиска
     const [searchQuery, setSearchQuery] = useState('')
@@ -73,45 +75,50 @@ const SearchGamesPage = () => {
     const [modalIsShow, setModalIsShow] = useState(false)
 
     // Если изменится сортировка или строка запроса - делаем запрос игр из БД
-    useEffect(getTotalNumber, [searchQueryEvent, selectedSort])
+    useEffect(getTotalNumber, [searchQueryEvent, selectedSort, api])
     
     // Запрашиваем общее число игр из БД, а затем сами игры
     function getTotalNumber() {
-        api.get('game/games-number', { params: {name: searchQueryEvent} }).then(function (response) {
-            totalGamesNumberRef.current = response.data;
-            console.log(totalGamesNumberRef.current);
+        if (!fetching) {
+            if (inputForm.current)
+                ((inputForm.current) as HTMLFieldSetElement).disabled = true;
 
-            // Очищаем список и обнуляем счётчик
-            setGames(undefined);
-            currentGameNumberRef.current = 0;
+            api.get('game/games-number', { params: {name: searchQueryEvent} }).then(function (response) {
+                totalGamesNumberRef.current = response.data;
+                // console.log(totalGamesNumberRef.current);
 
-            // Если игры нашлись, то делаем запрос
-            if (response.data > 0) {
-                setFetching(true);
-            }
-            else {
-                // Для анимации
-                setTimeout(() => setGames([]), 750);
-            }
-        }).catch(() => alert('Не удалось получить список игр'))
+                // Очищаем список и обнуляем счётчик
+                setGames(undefined);
+                currentGameNumberRef.current = 0;
+
+                // Если игры нашлись, то делаем запрос
+                if (response.data > 0) {
+                    setFetching(true);
+                }
+                else {
+                    // Для анимации
+                    setTimeout(() => {
+                        setGames([]);
+                        if (inputForm.current)
+                            ((inputForm.current) as HTMLFieldSetElement).disabled = false;
+                    }, 750);
+                }
+            }).catch(() => alert('Не удалось получить список игр'))
+        }
     }
 
     // Подписка на игру
     function subscribe(gameId: number) {
-        api.post(`game/${gameId}/subscribe`, {headers: {
-            'Content-Type': 'application/json'
-        }}).then(function (response) {
-            console.log("Subscribed");
+        api.post(`game/${gameId}/subscribe`).then(function (response) {
+            // console.log("Subscribed");
             //console.log(response.data);
         })
     }
 
     // Отписка от игры
     function unsubscribe(gameId: number) {
-        api.post(`game/${gameId}/unsubscribe`, {headers: {
-            'Content-Type': 'application/json'
-        }}).then(function (response) {
-            console.log("Unsubscribed");
+        api.post(`game/${gameId}/unsubscribe`).then(function (response) {
+            // console.log("Unsubscribed");
             //console.log(response.data);
         })
     }
@@ -136,7 +143,7 @@ const SearchGamesPage = () => {
     // Выполняется при изменении состояния индикатора fetching
     useEffect(() => {
         if (fetching) {
-            //console.log("fetching games");
+            // console.log("fetching games");
             //console.log(`Current: ${currentGameNumberRef.current}`);
 
             // Запрашиваем игры, передаём лимит, стартовую позицию, искомое имя, id пользователя и тип сортировки
@@ -151,7 +158,11 @@ const SearchGamesPage = () => {
                 
                 // Увеличиваем текущую позицию
                 currentGameNumberRef.current += requestSize ?? 0;
-            }).catch(() => alert('Не удалось получить список игр')).finally(() => setFetching(false))
+            }).catch(() => alert('Не удалось получить список игр')).finally(() => {
+                setFetching(false);
+                if (inputForm.current)
+                    ((inputForm.current) as HTMLFieldSetElement).disabled = false;
+            })
         }
     }, [fetching])
 
@@ -162,27 +173,30 @@ const SearchGamesPage = () => {
             <Col md="6">
                 <div id="search-box" className="static-item">
                     <Form onSubmit={searchGames}>
-                        {/* Поиск по названию */}
-                        <div style={{fontSize: "24px"}}><b>Название</b></div>
-                        <input style={{width: "100%"}} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                        <fieldset ref={inputForm}>
+                            {/* Поиск по названию */}
+                            <div style={{ fontSize: "24px" }}><b>Название</b></div>
+                            <input style={{ width: "100%" }} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
 
-                        <div style={{marginTop: "15px", textAlign: "center"}}>
-                            {/* Сортировка */}
-                            <span style={{width: "48%", display: "inline-block", verticalAlign: "middle"}}>
-                                <span style={{fontWeight: "bolder", fontSize: "20px"}}>Сортировка:</span>
-                                <select id="select-list" value={selectedSort} onChange={event => setSelectedSort(event.target.value)}>
-                                    <option disabled value={""}>Сортировка</option>
-                                    {Array.from(sortTypes.keys()).map((option) =>
-                                        <option key={option}>{option}</option>
-                                    )}
-                                </select>      
-                            </span>
-                            
-                            {/* Кнопка поиска */}
-                            <span id="search-button-block">                   
-                                <Button type="submit" id="search-button">Поиск</Button>
-                            </span>  
-                        </div>
+                            <div style={{ marginTop: "15px", textAlign: "center" }}>
+                                {/* Сортировка */}
+                                <span style={{ width: "48%", display: "inline-block", verticalAlign: "middle" }}>
+                                    <span style={{ fontWeight: "bolder", fontSize: "20px" }}>Сортировка:</span>
+                                    <select id="select-list" value={selectedSort} onChange={event => setSelectedSort(event.target.value)}>
+                                        <option disabled value={""}>Сортировка</option>
+                                        {Array.from(sortTypes.keys()).map((option) =>
+                                            <option key={option}>{option}</option>
+                                        )}
+                                    </select>
+                                </span>
+
+                                {/* Кнопка поиска */}
+                                <span id="search-button-block">
+                                    <Button type="submit" id="search-button">Поиск</Button>
+                                </span>
+                            </div>
+                        </fieldset>
+                        
                     </Form>
                 </div>
             </Col>
