@@ -1,0 +1,20 @@
+.gameItemBadge {
+    background-color: #e5e5e5 !important;
+    color: #000000 !important;
+    font-size: 16px !important;
+    font-weight: bolder !important;
+    padding: 10px !important;
+    border-radius: 6px !important;
+    height: 42px !important;
+    display: flex;
+    align-items: center;
+}
+
+.gameItemIcon {
+    font-size: 16px !important;
+}
+
+.onlineItemBadge {
+    background-color: #346c52 !important;
+    color: #ffffff !important;
+}

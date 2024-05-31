@@ -4,6 +4,9 @@ import "./PlayerCard.css";
 import NoAvatarImage from "../../resources/EmptyProfileAvatar_200px.png";
 import {PlayerData} from "./PlayerData";
 import CenteredCardWithItem from "../../components/CenteredCardWithItem";
+import GameList from "./GameList";
+import {FaHeart} from "react-icons/fa";
+import {ImCross} from "react-icons/im";
 
 interface PlayerCardProps extends PlayerData {
     onAccept: (username: string) => void;
@@ -21,6 +24,9 @@ const PlayerCard = ({
                         onAccept,
                         onReject,
                     }: PlayerCardProps) => {
+    // Number of games to show per page
+    const gamesPerPage = 6;
+
     return (
         <CenteredCardWithItem
             columnWidth={8}
@@ -44,26 +50,15 @@ const PlayerCard = ({
                     </Row>
 
                     <Card.Text>
-                        <strong>Игры:</strong>
-                        <ul>
-                            {games.map((game, index) => (
-                                    <li key={index}>{game.name}, {game.playsOnline ? 'онлайн' : 'оффлайн'}</li>
-                                )
-                            )}
-                        </ul>
+                        <GameList key={username} games={games} gamesPerPage={gamesPerPage}/>
                     </Card.Text>
 
-                    <Row>
-                        <Col xs="auto" sm="auto" xl="2">
-                            <Button className="w-100" variant="danger"
-                                    onClick={() => onReject(username)}>Отклонить</Button>
-                        </Col>
-                        <Col></Col>
-                        <Col xs="auto" sm="auto" xl="2">
-                            <Button className="w-100" variant="success"
-                                    onClick={() => onAccept(username)}>Принять</Button>
-                        </Col>
-                    </Row>
+                    <div className={"d-flex justify-content-between"}>
+                        <Button variant="danger" size="lg"
+                                onClick={() => onReject(username)}><ImCross/></Button>
+                        <Button variant="success" size="lg"
+                                onClick={() => onAccept(username)}><FaHeart/></Button>
+                    </div>
                 </>
             }
         />
