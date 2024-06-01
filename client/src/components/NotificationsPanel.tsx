@@ -61,10 +61,9 @@ const NotificationsPanel = () => {
 
         setGotNotifications(gotNotif);
 
-        // console.log(items.length);
         return {
           list: oldArr.concat(res),
-          isFinal: items.length === 0,
+          isFinal: !(res.length === notifOnPageCount),
         };
       } catch {
         return {
@@ -78,8 +77,12 @@ const NotificationsPanel = () => {
 
   // Список уведомлений
   // TODO понять, почему надо два раза вызывать без новых уведов, чтобы кнопку отключило, починить
-  const [notifications, setNotifications, isNotificationsFinal] =
-    useDynamicList(getNotificationsQuery);
+  const [
+    notifications,
+    setNotifications,
+    isNotificationsFinal,
+    updateNotifications,
+  ] = useDynamicList(getNotificationsQuery);
 
   useEffect(() => {
     abortSignal.current.abort();
@@ -89,21 +92,14 @@ const NotificationsPanel = () => {
       fetchEventSource("api/v1/notifications/subscribe", {
         onmessage(event) {
           setGotNotifications(true);
-          getNotificationsQuery(notifications ? notifications : []);
+          let notif = JSON.parse(event.data);
+          updateNotifications((x) => [notif].concat(x));
         },
         headers: { Authorization: authHeader },
         signal: abortSignal.current.signal,
       });
-      api
-        .get("notifications/testSourceEvent", {})
-        .then(async (response) => {
-          console.log("Тестовая отправка уведомления от сервиса", response);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
     }
-  }, [authHeader, abortSignal, api, getNotificationsQuery, notifications]);
+  }, [authHeader, abortSignal, api]);
 
   // Индикатор наличия уведомлений
   const [gotNotifications, setGotNotifications] = useState(false);
@@ -111,19 +107,13 @@ const NotificationsPanel = () => {
   // Индикатор открытости списка панели уведомлений, для ререндера
   const [openState, setOpenState] = useState(false);
 
-  // Состояние для кнопки "загрузить еще" уведомления. false, когда больше загрузить нельзя
-  const [canLoadMoreNotif, setCanLoadMoreNotif] = useState(true);
-
   // Количество уведомлений, отображаемых/добавляемых за раз
   const notifOnPageCount = 2;
-
-  //const pomogite = useRef(isNotificationsFinal);
 
   const setSeenNotifications = (event: any) => {
     // При открытии меню отправляем в БД запрос на изменение статуса уведомлений
     if (event.target.classList.contains("show")) {
       setOpenState(true);
-      // console.log(notifications);
       notifications?.forEach((notif) => {
         if (!notif.seen) {
           api
@@ -135,9 +125,7 @@ const NotificationsPanel = () => {
         }
       });
     } // При закрытии - обновляем поле seen и рамку вокруг прочитанных объектов
-    // + делаем кнопку "загрузить еще" доступной
     else {
-      setCanLoadMoreNotif(true);
       setOpenState(false);
       notifications?.forEach((notif) => {
         notif.seen = true;
@@ -147,13 +135,24 @@ const NotificationsPanel = () => {
 
   async function loadMoreNotificationsHandler() {
     setNotifications();
-    if (isNotificationsFinal) {
-      setCanLoadMoreNotif(false);
-    }
+    setOpenState(true);
   }
 
   return (
     <div>
+      <Button
+        children="екелемене"
+        onClick={function (): void {
+          api
+            .get("notifications/testSourceEvent", {})
+            .then(async (response) => {
+              console.log("Тестовая отправка уведомления от сервиса", response);
+            })
+            .catch((error) => {
+              console.error(error);
+            });
+        }}
+      ></Button>
       <div
         id="notification_dropdown_toggle"
         className="nav-link dropdown-toggle "
@@ -201,9 +200,9 @@ const NotificationsPanel = () => {
             : "Уведомлений пока нет"}
           <div className="d-flex justify-content-center">
             <Button
-              disabled={!canLoadMoreNotif}
+              disabled={isNotificationsFinal}
               children={
-                canLoadMoreNotif
+                !isNotificationsFinal
                   ? "Загрузить еще"
                   : "Новых уведомлений пока нет"
               }
