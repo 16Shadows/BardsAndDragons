@@ -8,6 +8,14 @@ import { useState, useEffect } from "react";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import useSignOut from "../utils/useSignOut";
 import useApi from "../http-common";
+import { FaUserFriends } from "react-icons/fa";
+import { IoDice } from "react-icons/io5";
+import { LuLogOut } from "react-icons/lu";
+import { FaDice } from "react-icons/fa";
+import { IoMdSettings } from "react-icons/io";
+import { LuDices } from "react-icons/lu";
+import { IoSettingsOutline } from "react-icons/io5";
+import { LuUsers2 } from "react-icons/lu";
 
 const Navbar = () => {
   // Запрос, вошел ли пользователь в профиль или нет
@@ -22,9 +30,10 @@ const Navbar = () => {
 
   const navigate = useNavigate();
 
-  const {signOut} = useSignOut();
+  const { signOut } = useSignOut();
 
   const api = useApi();
+  const iconSize = 20;
 
   const getProfileInfoQuery = async () => {
     // GET запрос списка городов к серверу
@@ -167,6 +176,7 @@ const Navbar = () => {
                         data-bs-toggle="collapse"
                         data-bs-target=".navbar-collapse.show"
                       >
+                        <IoMdSettings size={iconSize} />
                         Профиль
                       </span>
                     </NavLink>
@@ -180,6 +190,7 @@ const Navbar = () => {
                         data-bs-toggle="collapse"
                         data-bs-target=".navbar-collapse.show"
                       >
+                        <IoDice size={iconSize} />
                         Мои игры
                       </span>
                     </NavLink>
@@ -190,6 +201,7 @@ const Navbar = () => {
                         data-bs-toggle="collapse"
                         data-bs-target=".navbar-collapse.show"
                       >
+                        <FaUserFriends size={iconSize} />
                         Мои друзья
                       </span>
                     </NavLink>
@@ -208,7 +220,7 @@ const Navbar = () => {
                         data-bs-toggle="collapse"
                         data-bs-target=".navbar-collapse.show"
                       >
-                        Выйти
+                        <LuLogOut size={iconSize} /> Выйти
                       </span>
                     </Link>
                   </li>
