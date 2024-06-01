@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../http-common";
 
@@ -21,16 +20,18 @@ const Home = () => {
       });
   };
 
-    return (
-        <div>
-            <h1>Home</h1>
-            <button onClick={testQuery}>Check Auth</button>
-            <button onClick={() => navigate('/login')}>Go to Login</button>
-            <button onClick={() => navigate('/register')}>Go to Register</button>
-            <button onClick={() => navigate('/secure')}>Go to Secure Dashboard</button>
-            <button onClick={() => navigate('/test-page')}>Go to Test Page</button>
-        </div>
-    )
-}
+  return (
+    <div>
+      <h1>Home</h1>
+      <button onClick={testQuery}>Check Auth</button>
+      <button onClick={() => navigate("/login")}>Go to Login</button>
+      <button onClick={() => navigate("/register")}>Go to Register</button>
+      <button onClick={() => navigate("/secure")}>
+        Go to Secure Dashboard
+      </button>
+      <button onClick={() => navigate("/test-page")}>Go to Test Page</button>
+    </div>
+  );
+};
 
 export default Home;
