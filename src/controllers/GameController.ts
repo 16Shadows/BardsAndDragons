@@ -18,7 +18,7 @@ const sortTypes = new Set(["id", "name"])
 // Лимит получаемых в запросе объектов
 const defaultRequestLimit = 50
 
-export interface GameData 
+interface GameData 
 { 
     id: number; 
     name: string; 
@@ -26,6 +26,13 @@ export interface GameData
     playerCount: string;
     ageRating: string;
     subscribed?: boolean; 
+}
+
+type FindInList = {
+    limit?: number;
+    start?: number;
+    name?: string;
+    sort?: string;
 }
 
 @Controller('api/v1/game')
@@ -62,7 +69,7 @@ export class GameController extends Object {
         optional: true
     })
     @Return('application/json')
-    async getGames(bag: MiddlewareBag, query: QueryBag) {
+    async getGames(bag: MiddlewareBag, query: FindInList) {
         let repository = this._dbContext.getRepository(Game);
         let games;
 
@@ -101,22 +108,11 @@ export class GameController extends Object {
             });
         }
 
-        console.log(Date.now());
-        console.log("games");
-        //console.log(games);
-
-        // Задержка для тестирования
-        // const date = Date.now();        
-        // let currentDate = null;       
-        // do {               
-        //    currentDate = Date.now();      
-        // } while (currentDate - date < 500); 
-
         return games;
     }
 
     // Получение списка игр из БД
-    @GET('subscribes')
+    @GET('games-with-subscription')
     // Лимит игр
     @QueryArgument('limit', {
         typeId: 'int',
@@ -141,7 +137,7 @@ export class GameController extends Object {
     })
     @Middleware(AuthMiddleware)
     @Return('application/json')
-    async getGamesSubscribe(bag: AuthMiddlewareBag, query: QueryBag) {
+    async getGamesSubscribe(bag: AuthMiddlewareBag, query: FindInList) {
         let repository = this._dbContext.getRepository(Game);
         let games: SelectQueryBuilder<Game>;
         let userId = bag.user.id;
@@ -193,10 +189,6 @@ export class GameController extends Object {
             .orderBy(`game.${sort}`, 'ASC')
             .getRawMany<GameData>();
 
-        console.log(Date.now());
-        console.log("games");
-        console.log(result);
-
         return result;
 
         // Задержка для тестирования
@@ -231,10 +223,6 @@ export class GameController extends Object {
             games = await repository.count();
         }
 
-        console.log(Date.now());
-        console.log("games-number");
-        //console.log(games);
-
         return games;
     }
 
@@ -257,8 +245,6 @@ export class GameController extends Object {
         newPair.playsOnline = false;
 
         await repository.save(newPair);
-
-        return newPair;
     }
 
     // Отписка от игры
@@ -274,7 +260,5 @@ export class GameController extends Object {
 
         // Удаление объекта из БД на основе id игры и пользователя
         await repository.delete({user: bag.user, game: game});
-
-        return true;
     }
 }

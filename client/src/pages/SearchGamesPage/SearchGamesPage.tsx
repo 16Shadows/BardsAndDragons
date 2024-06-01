@@ -3,9 +3,7 @@ import GameItem, { IGameProps } from "../../components/GameItem/GameItem";
 import { Button, Col, Form, Modal, Row } from "react-bootstrap";
 import useApi from '../../http-common'
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
-// import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 import "./SearchGamesPage.css"
-// import { UserData } from "../../models/UserData";
 // import Alert from "../../components/Alert";
 // import Popup from "../../components/Popup";
 
@@ -15,14 +13,11 @@ const SearchGamesPage = () => {
     // Проверка, авторизован ли пользователь
     const isAuthenticated = useIsAuthenticated()
 
-    const gameRequestName = isAuthenticated ? 'game/subscribes' : 'game/games'
-
-    // Имя пользователя
-    // const username = useAuthUser<UserData>()?.username
+    const gameRequestName = isAuthenticated ? 'game/games-with-subscription' : 'game/games'
 
     // ===Пагинация===
     // Количество запрашиваемых за раз игр
-    const [requestSize, setRequestSize] = useState<number>(0)
+    const requestSize = 5 + Math.round(document.documentElement.clientHeight / 200)
 
     // Общее число игр, которые соответствуют текущим условиям выбора
     const totalGamesNumberRef = useRef(0)
@@ -111,7 +106,6 @@ const SearchGamesPage = () => {
     function subscribe(gameId: number) {
         api.post(`game/${gameId}/subscribe`).then(function (response) {
             // console.log("Subscribed");
-            //console.log(response.data);
         })
     }
 
@@ -119,7 +113,6 @@ const SearchGamesPage = () => {
     function unsubscribe(gameId: number) {
         api.post(`game/${gameId}/unsubscribe`).then(function (response) {
             // console.log("Unsubscribed");
-            //console.log(response.data);
         })
     }
 
@@ -128,8 +121,6 @@ const SearchGamesPage = () => {
         // Добавляем слушатель для прокрутки
         document.addEventListener("scroll", scrollHandler);
 
-        // Устанавливаем количество игр для одного запроса
-        setRequestSize(Math.round(document.documentElement.clientHeight / 100));
         //console.log(`requestSize: ${requestSize}`);
 
         // Запрашиваем игры из БД
@@ -144,20 +135,21 @@ const SearchGamesPage = () => {
     useEffect(() => {
         if (fetching) {
             // console.log("fetching games");
-            //console.log(`Current: ${currentGameNumberRef.current}`);
+            // console.log(`Current: ${currentGameNumberRef.current}`);
 
             // Запрашиваем игры, передаём лимит, стартовую позицию, искомое имя, id пользователя и тип сортировки
             api.get(gameRequestName, { params: {limit: requestSize, start: currentGameNumberRef.current, name: searchQueryEvent, sort: sortTypes.get(selectedSort)} }).then(function (response) {
-                if (!games) {
-                    //setGames((response.data as IGameProps[]).sort((a, b) => a["id"] - b["id"]));
-                    setGames(response.data);
-                }
-                else {
-                    setGames([...games, ...response.data]);
-                }
+                setGames(gms => {
+                    if (!gms) {
+                        return response.data;
+                    }
+                    else {
+                        return gms.concat(response.data);
+                    }
+                })
                 
                 // Увеличиваем текущую позицию
-                currentGameNumberRef.current += requestSize ?? 0;
+                currentGameNumberRef.current += requestSize;
             }).catch(() => alert('Не удалось получить список игр')).finally(() => {
                 setFetching(false);
                 if (inputForm.current)
