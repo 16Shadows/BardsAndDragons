@@ -43,15 +43,12 @@ const ProfilePage = () => {
   );
   const [profileContacts, setProfileContacts] = useState<string | null>(null);
 
-  const handleNameChange = (event: {
-    target: { value: React.SetStateAction<null | string> };
-  }) => {
-    if (event.target.value === "") setName(null);
-    else setName(event.target.value);
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.currentTarget.value === "") setName(null);
+    else setName(event.currentTarget.value);
   };
   const handleTownChange = (
-    newValue: SingleValue<{ value: string; label: string } | null>,
-    action: any
+    newValue: SingleValue<{ value: string; label: string } | null>
   ) => {
     if (newValue != null) setTown(newValue);
     else return;
@@ -62,20 +59,20 @@ const ProfilePage = () => {
   const hangleIsShowingAgeChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    if (event.target.checked) setIsShowingAge(true);
+    if (event.currentTarget.checked) setIsShowingAge(true);
     else setIsShowingAge(false);
   };
-  const handleDescriptionChange = (event: {
-    target: { value: React.SetStateAction<null | string> };
-  }) => {
-    if (event.target.value === "") setProfileDescription(null);
-    else setProfileDescription(event.target.value);
+  const handleDescriptionChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    if (event.currentTarget.value === "") setProfileDescription(null);
+    else setProfileDescription(event.currentTarget.value);
   };
-  const handleContactsChange = (event: {
-    target: { value: React.SetStateAction<null | string> };
-  }) => {
-    if (event.target.value === "") setProfileContacts(null);
-    else setProfileContacts(event.target.value);
+  const handleContactsChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    if (event.currentTarget.value === "") setProfileContacts(null);
+    else setProfileContacts(event.currentTarget.value);
   };
 
   const { signOut } = useSignOut();
