@@ -16,6 +16,6 @@ export interface NotificationObject {
   type: NotificationTypes;
   seen: boolean;
   displayName: string | null;
-  username: string | null;
+  username: string;
   avatar: string | null;
 }

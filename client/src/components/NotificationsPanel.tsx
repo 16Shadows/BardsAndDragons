@@ -1,4 +1,4 @@
-import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useApi from "../http-common";
 import NotificationTemplate from "./NotificationTemplate";
 import notificationPic from "../resources/notification_50px.png";
@@ -9,10 +9,7 @@ import {
 } from "../models/Notifications";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import React from "react";
-import { Int32 } from "typeorm";
 import Button from "./Button";
-import { start } from "repl";
 import useDynamicList from "../utils/useDynamicList";
 
 const NotificationsPanel = () => {
@@ -21,30 +18,6 @@ const NotificationsPanel = () => {
   const authHeader = useAuthHeader();
 
   const abortSignal = useRef(new AbortController());
-
-  useEffect(() => {
-    abortSignal.current.abort();
-    abortSignal.current = new AbortController();
-    // Подписка на уведомления от сервера, новые уведомления пользователю
-    if (authHeader) {
-      fetchEventSource("api/v1/notifications/subscribe", {
-        onmessage(event) {
-          setGotNotifications(true);
-          getNotificationsQuery(notifications ? notifications : []);
-        },
-        headers: { Authorization: authHeader },
-        signal: abortSignal.current.signal,
-      });
-      api
-        .get("notifications/testSourceEvent", {})
-        .then(async (response) => {
-          console.log("Тестовая отправка уведомления от сервиса", response);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    }
-  }, [authHeader, abortSignal, api]);
 
   const getNotificationsQuery = useCallback(
     async (oldArr: ReadonlyArray<NotificationObject>) => {
@@ -62,28 +35,22 @@ const NotificationsPanel = () => {
             type: item.type,
             seen: item.seen,
             displayName: null,
-            username: null,
+            username: "",
             avatar: null,
           };
 
           if (resultItem.type === "friendRequest") {
-            resultItem.username = item.friendRequestSentBy
-              ? item.friendRequestSentBy.username
-              : null;
-            resultItem.displayName = item.friendRequestSentBy
-              ? item.friendRequestSentBy.displayName
-              : null;
-            resultItem.avatar = item.friendRequestSentBy ? item.avatar : null;
+            if (item.friendRequestSentBy) {
+              resultItem.username = item.friendRequestSentBy.username;
+              resultItem.displayName = item.friendRequestSentBy.displayName;
+              resultItem.avatar = item.avatar;
+            }
           } else if (resultItem.type === "friendRequestAccepted") {
-            resultItem.username = item.friendRequestAcceptedBy
-              ? item.friendRequestAcceptedBy.username
-              : null;
-            resultItem.displayName = item.friendRequestAcceptedBy
-              ? item.friendRequestAcceptedBy.displayName
-              : null;
-            resultItem.avatar = item.friendRequestAcceptedBy
-              ? item.avatar
-              : null;
+            if (item.friendRequestAcceptedBy) {
+              resultItem.username = item.friendRequestAcceptedBy.username;
+              resultItem.displayName = item.friendRequestAcceptedBy.displayName;
+              resultItem.avatar = item.avatar;
+            }
           }
 
           if (!gotNotif && resultItem.seen === false) gotNotif = true;
@@ -114,10 +81,34 @@ const NotificationsPanel = () => {
   const [notifications, setNotifications, isNotificationsFinal] =
     useDynamicList(getNotificationsQuery);
 
+  useEffect(() => {
+    abortSignal.current.abort();
+    abortSignal.current = new AbortController();
+    // Подписка на уведомления от сервера, новые уведомления пользователю
+    if (authHeader) {
+      fetchEventSource("api/v1/notifications/subscribe", {
+        onmessage(event) {
+          setGotNotifications(true);
+          getNotificationsQuery(notifications ? notifications : []);
+        },
+        headers: { Authorization: authHeader },
+        signal: abortSignal.current.signal,
+      });
+      api
+        .get("notifications/testSourceEvent", {})
+        .then(async (response) => {
+          console.log("Тестовая отправка уведомления от сервиса", response);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  }, [authHeader, abortSignal, api, getNotificationsQuery, notifications]);
+
   // Индикатор наличия уведомлений
   const [gotNotifications, setGotNotifications] = useState(false);
 
-  // Индикатор открытости списка панели уведомлений
+  // Индикатор открытости списка панели уведомлений, для ререндера
   const [openState, setOpenState] = useState(false);
 
   // Состояние для кнопки "загрузить еще" уведомления. false, когда больше загрузить нельзя
@@ -163,7 +154,7 @@ const NotificationsPanel = () => {
 
   return (
     <div>
-      <a
+      <div
         id="notification_dropdown_toggle"
         className="nav-link dropdown-toggle "
         onClick={(event) => {
@@ -188,7 +179,7 @@ const NotificationsPanel = () => {
             src={notificationPic}
           />
         )}
-      </a>
+      </div>
       <ul
         className={
           "overflow-auto dropdown-menu notifications-menu dropdown-menu-end "

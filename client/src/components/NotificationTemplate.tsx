@@ -3,19 +3,11 @@ import defaultAvatarPic from "../resources/EmptyProfileAvatar_50px.png";
 import "../css/Notifications.css";
 import "../css/App.css";
 import Button from "./Button";
-import { NavLink, useNavigate } from "react-router-dom";
-import TestPage from "../pages/TestPage";
-import { userInfo } from "os";
-import { useEffect, useState } from "react";
-import useApi from "../http-common";
-
-interface NotifProps extends NotificationObject {
-  onSeenChange: (newState: boolean) => void;
-}
+import { useNavigate } from "react-router-dom";
+import { getUserProfileRoute } from "./routes/Navigation";
 
 const NotificationTemplate = (props: NotificationObject) => {
   const navigate = useNavigate();
-  // TODO добавить к имени юзера ссылку на его профиль
   const senderName = props.displayName ? props.displayName : props.username;
 
   return (
@@ -61,9 +53,11 @@ const NotificationTemplate = (props: NotificationObject) => {
           ) : (
             <div>
               <p className="mt-2">
-                {/* TODO добавить ссылку на страницу профиля */}
                 Пользователь
-                <a href="/" className="text-decoration-none">
+                <a
+                  href={getUserProfileRoute(props.username)}
+                  className="text-decoration-none"
+                >
                   {senderName}
                 </a>
                 принял вашу заявку в друзья
