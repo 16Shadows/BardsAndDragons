@@ -41,8 +41,9 @@ export class NotificationController {
                     seen: notif.seen,
                     friendRequestSentBy: {
                         username: sender.username,
-                        displayName: sender.displayName
-                    }
+                        displayName: sender.displayName,
+                        avatar: sender.avatar
+                    }                    
                 };
             }
             case 'friendRequestAccepted': {
@@ -53,8 +54,10 @@ export class NotificationController {
                     seen: notif.seen,
                     friendRequestAcceptedBy: {
                         username: acceptedBy.username,
-                        displayName: acceptedBy.displayName
+                        displayName: acceptedBy.displayName, 
+                        avatar: acceptedBy.avatar
                     }
+                    
                 };
             }
         }

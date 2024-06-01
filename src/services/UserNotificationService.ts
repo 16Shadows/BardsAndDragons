@@ -5,10 +5,12 @@ import { User } from "../model/user";
 import { NotificationBase } from "../model/notifications/notificationBase";
 import { FriendRequestNotification } from "../model/notifications/friendRequestNotification";
 import { FriendRequestAcceptedNotification } from "../model/notifications/friendRequestAcceptedNotification";
+import { Image } from "../model/image";
 
 export type UserData = {
     username: string,
     displayName?: string
+    avatar?: Promise<Image>
 };
 
 export type NotificationDataBase = {

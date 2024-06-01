@@ -2,20 +2,16 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import logo from "../resources/bdlogo_mini.png";
 import avatar from "../resources/EmptyProfileAvatar_50px.png";
 import NotificationsPanel from "./NotificationsPanel";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import useApi from "../http-common";
 import "../css/Notifications.css";
-import {
-  NotificationObject,
-  QueryNotificationObject,
-} from "../models/Notifications";
 
 const Navbar = () => {
   // Запрос, вошел ли пользователь в профиль или нет
   const isAuthenticated = useIsAuthenticated();
-  // TODO добавить обновление навбара после изменения, useRef?
+  // TODO добавить обновление навбара после изменения, добавлено в feat-notifications
   const [profileName, setProfileName] = useState("");
   const [profileAvatar, setProfileAvatar] = useState(avatar);
 
@@ -24,7 +20,7 @@ const Navbar = () => {
 
   const api = useApi();
 
-  const getProfileInfoQuery = async () => {
+  const getProfileInfoQuery = useCallback(async () => {
     // GET запрос списка городов к серверу
     api
       .get("user/@current", {})
@@ -40,13 +36,13 @@ const Navbar = () => {
       .catch((error) => {
         console.error(error);
       });
-  };
+  }, [api]);
 
   useEffect(
     () => {
       if (isAuthenticated) getProfileInfoQuery();
     },
-    [] // Запуск только после первого рендера страницы/объекта navbar
+    [getProfileInfoQuery, isAuthenticated] // Запуск только после первого рендера страницы/объекта navbar
   );
 
   return (
@@ -121,7 +117,7 @@ const Navbar = () => {
               </li>
 
               <li className="nav-item dropdown">
-                <a
+                <div
                   className="nav-link dropdown-toggle"
                   role="button"
                   data-bs-toggle="dropdown"
@@ -133,7 +129,7 @@ const Navbar = () => {
                     src={profileAvatar}
                   />
                   {profileName}
-                </a>
+                </div>
                 <ul className="dropdown-menu" data-bs-auto-close="outside">
                   <li>
                     <NavLink className="dropdown-item" to="/my-profile">

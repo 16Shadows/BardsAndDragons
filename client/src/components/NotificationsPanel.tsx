@@ -1,4 +1,4 @@
-import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useApi from "../http-common";
 import NotificationTemplate from "./NotificationTemplate";
 import notificationPic from "../resources/notification_50px.png";
@@ -9,10 +9,7 @@ import {
 } from "../models/Notifications";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import React from "react";
-import { Int32 } from "typeorm";
 import Button from "./Button";
-import { start } from "repl";
 import useDynamicList from "../utils/useDynamicList";
 
 const NotificationsPanel = () => {
@@ -21,6 +18,68 @@ const NotificationsPanel = () => {
   const authHeader = useAuthHeader();
 
   const abortSignal = useRef(new AbortController());
+
+  const getNotificationsQuery = useCallback(
+    async (oldArr: ReadonlyArray<NotificationObject>) => {
+      try {
+        const response = await api.get("notifications", {
+          params: { start: oldArr.length, count: notifOnPageCount },
+        });
+
+        let gotNotif = false;
+        const items = response.data;
+
+        const resPromise = items.map((item: QueryNotificationObject) => {
+          const resultItem: NotificationObject = {
+            id: item.id,
+            type: item.type,
+            seen: item.seen,
+            displayName: null,
+            username: "",
+            avatar: null,
+          };
+
+          if (resultItem.type === "friendRequest") {
+            if (item.friendRequestSentBy) {
+              resultItem.username = item.friendRequestSentBy.username;
+              resultItem.displayName = item.friendRequestSentBy.displayName;
+              resultItem.avatar = item.avatar;
+            }
+          } else if (resultItem.type === "friendRequestAccepted") {
+            if (item.friendRequestAcceptedBy) {
+              resultItem.username = item.friendRequestAcceptedBy.username;
+              resultItem.displayName = item.friendRequestAcceptedBy.displayName;
+              resultItem.avatar = item.avatar;
+            }
+          }
+
+          if (!gotNotif && resultItem.seen === false) gotNotif = true;
+
+          return resultItem;
+        });
+        const res = await Promise.all(resPromise);
+
+        setGotNotifications(gotNotif);
+
+        // console.log(items.length);
+        return {
+          list: oldArr.concat(res),
+          isFinal: items.length === 0,
+        };
+      } catch {
+        return {
+          list: oldArr,
+          isFinal: false,
+        };
+      }
+    },
+    [api]
+  );
+
+  // Список уведомлений
+  // TODO понять, почему надо два раза вызывать без новых уведов, чтобы кнопку отключило, починить
+  const [notifications, setNotifications, isNotificationsFinal] =
+    useDynamicList(getNotificationsQuery);
 
   useEffect(() => {
     abortSignal.current.abort();
@@ -44,75 +103,12 @@ const NotificationsPanel = () => {
           console.error(error);
         });
     }
-  }, [authHeader, abortSignal, api]);
-
-  const getNotificationsQuery = useCallback(
-    async (oldArr: ReadonlyArray<NotificationObject>) => {
-      try {
-        const response = await api.get("notifications", {
-          params: { start: oldArr.length, count: notifOnPageCount },
-        });
-
-        let gotNotif = false;
-        const items = response.data;
-
-        const resPromise = items.map((item: QueryNotificationObject) => {
-          const resultItem: NotificationObject = {
-            id: item.id,
-            type: item.type,
-            seen: item.seen,
-            displayName: null,
-            username: null,
-          };
-
-          if (resultItem.type === "friendRequest") {
-            resultItem.username = item.friendRequestSentBy
-              ? item.friendRequestSentBy.username
-              : null;
-            resultItem.displayName = item.friendRequestSentBy
-              ? item.friendRequestSentBy.displayName
-              : null;
-          } else if (resultItem.type === "friendRequestAccepted") {
-            resultItem.username = item.friendRequestAcceptedBy
-              ? item.friendRequestAcceptedBy.username
-              : null;
-            resultItem.displayName = item.friendRequestAcceptedBy
-              ? item.friendRequestAcceptedBy.displayName
-              : null;
-          }
-
-          if (!gotNotif && resultItem.seen === false) gotNotif = true;
-
-          return resultItem;
-        });
-        const res = await Promise.all(resPromise);
-
-        setGotNotifications(gotNotif);
-
-        console.log(items.length);
-        return {
-          list: oldArr.concat(res),
-          isFinal: items.length === 0,
-        };
-      } catch {
-        return {
-          list: oldArr,
-          isFinal: false,
-        };
-      }
-    },
-    [api] // ????
-  );
-
-  // Список уведомлений
-  // TODO понять, почему надо два раза вызывать без новых уведов, чтобы кнопку отключило, починить
-  const [notifications, setNotifications, isNotificationsFinal] =
-    useDynamicList(getNotificationsQuery);
+  }, [authHeader, abortSignal, api, getNotificationsQuery, notifications]);
 
   // Индикатор наличия уведомлений
   const [gotNotifications, setGotNotifications] = useState(false);
 
-  // Индикатор открытости списка панели уведомлений
+  // Индикатор открытости списка панели уведомлений, для ререндера
   const [openState, setOpenState] = useState(false);
 
   // Состояние для кнопки "загрузить еще" уведомления. false, когда больше загрузить нельзя
@@ -127,7 +123,7 @@ const NotificationsPanel = () => {
     // При открытии меню отправляем в БД запрос на изменение статуса уведомлений
     if (event.target.classList.contains("show")) {
       setOpenState(true);
-      console.log(notifications);
+      // console.log(notifications);
       notifications?.forEach((notif) => {
         if (!notif.seen) {
           api
@@ -158,7 +154,7 @@ const NotificationsPanel = () => {
 
   return (
     <div>
-      <a
+      <div
         id="notification_dropdown_toggle"
         className="nav-link dropdown-toggle "
         onClick={(event) => {
@@ -183,7 +179,7 @@ const NotificationsPanel = () => {
             src={notificationPic}
           />
         )}
-      </a>
+      </div>
       <ul
         className={
           "overflow-auto dropdown-menu notifications-menu dropdown-menu-end "
@@ -199,6 +195,7 @@ const NotificationsPanel = () => {
                   seen={item.seen}
                   displayName={item.displayName}
                   username={item.username}
+                  avatar={item.avatar}
                 />
               ))
             : "Уведомлений пока нет"}
