@@ -13,41 +13,42 @@ import PlayersPage from "../../pages/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
 import TestPage from "../../pages/TestPage";
 import {
-    getFriendsPageRoute, getGamesPageRoute, getHomeRoute,
-    getLoginPageRoute, getMyGamesPageRoute,
-    getMyProfilePageRoute, getNotFoundRoute,
-    getPlayersPageRoute,
-    getRegistrationPageRoute
+  getFriendsPageRoute,
+  getGamesPageRoute,
+  getHomeRoute,
+  getLoginPageRoute,
+  getMyGamesPageRoute,
+  getMyProfilePageRoute,
+  getNotFoundRoute,
+  getPlayersPageRoute,
+  getRegistrationPageRoute,
 } from "./Navigation";
 
 const RoutesComponent = () => {
-    return (
-        <Routes>
-            {/* Public routes */}
-            <Route path={getHomeRoute()} element={<Home/>}/>
-            <Route path={getLoginPageRoute()} element={<Login/>}/>
-            <Route path={getRegistrationPageRoute()} element={<Registration/>}/>
-            <Route path={getGamesPageRoute()} element={<SearchGamesPage/>}/>
+  return (
+    <Routes>
+      {/* Public routes */}
+      <Route path={getHomeRoute()} element={<Home />} />
+      <Route path={getLoginPageRoute()} element={<Login />} />
+      <Route path={getRegistrationPageRoute()} element={<Registration />} />
+      <Route path={getGamesPageRoute()} element={<SearchGamesPage />} />
 
-            {/* TODO: delete test page in production */}
-            <Route path={"test-page"} element={<TestPage/>}/>
+      {/* TODO: delete test page in production */}
+      <Route path={"test-page"} element={<TestPage />} />
 
-            {/* Protected routes */}
-            <Route element={<ProtectedRoutes fallbackPath={getLoginPageRoute()}/>
-            }>
-                <Route path={getMyProfilePageRoute()} element={<ProfilePage/>}/>
-                <Route path={getMyGamesPageRoute()} element={<MyGamesPage/>}/>
-                <Route path={getFriendsPageRoute()} element={<MyFriendsPage/>}/>
+      {/* Protected routes */}
+      <Route element={<ProtectedRoutes fallbackPath={getLoginPageRoute()} />}>
+        <Route path={getMyProfilePageRoute()} element={<ProfilePage />} />
+        <Route path={getMyGamesPageRoute()} element={<MyGamesPage />} />
+        <Route path={getFriendsPageRoute()} element={<MyFriendsPage />} />
+
+        <Route path={getPlayersPageRoute()} element={<PlayersPage />} />
+      </Route>
 
       {/* TODO: 404 page */}
-      <Route path={"*"} element={<div>404 Not found </div>} />
+      <Route path={getNotFoundRoute()} element={<div>404 Not found </div>} />
     </Routes>
   );
 };
 
-            {/* TODO: 404 page */}
-            <Route path={getNotFoundRoute()} element={<div>404 Not found </div>}/>
-        </Routes>)
-}
-
-export default RoutesComponent
+export default RoutesComponent;
