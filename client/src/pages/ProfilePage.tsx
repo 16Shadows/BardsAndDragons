@@ -15,7 +15,7 @@ import TooltipComponent from "../components/TooltipComponent";
 import useApi from "../http-common";
 
 import { registerLocale } from "react-datepicker";
-import ru from "date-fns/locale/ru";
+import { ru } from "date-fns/locale/ru";
 registerLocale("ru", ru);
 
 interface TownForSelect {
@@ -31,9 +31,9 @@ const ProfilePage = () => {
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [avatarPic, setAvatarPic] = useState<string | null>(null);
-  const [townList, setTownList] = useState<
-    OptionsOrGroups<TownForSelect, any> | undefined
-  >([]);
+  const [townList, setTownList] = useState<OptionsOrGroups<TownForSelect, any>>(
+    []
+  );
   const [name, setName] = useState<string | null>(null);
   const [town, setTown] = useState<TownForSelect>({ value: "", label: "" });
   const [birthDate, setBirthDate] = useState<Date | null>(null);
@@ -78,82 +78,37 @@ const ProfilePage = () => {
   const { signOut } = useSignOut();
   const api = useApi();
 
-  const getCitiesQuery = useCallback(async () => {
-    api
-      .get("cities", {})
-      .then((response) => {
-        const a = response.data.map((x: string) => {
-          // TODO добавить локализацию городов, значение value из бд и label локализован
-          return { value: x, label: x };
-        });
-        setTownList(a);
-      })
-      .catch((error) => {
-        console.error(error);
-        alert(error.message);
-      });
-  }, [api]);
-
-  const getProfileInfoQuery = useCallback(async () => {
-    api
-      .get("user/@current", {})
-      .then(async (response) => {
-        // TODO заменить на хранение на клиенте, не запрашивать
-        setUsername(response.data.username);
-        setEmail(response.data.email);
-        response.data.displayName && setName(response.data.displayName);
-        response.data.description &&
-          setProfileDescription(response.data.description);
-        response.data.contactInfo &&
-          setProfileContacts(response.data.contactInfo);
-        // Создаем объект города, TODO добавить локализацию  label
-        response.data.city &&
-          setTown({ value: response.data.city, label: response.data.city });
-        response.data.avatar && setAvatarPic("/" + response.data.avatar);
-        response.data.birthday && setBirthDate(response.data.birthday);
-        response.data.shouldDisplayAge &&
-          setIsShowingAge(response.data.shouldDisplayAge);
-      })
-      .catch((error) => {
-        console.error(error);
-        alert(error.message);
-      });
-  }, [api]);
-
-  const UploadImageToDB = async (blob: URL | string) => {
-    if (avatarPic) {
-      let blobImage = await fetch(blob).then((res) => res.blob());
-
-      const path = await api
-        .post("images/upload", blobImage, {
+  const UploadImageToDB = useCallback(
+    async (blob: URL | string) => {
+      try {
+        let blobImage = await fetch(blob).then((res) => res.blob());
+        const response = await api.post("images/upload", blobImage, {
           headers: { "Content-Type": blobImage.type },
-        })
-        .then((response) => {
-          return response.data.path;
-        })
-        .catch((error) => {
-          console.error(error);
-          alert(error.message);
         });
-
-      return path;
-    }
-  };
-
-  const SaveChangesToDB = async () => {
-    let imagePath = null;
-
-    // Проверка, уже ли картинка из бд. Да, если перед / "" и userimages, нет, если "blob:http:
-    if (avatarPic) {
-      let res = avatarPic.split("/");
-      if (res[0] === "blob:http:") {
-        imagePath = await UploadImageToDB(avatarPic);
-        setAvatarPic(imagePath);
+        return response.data.path;
+      } catch (e) {
+        alert("Не удалось загрузить изображение на сервер.\n" + e);
       }
-    }
+      return null;
+    },
+    [api]
+  );
 
-    api
-      .post("user/@current", {
+  const SaveChangesToDB = useCallback(async () => {
+    try {
+      let imagePath = null;
+
+      // Проверка, уже ли картинка из бд. Да, если начало /userimages, нет, если blob:http:
+      if (avatarPic) {
+        if (avatarPic.startsWith("blob")) {
+          imagePath = await UploadImageToDB(avatarPic);
+          if (imagePath !== undefined) {
+            setAvatarPic(imagePath);
+          }
+        }
+      }
+
+      await api.post("user/@current", {
         avatar: imagePath,
         displayName: name,
         city: town.value === "" ? null : town.value,
@@ -161,26 +116,30 @@ const ProfilePage = () => {
         shouldDisplayAge: isShowingAge,
         description: profileDescription,
         contactInfo: profileContacts,
-      })
-      .then((response) => {})
-      .catch((error) => {
-        console.error(error);
-        alert(error.message);
       });
-  };
+    } catch (e) {
+      alert("Не удалось сохранить изменения профиля на сервере.\n" + e);
+    }
+  }, [
+    UploadImageToDB,
+    api,
+    avatarPic,
+    birthDate,
+    isShowingAge,
+    name,
+    profileContacts,
+    profileDescription,
+    town.value,
+  ]);
 
-  const DeleteProfile = () => {
-    signOut();
-    api
-      .post("user/@current/delete", {})
-      .then((response) => {})
-      .catch((error) => {
-        console.error(error);
-        alert(error.message);
-      });
-  };
-  const [modalShowDeleteProfile, setModalShowDeleteProfile] = useState(false);
-  const [modalShowSaveProfile, setModalShowSaveProfile] = useState(false);
+  const DeleteProfile = useCallback(async () => {
+    try {
+      signOut();
+      await api.post("user/@current/delete", {});
+    } catch (e) {
+      alert("Не удалось удалить профиль.\n" + e);
+    }
+  }, [api, signOut]);
 
   const DeleteProfileButtons = [
     {
@@ -217,12 +176,48 @@ const ProfilePage = () => {
   ] as PopupButton[];
 
   useEffect(() => {
+    async function getCitiesQuery() {
+      try {
+        const response = await api.get("cities", {});
+
+        const list = response.data.map((x: string) => {
+          // TODO добавить локализацию городов, значение value из бд и label локализован
+          return { value: x, label: x };
+        });
+        setTownList(list);
+      } catch (e) {
+        alert("Не удалось загрузить список городов.\n" + e);
+      }
+    }
     getCitiesQuery();
+    async function getProfileInfoQuery() {
+      try {
+        const response = await api.get("user/@current", {});
+
+        // TODO заменить на хранение на клиенте, не запрашивать
+        setUsername(response.data.username);
+        setEmail(response.data.email);
+        response.data.displayName && setName(response.data.displayName);
+        response.data.description &&
+          setProfileDescription(response.data.description);
+        response.data.contactInfo &&
+          setProfileContacts(response.data.contactInfo);
+        // Создаем объект города, TODO добавить локализацию  label
+        response.data.city &&
+          setTown({ value: response.data.city, label: response.data.city });
+        response.data.avatar && setAvatarPic("/" + response.data.avatar);
+        response.data.birthday && setBirthDate(response.data.birthday);
+        response.data.shouldDisplayAge &&
+          setIsShowingAge(response.data.shouldDisplayAge);
+      } catch (e) {
+        alert("Не удалось загрузить данные профиля.\n" + e);
+      }
+    }
     getProfileInfoQuery();
-  }, [getCitiesQuery, getProfileInfoQuery]);
+  }, [api]);
 
   // Превью загруженной аватарки
-  async function onAvatarUpload(event: any) {
+  function onAvatarUpload(event: any) {
     // Временный юрл, после обновления страницы сотрет данные о картинке
     let st = URL.createObjectURL(event.target.files[0]);
     setAvatarPic(st);
@@ -238,9 +233,7 @@ const ProfilePage = () => {
             alt="Profile avatar"
             src={avatarPic ? avatarPic : defaultAvatarPic}
           />
-          {avatarPic ? (
-            ""
-          ) : (
+          {!avatarPic && (
             <div>
               <small className="form-text text-red">
                 Необходимо добавить изображение
@@ -281,7 +274,7 @@ const ProfilePage = () => {
             <div className="row">
               <label
                 className={
-                  !(town.value === "")
+                  town.value !== ""
                     ? "col-form-label"
                     : "col-form-label text-red"
                 }
@@ -318,7 +311,7 @@ const ProfilePage = () => {
                 name="name"
                 type="text"
                 placeholder={username}
-                value={name ? name : ""}
+                value={name ?? ""}
                 onChange={handleNameChange}
                 style={{ width: "inherit" }}
               ></input>
@@ -338,7 +331,7 @@ const ProfilePage = () => {
                 onChange={handleTownChange}
                 isDisabled={!isEditing}
                 placeholder={"Не выбран"}
-                value={town ? town : null}
+                value={town}
               />
               <div className="row">
                 <div className="col DatePicker">
@@ -350,7 +343,7 @@ const ProfilePage = () => {
                     locale="ru"
                     showIcon
                     dateFormat="dd/MM/yyyy"
-                    selected={birthDate ? birthDate : null}
+                    selected={birthDate}
                     onChange={handleBirthDateChange}
                     // При некорректном, неполном или пустом вводе дата = null
                     onChangeRaw={() => {
@@ -361,9 +354,7 @@ const ProfilePage = () => {
               </div>{" "}
             </div>
           </div>
-          {birthDate && name && town.value !== "" ? (
-            ""
-          ) : (
+          {(!birthDate || !name || town.value === "") && (
             <div>
               <small className="form-text text-red">
                 Необходимо заполнить все поля профиля
@@ -386,10 +377,11 @@ const ProfilePage = () => {
                 onChange={hangleIsShowingAgeChange}
               />
               <label className="form-check-label">Показывать мой возраст</label>
-              <TooltipComponent
-                mainText=" (?)"
-                children='Если выбрано "Не показывать" - ваш возраст не будет виден другим пользователям, но продолжит использоваться в алгоритме подбора игроков'
-              ></TooltipComponent>
+              <TooltipComponent mainText={"(?)"}>
+                Если выбрано "Не показывать" - ваш возраст не будет виден другим
+                пользователям, но продолжит использоваться в алгоритме подбора
+                игроков
+              </TooltipComponent>
             </div>
           </div>
         </div>
@@ -405,16 +397,14 @@ const ProfilePage = () => {
               className="form-control"
               id="ProfileDescription"
               disabled={!isEditing}
-              value={profileDescription ? profileDescription : ""}
+              value={profileDescription ?? ""}
               onChange={handleDescriptionChange}
               placeholder="Опишите ваши интересы, предпочтения в играх и т.п."
             ></textarea>
             <small id="DescriptionHelpText" className="form-text">
               Описание профиля видно всем пользователям
             </small>
-            {profileDescription ? (
-              ""
-            ) : (
+            {!profileDescription && (
               <div>
                 <small className="form-text text-red">
                   Необходимо заполнить описание профиля
@@ -434,7 +424,7 @@ const ProfilePage = () => {
               className="form-control"
               id="ProfileContacts"
               disabled={!isEditing}
-              value={profileContacts ? profileContacts : ""}
+              value={profileContacts ?? ""}
               onChange={handleContactsChange}
               placeholder="Например, ссылка на аккаунт в Телеграме, ВКонтакте, адрес электронной почты..."
             ></textarea>
@@ -446,9 +436,7 @@ const ProfilePage = () => {
               <strong className="text-red">актуальные</strong> контакты, по
               которым другие игроки смогут с вами связаться и позвать поиграть!
             </small>
-            {profileContacts ? (
-              ""
-            ) : (
+            {!profileContacts && (
               <div>
                 <small className="form-text text-red">
                   Необходимо заполнить контакты
@@ -481,8 +469,7 @@ const ProfilePage = () => {
               <Popup
                 popupButtonText="Сохранить изменения"
                 popupButtonVariant="primary"
-                show={modalShowSaveProfile}
-                onHide={() => setModalShowSaveProfile(false)}
+                show={false}
                 title="Сохранение изменений профиля"
                 message={
                   <div>
@@ -527,11 +514,7 @@ const ProfilePage = () => {
           <Popup
             popupButtonText="Удалить профиль"
             popupButtonVariant="danger"
-            show={modalShowDeleteProfile}
-            onHide={() => {
-              setModalShowDeleteProfile(false);
-              console.log(modalShowDeleteProfile);
-            }}
+            show={false}
             title="Удаление профиля"
             message={
               <div>

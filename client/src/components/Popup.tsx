@@ -11,7 +11,7 @@ export interface PopupButton {
 
 function Popup(props: {
   show: boolean;
-  onHide: any;
+  onHide?: any;
   buttons: PopupButton[];
   title: string;
   message: React.ReactNode;
