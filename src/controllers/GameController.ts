@@ -10,7 +10,7 @@ import { UsersGame } from "../model/usersGame";
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
 import { badRequest, notFound } from "../modules/core/routing/response";
 import { SelectQueryBuilder } from "typeorm/browser";
-import { gameNotFound, sortTypeNotFound, subscriptionAlreadyExist } from "../../client/src/utils/errorMessages";
+import { gameNotFound, sortTypeNotFound, subscriptionAlreadyExist, subscriptionNotExist } from "../../client/src/utils/errorMessages";
 
 // Список опций сортировки
 const sortTypes = new Set(["id", "name"])
@@ -239,7 +239,7 @@ export class GameController extends Object {
 
         // Проверка на существование игры
         if (!await this._dbContext.getRepository(Game).findOneBy({id: gameId})) {
-            return badRequest({message: gameNotFound});
+            return notFound({message: gameNotFound});
         }
 
         let repository = this._dbContext.getRepository(UsersGame);
@@ -270,7 +270,7 @@ export class GameController extends Object {
 
         // Проверка на существование игры
         if (!await this._dbContext.getRepository(Game).findOneBy({id: gameId})) {
-            return badRequest({message: gameNotFound});
+            return notFound({message: gameNotFound});
         }
 
         let repository = this._dbContext.getRepository(UsersGame);
@@ -279,7 +279,7 @@ export class GameController extends Object {
         let obj = await repository.findOneBy({game: game, user: bag.user});
 
         if (!obj)
-            return notFound();
+            return badRequest({message: subscriptionNotExist});
 
         await repository.remove(obj);
     }
