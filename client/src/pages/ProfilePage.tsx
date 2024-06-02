@@ -132,16 +132,17 @@ const ProfilePage = () => {
     town.value,
   ]);
 
-  const DeleteProfile = useSignOut(useCallback(async () => {
-    try {
-      await api.post("user/@current/delete", {});
-      return true;
-    }
-    catch (e) {
-      alert(e);
-      return false;
-    }
-  }, [api]));
+  const DeleteProfile = useSignOut(
+    useCallback(async () => {
+      try {
+        await api.post("user/@current/delete", {});
+        return true;
+      } catch (e) {
+        alert("Не удалось удалить профиль.\n" + e);
+        return false;
+      }
+    }, [api])
+  );
 
   const DeleteProfileButtons = [
     {
