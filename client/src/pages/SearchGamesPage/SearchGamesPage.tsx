@@ -1,18 +1,17 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import GameItem, { IGameProps } from "../../components/GameItem/GameItem";
-import { Button, Col, Form, Modal, Row } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import useApi from '../../http-common'
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
 import "./SearchGamesPage.css"
-// import Alert from "../../components/Alert";
-// import Popup from "../../components/Popup";
+import ModalWindowAlert from "../../components/ModalWindowAlert/ModalWindowAlert";
 
 const SearchGamesPage = () => {
-
     // ===Авторизация===
     // Проверка, авторизован ли пользователь
     const isAuthenticated = useIsAuthenticated()
 
+    // Определение запроса в зависимости от статуса авторизации
     const gameRequestName = isAuthenticated ? 'game/games-with-subscription' : 'game/games'
 
     // ===Пагинация===
@@ -43,6 +42,16 @@ const SearchGamesPage = () => {
     // Axios API для запросов к беку
     const api = useApi();
 
+    // ===Модальное окно===
+    // Таймер закрытия окна
+    const modalTimeoutHandler = useRef<NodeJS.Timeout>()
+
+    // Сообщение об ошибке
+    const [modalMessage, setModalMessage ] = useState("Сообщение")
+
+    // Состояние модального окна скрыто/открыто
+    const [modalIsShow, setModalIsShow] = useState(false)
+
     // ===Сортировка===
     // Список опций
     const sortTypes = new Map([["По номеру", "id"], ["По названию", "name"]])
@@ -66,8 +75,6 @@ const SearchGamesPage = () => {
         e.preventDefault();
         setSearchQueryEvent(searchQuery);
     }
-
-    const [modalIsShow, setModalIsShow] = useState(false)
 
     // Если изменится сортировка или строка запроса - делаем запрос игр из БД
     useEffect(getTotalNumber, [searchQueryEvent, selectedSort, api])
@@ -98,7 +105,10 @@ const SearchGamesPage = () => {
                             ((inputForm.current) as HTMLFieldSetElement).disabled = false;
                     }, 750);
                 }
-            }).catch(() => alert('Не удалось получить список игр'))
+            }).catch(() => {
+                if (!modalIsShow)
+                    showModal("Не удалось получить список игр");
+            })
         }
     }
 
@@ -106,14 +116,39 @@ const SearchGamesPage = () => {
     function subscribe(gameId: number) {
         api.post(`game/${gameId}/subscribe`).then(function (response) {
             // console.log("Subscribed");
-        })
+        }).catch((error) => {
+            showModal(error.response?.data?.message || "Не удалось подписаться на игру");
+        });
     }
 
     // Отписка от игры
     function unsubscribe(gameId: number) {
         api.post(`game/${gameId}/unsubscribe`).then(function (response) {
             // console.log("Unsubscribed");
-        })
+        }).catch((error) => {
+            showModal(error.response?.data?.message || "Игра не найдена");
+        });
+    }
+
+    // Открыть модальное окно с сообщением
+    function showModal(message: string, timeout = 5000) {
+        setModalMessage(message);
+        setModalIsShow(true);
+        modalTimeoutHandler.current = setTimeout(hideModal, timeout);
+    }
+
+    // Закрыть модальное окно
+    function hideModal() {
+        setModalIsShow(state => {
+            // Действия, если окно ещё не закрыто
+            if (state) {
+                clearTimeout(modalTimeoutHandler.current);
+                return false;
+            }
+            // Если закрыто, то состояние не сменится
+            else
+                return false;
+        });
     }
 
     // Выполняется при первой загрузке страницы
@@ -150,7 +185,10 @@ const SearchGamesPage = () => {
                 
                 // Увеличиваем текущую позицию
                 currentGameNumberRef.current += requestSize;
-            }).catch(() => alert('Не удалось получить список игр')).finally(() => {
+            }).catch(() => {
+                if (!modalIsShow)
+                    showModal("Не удалось получить список игр");
+            }).finally(() => {
                 setFetching(false);
                 if (inputForm.current)
                     ((inputForm.current) as HTMLFieldSetElement).disabled = false;
@@ -216,12 +254,8 @@ const SearchGamesPage = () => {
                     }
                 </div>
             </Col>
-            <Modal show={modalIsShow} onHide={() => setModalIsShow(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title style={{ color: "red" }}>{"Произошла ошибка"}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{"Сообщение"}</Modal.Body>
-            </Modal>
+            {/* Отображение ошибок */}
+            <ModalWindowAlert show={modalIsShow} onHide={hideModal} message={modalMessage} />
         </Row>
     );
 };

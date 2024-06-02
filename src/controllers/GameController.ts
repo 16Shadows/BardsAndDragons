@@ -3,14 +3,14 @@ import {ModelDataSource} from "../model/dataSource";
 import { GET, POST } from "../modules/core/routing/decorators";
 import {Middleware, MiddlewareBag} from "../modules/core/middleware/middleware";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
-// import {badRequest, json} from "../modules/core/routing/response";
 import { Game } from "../model/game";
 import { QueryArgument, QueryBag } from "../modules/core/routing/query";
 import { ILike } from "typeorm"
 import { UsersGame } from "../model/usersGame";
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
-import { badRequest } from "../modules/core/routing/response";
+import { badRequest, notFound } from "../modules/core/routing/response";
 import { SelectQueryBuilder } from "typeorm/browser";
+import { gameNotFound, sortTypeNotFound, subscriptionAlreadyExist } from "../../client/src/utils/errorMessages";
 
 // Список опций сортировки
 const sortTypes = new Set(["id", "name"])
@@ -18,6 +18,7 @@ const sortTypes = new Set(["id", "name"])
 // Лимит получаемых в запросе объектов
 const defaultRequestLimit = 50
 
+// Информация об игре
 interface GameData 
 { 
     id: number; 
@@ -28,6 +29,7 @@ interface GameData
     subscribed?: boolean; 
 }
 
+// Поиск данных в базе
 type FindInList = {
     limit?: number;
     start?: number;
@@ -82,7 +84,7 @@ export class GameController extends Object {
         let sort = query.sort ?? "id"
 
         if (!sortTypes.has(sort))
-            return badRequest();
+            return badRequest({message: sortTypeNotFound});
 
         // Поиск по имени
         if (query.name && query.name != "") {
@@ -151,7 +153,7 @@ export class GameController extends Object {
         let sort = query.sort ?? "id"
 
         if (!sortTypes.has(sort))
-            return badRequest();
+            return badRequest({message: sortTypeNotFound});
 
         games = repository.createQueryBuilder("game")
 
@@ -235,7 +237,17 @@ export class GameController extends Object {
         const game = new Game()
         game.id = gameId;
 
+        // Проверка на существование игры
+        if (!await this._dbContext.getRepository(Game).findOneBy({id: gameId})) {
+            return badRequest({message: gameNotFound});
+        }
+
         let repository = this._dbContext.getRepository(UsersGame);
+
+        // Проверка на существование подписки
+        if (await repository.findOneBy({game: game, user: bag.user})) {
+            return badRequest({message: subscriptionAlreadyExist});
+        }
 
         // Создание объекта для БД с получением данных
         const newPair = new UsersGame();
@@ -259,6 +271,11 @@ export class GameController extends Object {
         let repository = this._dbContext.getRepository(UsersGame);
 
         // Удаление объекта из БД на основе id игры и пользователя
-        await repository.delete({user: bag.user, game: game});
+        let obj = await repository.findOneBy({game: game, user: bag.user});
+
+        if (!obj)
+            return notFound();
+
+        await repository.remove(obj);
     }
 }
