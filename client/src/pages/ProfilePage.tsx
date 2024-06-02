@@ -76,7 +76,6 @@ const ProfilePage = () => {
     else setProfileContacts(event.currentTarget.value);
   };
 
-  const { signOut } = useSignOut();
   const api = useApi();
 
   const UploadImageToDB = useCallback(
@@ -133,17 +132,16 @@ const ProfilePage = () => {
     town.value,
   ]);
 
-  const DeleteProfile = useCallback(async () => {
+  const DeleteProfile = useSignOut(useCallback(async () => {
     try {
-      const res = await api.post("user/@current/delete", {});
-      console.log(res.status);
-      if (res.status === axios.HttpStatusCode.Ok) {
-        signOut();
-      }
-    } catch (e) {
-      alert("Не удалось удалить профиль.\n" + e);
+      await api.post("user/@current/delete", {});
+      return true;
     }
-  }, [api, signOut]);
+    catch (e) {
+      alert(e);
+      return false;
+    }
+  }, [api]));
 
   const DeleteProfileButtons = [
     {

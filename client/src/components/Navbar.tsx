@@ -22,9 +22,18 @@ const Navbar = () => {
 
   const navigate = useNavigate();
 
-  const { signOut } = useSignOut();
-
   const api = useApi();
+
+  const signOut = useSignOut(useCallback(async () => {
+    try {
+      await api.post("user/logout");
+      return true;
+    }
+    catch(e) {
+      alert(e);
+      return false;
+    }
+  }, [api]));
 
   const getProfileInfoQuery = useCallback(async () => {
     // GET запрос списка городов к серверу
