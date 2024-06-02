@@ -268,6 +268,11 @@ export class GameController extends Object {
         const game = new Game()
         game.id = gameId;
 
+        // Проверка на существование игры
+        if (!await this._dbContext.getRepository(Game).findOneBy({id: gameId})) {
+            return badRequest({message: gameNotFound});
+        }
+
         let repository = this._dbContext.getRepository(UsersGame);
 
         // Удаление объекта из БД на основе id игры и пользователя
