@@ -1,5 +1,5 @@
 import React from "react";
-import {BrowserRouter} from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import AuthProvider from "react-auth-kit";
 import createStore from "react-auth-kit/createStore";
 import RoutesComponent from "./components/routes/Routes";
@@ -10,8 +10,8 @@ import Container from 'react-bootstrap/Container';
 import Navbar from "./components/Navbar";
 
 const store = createStore({
-    authName: "_auth",
-    authType: "localstorage",
+  authName: "_auth",
+  authType: "localstorage",
 });
 
 function App() {

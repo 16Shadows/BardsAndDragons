@@ -1,4 +1,4 @@
-import {Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, DeleteDateColumn, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {Image} from './image';
 import {City} from './city';
 import {UsersGame} from './usersGame';
@@ -25,13 +25,10 @@ export class User {
     })
     email: string;
 
-    @Column({
-        default: false
-    })
-    isDeleted: boolean;
+    @DeleteDateColumn()
+    deletedAt: Date;
 
     //Extended account info (optional)
-
     @Column({
         nullable: true
     })
