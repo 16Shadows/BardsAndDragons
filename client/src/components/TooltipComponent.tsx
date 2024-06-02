@@ -1,24 +1,23 @@
-import React from "react";
+import { PropsWithChildren } from "react";
 import OverlayTrigger from "react-bootstrap/esm/OverlayTrigger";
 import Tooltip from "react-bootstrap/esm/Tooltip";
 
 interface TooltipProps {
-  message: string;
+  mainText: React.ReactNode;
+  delayHide: number;
+  delayShow: number;
+  placement: "auto" | "top" | "bottom" | "right" | "left";
 }
-const TooltipComponent = (props: TooltipProps) => {
-  const message = props.message;
+const TooltipComponent = (props: PropsWithChildren<TooltipProps>) => {
   return (
     <OverlayTrigger
-      delay={{ hide: 450, show: 300 }}
-      overlay={(props) => <Tooltip {...props}>{message}</Tooltip>}
-      placement="top"
+      delay={{ hide: props.delayHide, show: props.delayShow }}
+      overlay={<Tooltip>{props.children}</Tooltip>}
+      placement={props.placement}
     >
-      <label>&nbsp;(?)</label>
+      <label>{props.mainText}</label>
     </OverlayTrigger>
   );
 };
 
 export default TooltipComponent;
-
-// Пример использования:
-// <TooltipComponent message="Место для текста"></TooltipComponent>

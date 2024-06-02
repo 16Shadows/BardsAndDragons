@@ -7,7 +7,6 @@ const DatePickerInput = (props: {
   disabled: boolean;
 }) => {
   const [date, setDate] = useState(props.date);
-  console.log("date", date);
   // Подписываем обработчик события смены даты
   document.addEventListener("OnDateChange", props.onChangeListener);
 

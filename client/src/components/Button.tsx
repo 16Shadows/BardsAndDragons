@@ -1,15 +1,13 @@
-import React, { Key } from "react";
-import { IntegerType } from "typeorm";
+import { PropsWithChildren } from "react";
 
 interface Props {
-  children: string;
   onClick?: () => void;
   action?: () => {};
-  color?: "primary" | "secondary" | "danger" | "success";
+  color: "primary" | "secondary" | "danger" | "success";
   outline?: boolean;
   style?: {};
 }
-const Button = (props: Props) => {
+const Button = (props: PropsWithChildren<Props>) => {
   return (
     <button
       className={
