@@ -4,14 +4,14 @@ import Modal from "react-bootstrap/Modal";
 
 export interface PopupButton {
   text: string;
-  action: () => {};
+  action: () => void;
   variant: "primary" | "secondary" | "danger" | "success";
   outline?: boolean;
 }
 
 function Popup(props: {
   show: boolean;
-  onHide?: any;
+  onHide?: () => void;
   buttons: PopupButton[];
   title: string;
   message: React.ReactNode;
@@ -27,16 +27,19 @@ function Popup(props: {
   return (
     <>
       <Button
-        color={props.popupButtonVariant ? props.popupButtonVariant : "primary"}
+        color={props.popupButtonVariant ?? "primary"}
         onClick={handleShow}
-        children={props.popupButtonText ?? props.popupButtonText}
-      />
+      >
+        {props.popupButtonText}
+      </Button>
 
       <Modal
         show={show}
         onHide={() => {
           handleClose();
-          props.onHide();
+          if (props.onHide) {
+            props.onHide();
+          }
         }}
       >
         <Modal.Header closeButton>

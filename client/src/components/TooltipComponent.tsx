@@ -4,13 +4,16 @@ import Tooltip from "react-bootstrap/esm/Tooltip";
 
 interface TooltipProps {
   mainText: React.ReactNode;
+  delayHide: number;
+  delayShow: number;
+  placement: "auto" | "top" | "bottom" | "right" | "left";
 }
 const TooltipComponent = (props: PropsWithChildren<TooltipProps>) => {
   return (
     <OverlayTrigger
-      delay={{ hide: 450, show: 300 }}
+      delay={{ hide: props.delayHide, show: props.delayShow }}
       overlay={<Tooltip>{props.children}</Tooltip>}
-      placement="top"
+      placement={props.placement}
     >
       <label>{props.mainText}</label>
     </OverlayTrigger>

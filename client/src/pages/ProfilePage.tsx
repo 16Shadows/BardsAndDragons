@@ -16,6 +16,7 @@ import useApi from "../http-common";
 
 import { registerLocale } from "react-datepicker";
 import { ru } from "date-fns/locale/ru";
+import axios from "axios";
 registerLocale("ru", ru);
 
 interface TownForSelect {
@@ -134,8 +135,11 @@ const ProfilePage = () => {
 
   const DeleteProfile = useCallback(async () => {
     try {
-      signOut();
-      await api.post("user/@current/delete", {});
+      const res = await api.post("user/@current/delete", {});
+      console.log(res.status);
+      if (res.status === axios.HttpStatusCode.Ok) {
+        signOut();
+      }
     } catch (e) {
       alert("Не удалось удалить профиль.\n" + e);
     }
@@ -231,7 +235,7 @@ const ProfilePage = () => {
             id="profile_pic"
             className="profile_image mb-2"
             alt="Profile avatar"
-            src={avatarPic ? avatarPic : defaultAvatarPic}
+            src={avatarPic ?? defaultAvatarPic}
           />
           {!avatarPic && (
             <div>
@@ -377,7 +381,12 @@ const ProfilePage = () => {
                 onChange={hangleIsShowingAgeChange}
               />
               <label className="form-check-label">Показывать мой возраст</label>
-              <TooltipComponent mainText={"(?)"}>
+              <TooltipComponent
+                mainText={"(?)"}
+                delayHide={450}
+                delayShow={300}
+                placement="top"
+              >
                 Если выбрано "Не показывать" - ваш возраст не будет виден другим
                 пользователям, но продолжит использоваться в алгоритме подбора
                 игроков

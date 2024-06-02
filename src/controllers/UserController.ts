@@ -291,6 +291,5 @@ export class UserController extends Object {
     async deleteMe(bag: AuthHeaderMiddlewareBag) {
         const repo = this._dbContext.getRepository(User);
         await repo.softRemove(bag.user);
-        return this.logout(bag, {});
     }
 }
