@@ -1,0 +1,34 @@
+.input {
+    display:block;
+    width: 100%;
+    border: none;
+    margin: 0;
+} 
+.age_input_group {
+    width: inherit;
+}
+.text_column {
+    width: 80%;
+}
+.label-col {
+    width: fit-content !important;
+}
+.pic-col{
+    width:min-content !important;
+    display: grid;
+    justify-items: center;
+}
+.profile-row{
+    display: flex;
+    align-items: center !important;
+}
+.text-red {
+    color: red;
+}
+/* Стили datePicker применяются к компоненту DatePicker через wrapperClassName */
+.datePicker {
+    width: inherit !important;
+}
+.datePicker input {
+    width: inherit !important;
+}

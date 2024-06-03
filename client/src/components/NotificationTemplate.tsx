@@ -4,12 +4,59 @@ import "../css/Notifications.css";
 import "../css/App.css";
 import Button from "./Button";
 import { useNavigate } from "react-router-dom";
-import { getUserProfileRoute } from "./routes/Navigation";
+import { getFriendsPageRoute, getUserProfileRoute } from "./routes/Navigation";
+
+const NotificationTemplateFriendRequest = (props: {
+  username: string;
+  displayName: string | null;
+}) => {
+  const navigate = useNavigate();
+
+  return (
+    <div>
+      <p className="mt-2">
+        Пользователь
+        <a
+          href={getUserProfileRoute(props.username)}
+          className="text-decoration-none"
+        >
+          {props.displayName ?? props.username}
+        </a>
+        отправил вам заявку в друзья!
+      </p>
+      <div className="d-flex justify-content-evenly mb-2">
+        <Button
+          color={"primary"}
+          children={"Мои друзья >>"}
+          onClick={() => {
+            navigate(getFriendsPageRoute());
+          }}
+        ></Button>
+      </div>
+    </div>
+  );
+};
+const NotificationTemplateRequestAccepted = (props: {
+  username: string;
+  displayName: string | null;
+}) => {
+  return (
+    <div>
+      <p className="mt-2">
+        Пользователь
+        <a
+          href={getUserProfileRoute(props.username)}
+          className="text-decoration-none"
+        >
+          {props.displayName ?? props.username}
+        </a>
+        принял вашу заявку в друзья
+      </p>
+    </div>
+  );
+};
 
 const NotificationTemplate = (props: NotificationObject) => {
-  const navigate = useNavigate();
-  const senderName = props.displayName ? props.displayName : props.username;
-
   return (
     <div
       id={"notification_" + props.id}
@@ -24,45 +71,22 @@ const NotificationTemplate = (props: NotificationObject) => {
           <div className="row align-items-start mt-2">
             <img
               className="rounded-circle"
-              alt="ProfileAvatar"
+              alt="Ошибка загрузка аватара"
               src={props.avatar ? "/" + props.avatar : defaultAvatarPic}
             />
           </div>
         </div>
         <div className="col w-auto">
           {props.type === "friendRequest" ? (
-            <div>
-              <p className="mt-2">
-                {/* TODO добавить ссылку на страницу профиля */}
-                Пользователь
-                <a href="/" className="text-decoration-none">
-                  {senderName}
-                </a>
-                отправил вам заявку в друзья!
-              </p>
-              <div className="d-flex justify-content-evenly mb-2">
-                <Button
-                  children={"Мои друзья >>"}
-                  onClick={() => {
-                    navigate("/my-friends");
-                    console.log("ddd");
-                  }}
-                ></Button>
-              </div>
-            </div>
+            <NotificationTemplateFriendRequest
+              username={props.username}
+              displayName={props.displayName}
+            />
           ) : (
-            <div>
-              <p className="mt-2">
-                Пользователь
-                <a
-                  href={getUserProfileRoute(props.username)}
-                  className="text-decoration-none"
-                >
-                  {senderName}
-                </a>
-                принял вашу заявку в друзья
-              </p>
-            </div>
+            <NotificationTemplateRequestAccepted
+              username={props.username}
+              displayName={props.displayName}
+            />
           )}
         </div>
       </div>

@@ -2,6 +2,7 @@ import axios, {AxiosInstance} from "axios";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import {useEffect} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
+import useSignOut from "react-auth-kit/hooks/useSignOut";
 
 // Create axios instance
 const api = axios.create({
@@ -24,23 +25,27 @@ const useApi = (): AxiosInstance => {
     const authHeader = useAuthHeader();
     const navigate = useNavigate();
     const location = useLocation();
+    const signOut = useSignOut();
 
     // Update authorization header on every authHeader change
     useEffect(() => {
         api.defaults.headers.Authorization = authHeader;
     }, [authHeader]);
 
-    api.interceptors.response.use(function (response) {
-        return response;
-    }, function (error) {
-        if (error.response) {
-            // If unauthorized, redirect to log in
-            if (error.response.status === 401) {
-                navigate("/login", {state: {from: location}});
+    useEffect(() => {
+        api.interceptors.response.use(function (response) {
+            return response;
+        }, function (error) {
+            if (error.response) {
+                // If unauthorized, redirect to log in
+                if (error.response.status === 401) {
+                    signOut();
+                    navigate("/login", {state: {from: location}});
+                }
             }
-        }
-        return Promise.reject(error);
-    });
+            return Promise.reject(error);
+        });
+    }, [location, navigate, signOut]);
 
     return api;
 }
