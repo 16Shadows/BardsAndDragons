@@ -4,7 +4,7 @@ import avatar from "../resources/EmptyProfileAvatar_50px.png";
 import notificationPic from "../resources/notification_50px.png";
 import notificationRedPic from "../resources/notification_red_50px.png";
 import NotificationsPanel from "./NotificationsPanel";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import useSignOut from "../utils/useSignOut";
 import useApi from "../http-common";
@@ -16,22 +16,31 @@ const Navbar = () => {
   // TODO Добавить запрос на данные профиля
   const [profileName, setProfileName] = useState("Тестовое имя профиля");
 
-  const [profileAvatar, setProfileAvatar] = useState(avatar);
+  const [profileAvatar] = useState(avatar);
   // TODO Добавить запрос на наличие уведомлений
-  const [gotNotifications, setGotNotifications] = useState(false);
+  const [gotNotifications] = useState(false);
 
   const navigate = useNavigate();
 
-  const {signOut} = useSignOut();
-
   const api = useApi();
 
-  const getProfileInfoQuery = async () => {
+  const signOut = useSignOut(
+    useCallback(async () => {
+      try {
+        await api.post("user/logout", {});
+        return true;
+      } catch (e) {
+        alert(e);
+        return false;
+      }
+    }, [api])
+  );
+
+  const getProfileInfoQuery = useCallback(async () => {
     // GET запрос списка городов к серверу
     api
       .get("user/@current", {})
       .then((response) => {
-        console.log(response.data);
         // TODO заменить на хранение на клиенте, не запрашивать
         if (response.data.displayName)
           setProfileName(response.data.displayName);
@@ -43,13 +52,13 @@ const Navbar = () => {
       .catch((error) => {
         console.error(error);
       });
-  };
+  }, [api]);
 
   useEffect(
     () => {
       if (isAuthenticated) getProfileInfoQuery();
     },
-    [] // Запуск только после первого рендера страницы/объекта navbar
+    [getProfileInfoQuery, isAuthenticated] // Запуск только после первого рендера страницы/объекта navbar
   );
 
   return (

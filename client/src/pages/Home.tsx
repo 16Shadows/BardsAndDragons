@@ -1,6 +1,4 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
-import useApi from "../http-common";
 import homepage from "../resources/homepage.jpg";
 import "../css/Home.css";
 import Button from "../components/Button";
