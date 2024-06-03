@@ -3,7 +3,6 @@ import "../css/App.css";
 import "../css/ProfilePage.css";
 import "../css/react-datepicker.css";
 import defaultAvatarPic from "../resources/EmptyProfileAvatar_200px.png";
-
 // Select - https://react-select.com/home
 import Select, { OptionsOrGroups, SingleValue } from "react-select";
 import DatePicker from "react-datepicker";
@@ -232,7 +231,7 @@ const ProfilePage = () => {
           <img
             id="profile_pic"
             className="profile_image mb-2"
-            alt="Profile avatar"
+            alt="Ошибка загрузки аватара"
             src={avatarPic ?? defaultAvatarPic}
           />
           {!avatarPic && (
