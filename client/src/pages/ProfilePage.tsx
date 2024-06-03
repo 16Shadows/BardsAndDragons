@@ -16,6 +16,7 @@ import useApi from "../http-common";
 
 import { registerLocale } from "react-datepicker";
 import { ru } from "date-fns/locale/ru";
+import { HttpStatusCode } from "axios";
 registerLocale("ru", ru);
 
 interface TownForSelect {
@@ -207,7 +208,18 @@ const ProfilePage = () => {
         // Создаем объект города, TODO добавить локализацию  label
         response.data.city &&
           setTown({ value: response.data.city, label: response.data.city });
-        response.data.avatar && setAvatarPic("/" + response.data.avatar);
+        // Проверка доступности аватара
+        if (response.data.avatar) {
+          const image_response = await fetch(response.data.avatar);
+          if (image_response.status === HttpStatusCode.Ok) {
+            setAvatarPic("/" + response.data.avatar);
+          } else {
+            alert(
+              "Не удалось загрузить аватар профиля.\nAxiosError: Request failed with status code " +
+                image_response.status
+            );
+          }
+        }
         response.data.birthday && setBirthDate(response.data.birthday);
         response.data.shouldDisplayAge &&
           setIsShowingAge(response.data.shouldDisplayAge);
