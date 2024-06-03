@@ -16,7 +16,6 @@ import useApi from "../http-common";
 
 import { registerLocale } from "react-datepicker";
 import { ru } from "date-fns/locale/ru";
-import axios from "axios";
 registerLocale("ru", ru);
 
 interface TownForSelect {
