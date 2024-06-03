@@ -3,7 +3,6 @@ import "../css/App.css";
 import "../css/ProfilePage.css";
 import "../css/react-datepicker.css";
 import defaultAvatarPic from "../resources/EmptyProfileAvatar_200px.png";
-
 // Select - https://react-select.com/home
 import Select, { OptionsOrGroups, SingleValue } from "react-select";
 import DatePicker from "react-datepicker";
@@ -16,7 +15,6 @@ import useApi from "../http-common";
 
 import { registerLocale } from "react-datepicker";
 import { ru } from "date-fns/locale/ru";
-import { HttpStatusCode } from "axios";
 registerLocale("ru", ru);
 
 interface TownForSelect {
@@ -208,18 +206,7 @@ const ProfilePage = () => {
         // Создаем объект города, TODO добавить локализацию  label
         response.data.city &&
           setTown({ value: response.data.city, label: response.data.city });
-        // Проверка доступности аватара
-        if (response.data.avatar) {
-          const image_response = await fetch(response.data.avatar);
-          if (image_response.status === HttpStatusCode.Ok) {
-            setAvatarPic("/" + response.data.avatar);
-          } else {
-            alert(
-              "Не удалось загрузить аватар профиля.\nAxiosError: Request failed with status code " +
-                image_response.status
-            );
-          }
-        }
+        response.data.avatar && setAvatarPic("/" + response.data.avatar);
         response.data.birthday && setBirthDate(response.data.birthday);
         response.data.shouldDisplayAge &&
           setIsShowingAge(response.data.shouldDisplayAge);
@@ -244,7 +231,7 @@ const ProfilePage = () => {
           <img
             id="profile_pic"
             className="profile_image mb-2"
-            alt="Profile avatar"
+            alt="Ошибка загрузки аватара"
             src={avatarPic ?? defaultAvatarPic}
           />
           {!avatarPic && (

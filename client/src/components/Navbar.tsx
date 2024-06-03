@@ -12,7 +12,8 @@ import { FaUserFriends } from "react-icons/fa";
 import { IoDice } from "react-icons/io5";
 import { LuLogOut } from "react-icons/lu";
 import { IoMdSettings } from "react-icons/io";
-import { HttpStatusCode } from "axios";
+
+const iconSize = 20;
 
 const Navbar = () => {
   // Запрос, вошел пользователь в профиль или нет
@@ -28,7 +29,6 @@ const Navbar = () => {
 
   const navigate = useNavigate();
   const api = useApi();
-  const iconSize = 20;
 
   const signOut = useSignOut(
     useCallback(async () => {
@@ -42,42 +42,25 @@ const Navbar = () => {
     }, [api])
   );
 
-  const getProfileInfoQuery = useCallback(async () => {
-    try {
-      const response = await api.get("user/@current", {});
-
-      // TODO заменить на хранение на клиенте, не запрашивать
-      if (response.data.displayName) {
-        setProfileName(response.data.displayName);
-      } else {
-        setProfileName(response.data.username);
-      }
-
-      if (response.data.avatar) {
-        const image_response = await fetch(response.data.avatar);
-        if (image_response.status === HttpStatusCode.Ok) {
-          setProfileAvatar("/" + response.data.avatar);
-        } else {
-          alert(
-            "Не удалось загрузить аватар профиля.\nAxiosError: Request failed with status code " +
-              image_response.status
-          );
-        }
-      }
-    } catch (e) {
-      alert("Не удалось загрузить информацию профиля.\n" + e);
-    }
-  }, [api]);
-
   useEffect(() => {
+    async function getProfileInfoQuery() {
+      try {
+        const response = await api.get("user/@current", {});
+
+        // TODO заменить на хранение на клиенте, не запрашивать
+        setProfileName(response.data.displayName ?? response.data.username);
+        if (response.data.avatar) {
+          setProfileAvatar("/" + response.data.avatar);
+        }
+      } catch (e) {
+        alert("Не удалось загрузить информацию профиля.\n" + e);
+      }
+    }
+
     if (isAuthenticated) {
       getProfileInfoQuery();
     }
-  }, [getProfileInfoQuery, isAuthenticated]);
-
-  function handleNavbarLinkClick(newState: boolean) {
-    setIsOpenCollapseState(newState);
-  }
+  }, [api, isAuthenticated]);
 
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary bg-white mb-4">
@@ -109,7 +92,7 @@ const Navbar = () => {
                   className="nav-link"
                   aria-current="page"
                   to="/"
-                  onClick={() => handleNavbarLinkClick(false)}
+                  onClick={() => setIsOpenCollapseState(false)}
                 >
                   Главная
                 </NavLink>
@@ -119,7 +102,7 @@ const Navbar = () => {
                 <NavLink
                   className="nav-link"
                   to="/players"
-                  onClick={() => handleNavbarLinkClick(false)}
+                  onClick={() => setIsOpenCollapseState(false)}
                 >
                   Поиск игроков
                 </NavLink>{" "}
@@ -129,7 +112,7 @@ const Navbar = () => {
                 <NavLink
                   className="nav-link"
                   to="/games"
-                  onClick={() => handleNavbarLinkClick(false)}
+                  onClick={() => setIsOpenCollapseState(false)}
                 >
                   Поиск игр
                 </NavLink>
@@ -175,7 +158,7 @@ const Navbar = () => {
                 >
                   <img
                     className="rounded-circle me-2 navbar-image"
-                    alt="ProfileAvatar"
+                    alt="Ошибка загрузки аватара"
                     src={profileAvatar}
                   />
                   {profileName}
@@ -185,7 +168,7 @@ const Navbar = () => {
                     <NavLink
                       className="dropdown-item"
                       to="/my-profile"
-                      onClick={() => handleNavbarLinkClick(false)}
+                      onClick={() => setIsOpenCollapseState(false)}
                     >
                       <IoMdSettings size={iconSize} />
                       Профиль
@@ -198,7 +181,7 @@ const Navbar = () => {
                     <NavLink
                       className="dropdown-item"
                       to="/my-games"
-                      onClick={() => handleNavbarLinkClick(false)}
+                      onClick={() => setIsOpenCollapseState(false)}
                     >
                       <IoDice size={iconSize} />
                       Мои игры
@@ -208,7 +191,7 @@ const Navbar = () => {
                     <NavLink
                       className="dropdown-item"
                       to="/my-friends"
-                      onClick={() => handleNavbarLinkClick(false)}
+                      onClick={() => setIsOpenCollapseState(false)}
                     >
                       <FaUserFriends size={iconSize} />
                       Мои друзья
@@ -223,7 +206,7 @@ const Navbar = () => {
                       className="dropdown-item"
                       onClick={() => {
                         signOut();
-                        handleNavbarLinkClick(false);
+                        setIsOpenCollapseState(false);
                       }}
                       to="#"
                     >
