@@ -3,10 +3,7 @@ import useApi from "../http-common";
 import NotificationTemplate from "./NotificationTemplate";
 import notificationPic from "../resources/notification_50px.png";
 import notificationRedPic from "../resources/notification_red_50px.png";
-import {
-  NotificationObject,
-  QueryNotificationObject,
-} from "../models/Notifications";
+import { NotificationObject } from "../models/Notifications";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import Button from "./Button";
@@ -25,45 +22,14 @@ const NotificationsPanel = () => {
         const response = await api.get("notifications", {
           params: { start: oldArr.length, count: notifOnPageCount },
         });
-
-        let gotNotif = false;
         const items = response.data;
-
-        const resPromise = items.map((item: QueryNotificationObject) => {
-          const resultItem: NotificationObject = {
-            id: item.id,
-            type: item.type,
-            seen: item.seen,
-            displayName: null,
-            username: "",
-            avatar: null,
-          };
-
-          if (resultItem.type === "friendRequest") {
-            if (item.friendRequestSentBy) {
-              resultItem.username = item.friendRequestSentBy.username;
-              resultItem.displayName = item.friendRequestSentBy.displayName;
-              resultItem.avatar = item.avatar;
-            }
-          } else if (resultItem.type === "friendRequestAccepted") {
-            if (item.friendRequestAcceptedBy) {
-              resultItem.username = item.friendRequestAcceptedBy.username;
-              resultItem.displayName = item.friendRequestAcceptedBy.displayName;
-              resultItem.avatar = item.avatar;
-            }
-          }
-
-          if (!gotNotif && resultItem.seen === false) gotNotif = true;
-
-          return resultItem;
-        });
-        const res = await Promise.all(resPromise);
-
-        setGotNotifications(gotNotif);
+        setGotNotifications(
+          items.some((elem: NotificationObject) => elem.seen === false)
+        );
 
         return {
-          list: oldArr.concat(res),
-          isFinal: !(res.length === notifOnPageCount),
+          list: oldArr.concat(items),
+          isFinal: !(items.length === notifOnPageCount),
         };
       } catch {
         return {
@@ -99,7 +65,7 @@ const NotificationsPanel = () => {
         signal: abortSignal.current.signal,
       });
     }
-  }, [authHeader, abortSignal, api]);
+  }, [authHeader, abortSignal, api, updateNotifications]);
 
   // Индикатор наличия уведомлений
   const [gotNotifications, setGotNotifications] = useState(false);
@@ -140,8 +106,10 @@ const NotificationsPanel = () => {
 
   return (
     <div>
-      <Button
-        children="екелемене"
+      {/* Для дебага */}
+      {/* <Button
+        color={"primary"}
+        children="Тестовая отправка уведомления от сервера"
         onClick={function (): void {
           api
             .get("notifications/testSourceEvent", {})
@@ -152,7 +120,7 @@ const NotificationsPanel = () => {
               console.error(error);
             });
         }}
-      ></Button>
+      ></Button> */}
       <div
         id="notification_dropdown_toggle"
         className="nav-link dropdown-toggle "
@@ -168,13 +136,13 @@ const NotificationsPanel = () => {
         {gotNotifications ? (
           <img
             className="rounded-circle me-2"
-            alt="GotNotifications"
+            alt="Новые уведомления"
             src={notificationRedPic}
           />
         ) : (
           <img
             className="rounded-circle me-2"
-            alt="NoNotifications"
+            alt="Нет новых уведомлений"
             src={notificationPic}
           />
         )}
@@ -200,6 +168,7 @@ const NotificationsPanel = () => {
             : "Уведомлений пока нет"}
           <div className="d-flex justify-content-center">
             <Button
+              color={"primary"}
               disabled={isNotificationsFinal}
               children={
                 !isNotificationsFinal

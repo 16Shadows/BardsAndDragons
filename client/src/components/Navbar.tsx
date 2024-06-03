@@ -4,46 +4,58 @@ import avatar from "../resources/EmptyProfileAvatar_50px.png";
 import NotificationsPanel from "./NotificationsPanel";
 import { useState, useEffect, useCallback } from "react";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
-import useSignOut from "react-auth-kit/hooks/useSignOut";
+import useSignOut from "../utils/useSignOut";
 import useApi from "../http-common";
 import "../css/Notifications.css";
+import { FaUserFriends } from "react-icons/fa";
+import { IoDice } from "react-icons/io5";
+import { LuLogOut } from "react-icons/lu";
+import { IoMdSettings } from "react-icons/io";
+
+const iconSize = 20;
 
 const Navbar = () => {
-  // Запрос, вошел ли пользователь в профиль или нет
+  // Запрос, вошел пользователь в профиль или нет
   const isAuthenticated = useIsAuthenticated();
   // TODO добавить обновление навбара после изменения, добавлено в feat-notifications
   const [profileName, setProfileName] = useState("");
   const [profileAvatar, setProfileAvatar] = useState(avatar);
+  const [isOpenCollapseState, setIsOpenCollapseState] = useState(false);
 
   const navigate = useNavigate();
-  const signOut = useSignOut();
-
   const api = useApi();
 
-  const getProfileInfoQuery = useCallback(async () => {
-    // GET запрос списка городов к серверу
-    api
-      .get("user/@current", {})
-      .then((response) => {
-        // TODO заменить на хранение на клиенте, не запрашивать
-        if (response.data.displayName)
-          setProfileName(response.data.displayName);
-        else setProfileName(response.data.username);
-
-        // TODO обработка установки картинки
-        // response.data.avatar && set...
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }, [api]);
-
-  useEffect(
-    () => {
-      if (isAuthenticated) getProfileInfoQuery();
-    },
-    [getProfileInfoQuery, isAuthenticated] // Запуск только после первого рендера страницы/объекта navbar
+  const signOut = useSignOut(
+    useCallback(async () => {
+      try {
+        await api.post("user/logout", {});
+        return true;
+      } catch (e) {
+        alert(e);
+        return false;
+      }
+    }, [api])
   );
+
+  useEffect(() => {
+    async function getProfileInfoQuery() {
+      try {
+        const response = await api.get("user/@current", {});
+
+        // TODO заменить на хранение на клиенте, не запрашивать
+        setProfileName(response.data.displayName ?? response.data.username);
+        if (response.data.avatar) {
+          setProfileAvatar("/" + response.data.avatar);
+        }
+      } catch (e) {
+        alert("Не удалось загрузить информацию профиля.\n" + e);
+      }
+    }
+
+    if (isAuthenticated) {
+      getProfileInfoQuery();
+    }
+  }, [api, isAuthenticated]);
 
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary bg-white mb-4">
@@ -53,57 +65,51 @@ const Navbar = () => {
         <button
           className="navbar-toggler"
           type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
+          onClick={() => setIsOpenCollapseState(!isOpenCollapseState)}
           aria-controls="navbarSupportedContent"
           aria-expanded="false"
           aria-label="Toggle navigation"
         >
           <span className="navbar-toggler-icon"></span>
         </button>
-
         <div
-          className="links collapse navbar-collapse"
+          className={
+            isOpenCollapseState
+              ? "links collapse navbar-collapse show"
+              : "links collapse navbar-collapse"
+          }
           id="navbarSupportedContent"
         >
           <div>
             <ul className="navbar-nav mb-2 mb-lg-0">
               <li className="nav-item">
                 <NavLink
-                  // data-bs-toggle="collapse"
-                  // data-bs-target=".navbar-collapse.show"
                   className="nav-link"
                   aria-current="page"
                   to="/"
+                  onClick={() => setIsOpenCollapseState(false)}
                 >
-                  <span
-                    data-bs-toggle="collapse"
-                    data-bs-target=".navbar-collapse.show"
-                  >
-                    Главная
-                  </span>
+                  Главная
                 </NavLink>
               </li>
 
               <li className="nav-item">
-                <NavLink className="nav-link" to="/players">
-                  <span
-                    data-bs-toggle="collapse"
-                    data-bs-target=".navbar-collapse.show"
-                  >
-                    Поиск игроков
-                  </span>
-                </NavLink>
+                <NavLink
+                  className="nav-link"
+                  to="/players"
+                  onClick={() => setIsOpenCollapseState(false)}
+                >
+                  Поиск игроков
+                </NavLink>{" "}
               </li>
 
               <li className="nav-item">
-                <NavLink className="nav-link" to="/games">
-                  <span
-                    data-bs-toggle="collapse"
-                    data-bs-target=".navbar-collapse.show"
-                  >
-                    Поиск игр
-                  </span>
+                <NavLink
+                  className="nav-link"
+                  to="/games"
+                  onClick={() => setIsOpenCollapseState(false)}
+                >
+                  Поиск игр
                 </NavLink>
               </li>
             </ul>
@@ -130,41 +136,41 @@ const Navbar = () => {
                   />
                   {profileName}
                 </div>
-                <ul className="dropdown-menu" data-bs-auto-close="outside">
+
+                <ul className="dropdown-menu">
                   <li>
-                    <NavLink className="dropdown-item" to="/my-profile">
-                      <span
-                        data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse.show"
-                      >
-                        Профиль
-                      </span>
-                    </NavLink>
+                    <NavLink
+                      className="dropdown-item"
+                      to="/my-profile"
+                      onClick={() => setIsOpenCollapseState(false)}
+                    >
+                      <IoMdSettings size={iconSize} />
+                      Профиль
+                    </NavLink>{" "}
                   </li>
                   <li>
                     <hr className="dropdown-divider" />
                   </li>
                   <li>
-                    <NavLink className="dropdown-item" to="/my-games">
-                      <span
-                        data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse.show"
-                      >
-                        Мои игры
-                      </span>
+                    <NavLink
+                      className="dropdown-item"
+                      to="/my-games"
+                      onClick={() => setIsOpenCollapseState(false)}
+                    >
+                      <IoDice size={iconSize} />
+                      Мои игры
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink className="dropdown-item" to="/my-friends">
-                      <span
-                        data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse.show"
-                      >
-                        Мои друзья
-                      </span>
+                    <NavLink
+                      className="dropdown-item"
+                      to="/my-friends"
+                      onClick={() => setIsOpenCollapseState(false)}
+                    >
+                      <FaUserFriends size={iconSize} />
+                      Мои друзья
                     </NavLink>
                   </li>
-
                   <li>
                     <hr className="dropdown-divider" />
                   </li>
@@ -172,16 +178,14 @@ const Navbar = () => {
                     {/* Выход из аккаунта с переходом на главную страницу */}
                     <Link
                       className="dropdown-item"
-                      onClick={() => signOut()}
-                      to="/"
+                      onClick={() => {
+                        signOut();
+                        setIsOpenCollapseState(false);
+                      }}
+                      to="#"
                     >
-                      <span
-                        data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse.show"
-                      >
-                        Выйти
-                      </span>
-                    </Link>
+                      <LuLogOut size={iconSize} /> Выйти
+                    </Link>{" "}
                   </li>
                 </ul>
               </li>
@@ -190,19 +194,21 @@ const Navbar = () => {
             // Кнопки входа/регистрации, если пользователь не вошел в аккаунт
             <div className="nav-item login_reg_bundle ms-auto">
               <button
-                data-bs-toggle="collapse"
-                data-bs-target=".navbar-collapse.show"
                 type="button"
-                onClick={() => navigate("/login")}
+                onClick={() => {
+                  navigate("/login");
+                  setIsOpenCollapseState(false);
+                }}
                 className="btn btn-primary me-2"
               >
                 Вход
               </button>
               <button
-                data-bs-toggle="collapse"
-                data-bs-target=".navbar-collapse.show"
                 type="button"
-                onClick={() => navigate("/register")}
+                onClick={() => {
+                  navigate("/register");
+                  setIsOpenCollapseState(false);
+                }}
                 className="btn btn-outline-primary"
               >
                 Регистрация
