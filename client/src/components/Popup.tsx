@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import Button from "./Button";
 import Modal from "react-bootstrap/Modal";
-import { IntegerType } from "typeorm";
-import PopupButton from "../interfaces/PopupButtonInterface";
+
+export interface PopupButton {
+  text: string;
+  action: () => void;
+  variant: "primary" | "secondary" | "danger" | "success";
+  outline?: boolean;
+}
 
 function Popup(props: {
   show: boolean;
-  onHide: any;
-  disabled: boolean;
+  onHide?: () => void;
   buttons: PopupButton[];
   title: string;
   message: React.ReactNode;
@@ -15,7 +19,7 @@ function Popup(props: {
   popupButtonVariant?: "primary" | "secondary" | "danger" | "success";
 }) {
   const buttons = props.buttons;
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(props.show);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -23,19 +27,28 @@ function Popup(props: {
   return (
     <>
       <Button
-        color={props.popupButtonVariant}
+        color={props.popupButtonVariant ?? "primary"}
         onClick={handleShow}
-        children={props.popupButtonText ? props.popupButtonText : ""}
-      />
+      >
+        {props.popupButtonText}
+      </Button>
 
-      <Modal show={show} onHide={handleClose}>
+      <Modal
+        show={show}
+        onHide={() => {
+          handleClose();
+          if (props.onHide) {
+            props.onHide();
+          }
+        }}
+      >
         <Modal.Header closeButton>
           <Modal.Title>{props.title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>{props.message}</Modal.Body>
         <Modal.Footer>
           <>
-            {buttons.map((button, index) => {
+            {buttons.map((button) => {
               return (
                 <>
                   <Button

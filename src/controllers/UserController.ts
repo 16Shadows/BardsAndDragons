@@ -29,6 +29,7 @@ import {
     wrongPasswordError
 } from "../utils/errorMessages";
 import {TokenService} from "../services/TokenService";
+import { Token } from "../model/token";
 
 type UserInfo = {
     // TODO заменить на хранение на клиенте, не запрашивать
@@ -199,7 +200,7 @@ export class UserController extends Object {
     @Return('application/json')
     @Middleware(AuthMiddleware)
     @Middleware(AuthHeaderMiddleware)
-    async logout(bag: AuthHeaderMiddlewareBag, _: Object) {
+    async logout(bag: AuthHeaderMiddlewareBag) {
         if (!bag.token) {
             return badRequest({message: invalidTokenError});
         }
@@ -287,10 +288,11 @@ export class UserController extends Object {
 
     @POST('@current/delete')
     @Middleware(AuthMiddleware)
+    @Middleware(AuthHeaderMiddleware)
     @Accept('application/json')
-    async deleteMe(bag: AuthHeaderMiddlewareBag) {
+    async deleteMe(bag: AuthMiddlewareBag & AuthHeaderMiddlewareBag) {
         const repo = this._dbContext.getRepository(User);
+        await (this._dbContext.getRepository(Token).remove(await bag.user.tokens));
         await repo.softRemove(bag.user);
-        return this.logout(bag, {});
     }
 }

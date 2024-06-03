@@ -12,6 +12,7 @@ import { FaUserFriends } from "react-icons/fa";
 import { IoDice } from "react-icons/io5";
 import { LuLogOut } from "react-icons/lu";
 import { IoMdSettings } from "react-icons/io";
+import { HttpStatusCode } from "axios";
 
 const Navbar = () => {
   // Запрос, вошел пользователь в профиль или нет
@@ -20,30 +21,52 @@ const Navbar = () => {
   const [profileName, setProfileName] = useState(null);
 
   const [profileAvatar, setProfileAvatar] = useState(avatar);
-  // TODO Добавить запрос на наличие уведомлений
+  // TODO Добавить запрос на наличие уведомлений, исправлено в feat-notifications
   const [gotNotifications, setGotNotifications] = useState(false);
 
   const [isOpenCollapseState, setIsOpenCollapseState] = useState(false);
 
   const navigate = useNavigate();
-  const { signOut } = useSignOut();
-
   const api = useApi();
   const iconSize = 20;
 
+  const signOut = useSignOut(
+    useCallback(async () => {
+      try {
+        await api.post("user/logout", {});
+        return true;
+      } catch (e) {
+        alert(e);
+        return false;
+      }
+    }, [api])
+  );
+
   const getProfileInfoQuery = useCallback(async () => {
-    api
-      .get("user/@current", {})
-      .then((response) => {
-        // TODO заменить на хранение на клиенте, не запрашивать
-        if (response.data.displayName)
-          setProfileName(response.data.displayName);
-        else setProfileName(response.data.username);
-        response.data.avatar && setProfileAvatar("/" + response.data.avatar);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    try {
+      const response = await api.get("user/@current", {});
+
+      // TODO заменить на хранение на клиенте, не запрашивать
+      if (response.data.displayName) {
+        setProfileName(response.data.displayName);
+      } else {
+        setProfileName(response.data.username);
+      }
+
+      if (response.data.avatar) {
+        const image_response = await fetch(response.data.avatar);
+        if (image_response.status === HttpStatusCode.Ok) {
+          setProfileAvatar("/" + response.data.avatar);
+        } else {
+          alert(
+            "Не удалось загрузить аватар профиля.\nAxiosError: Request failed with status code " +
+              image_response.status
+          );
+        }
+      }
+    } catch (e) {
+      alert("Не удалось загрузить информацию профиля.\n" + e);
+    }
   }, [api]);
 
   useEffect(() => {
