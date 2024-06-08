@@ -110,6 +110,9 @@ export class GameController extends Object {
             });
         }
 
+        // Задержка для тестирования
+        // await new Promise((resolve) => setTimeout(resolve, 3000));
+
         return games;
     }
 
@@ -194,10 +197,7 @@ export class GameController extends Object {
         return result;
 
         // Задержка для тестирования
-        // await new Promise((resolve) => setTimeout(resolve, 3000)).then(() => {
-        //     // Код
-        //     }
-        // );
+        // await new Promise((resolve) => setTimeout(resolve, 3000));
     }
 
     // Получение количества игр

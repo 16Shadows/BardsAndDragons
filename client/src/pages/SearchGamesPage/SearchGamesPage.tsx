@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import GameItem, { IGameProps } from "../../components/GameItem/GameItem";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import useApi from '../../http-common'
@@ -16,20 +16,23 @@ const SearchGamesPage = () => {
 
     // ===Пагинация===
     // Количество запрашиваемых за раз игр
-    const requestSize = 5 + Math.round(document.documentElement.clientHeight / 200)
+    const requestSize = useMemo(() => 5 + Math.round(document.documentElement.clientHeight / 200), [])
 
     // Общее число игр, которые соответствуют текущим условиям выбора
-    const totalGamesNumberRef = useRef(0)
+    const totalGamesNumber = useRef<number>(0)
 
     // Номер текущей игры, с которого начнётся выборка из БД
-    const currentGameNumberRef = useRef(0)
+    const currentGameNumber = useRef<number>(0)
+
+    // Номер текущего запроса, с которого начнётся выборка из БД
+    const currentRequestVersion = useRef<number>(0)
 
     // ===Запрос данных из БД===
-    // Индикатор, что нужно выполнить запрос игр из БД
-    const [fetching, setFetching] = useState(false)
+    // Индикатор, что выполяется запрос игр из БД
+    const fetching = useRef(false)
 
     // Отключение формы при запросе данных
-    const [formIsDisabled, setFormIsDisabled] = useState<boolean>(false);
+    const [formIsDisabled, setFormIsDisabled] = useState<boolean | undefined>(undefined);
 
     // Строка запроса для поиска
     const [searchQuery, setSearchQuery] = useState('')
@@ -55,7 +58,7 @@ const SearchGamesPage = () => {
 
     // ===Сортировка===
     // Список опций
-    const sortTypes = new Map([["По номеру", "id"], ["По названию", "name"]])
+    const sortTypes = useMemo(() => new Map([["По номеру", "id"], ["По названию", "name"]]), [])
 
     // Выбранная опция
     const [selectedSort, setSelectedSort] = useState(Array.from(sortTypes.keys())[0])
@@ -68,40 +71,71 @@ const SearchGamesPage = () => {
         setSearchQueryEvent(searchQuery);
     }
 
-    // Если изменится сортировка или строка запроса - делаем запрос игр из БД
-    useEffect(getTotalNumber, [searchQueryEvent, selectedSort, api])
-    
-    // Запрашиваем общее число игр из БД, а затем сами игры
-    function getTotalNumber() {
-        if (!fetching) {
+    // Получение игр из БД
+    const getGames = useCallback(() => {
+        // Проверяем окончание данных в БД
+        if (currentGameNumber.current >= totalGamesNumber.current)
+            return;
 
-            setFormIsDisabled(true);
+        // Указываем, что выполняем новый запрос
+        currentRequestVersion.current += 1;
+        let currentVersion = currentRequestVersion.current;
+        
+        if (!fetching.current)
+            fetching.current = true;
 
-            api.get('game/games-number', { params: {name: searchQueryEvent} }).then(function (response) {
-                totalGamesNumberRef.current = response.data;
-                // console.log(totalGamesNumberRef.current);
-
-                // Очищаем список и обнуляем счётчик
-                setGames(undefined);
-                currentGameNumberRef.current = 0;
-
-                // Если игры нашлись, то делаем запрос
-                if (response.data > 0) {
-                    setFetching(true);
+        // Запрашиваем игры, передаём лимит, стартовую позицию, искомое имя, id пользователя и тип сортировки
+        api.get(gameRequestName, { params: { limit: requestSize, start: currentGameNumber.current, name: searchQueryEvent, sort: sortTypes.get(selectedSort) } }).then(function (response) {
+            // Проверяем, что этот запрос ещё актуален
+            if (currentVersion != currentRequestVersion.current)
+                return;
+            
+            setGames(gms => {
+                if (!gms) {
+                    return response.data;
                 }
                 else {
-                    // Для анимации
-                    setTimeout(() => {
-                        setGames([]);
-                        setFormIsDisabled(false);
-                    }, 750);
+                    return gms.concat(response.data);
                 }
-            }).catch(() => {
-                if (!modalIsShow)
-                    showModal("Не удалось получить список игр");
             })
-        }
-    }
+
+            // Увеличиваем текущую позицию
+            currentGameNumber.current += requestSize;
+        }).catch(() => {
+            if (!modalIsShow)
+                showModal("Не удалось получить список игр");
+            setGames([]);
+        }).finally(() => {
+            if (fetching.current)
+                fetching.current = false;
+        })
+    }, [requestSize, searchQueryEvent, selectedSort, api])
+
+    // Если изменятся сортировка или строка запроса - делаем запрос игр из БД
+    useEffect(() => {
+        // Запрашиваем общее число игр из БД
+        api.get('game/games-number', { params: {name: searchQueryEvent} }).then(function (response) {
+            totalGamesNumber.current = response.data;
+
+            // Очищаем список и обнуляем счётчик
+            setGames(undefined);
+            currentGameNumber.current = 0;
+
+            // Если игры нашлись, то делаем запрос
+            if (response.data > 0) {
+                getGames();
+            }
+            else {
+                // Для анимации
+                setTimeout(() => {
+                    setGames([]);
+                }, 750);
+            }
+        }).catch(() => {
+            if (!modalIsShow)
+                showModal("Не удалось получить список игр");
+        })
+    }, [requestSize, searchQueryEvent, selectedSort, api])
 
     // Подписка на игру
     function subscribe(gameId: number) {
@@ -142,58 +176,27 @@ const SearchGamesPage = () => {
         });
     }
 
-    // Выполняется при первой загрузке страницы
+    // Выполняется при изменении обработчика
     useEffect(() => {
         // Обработчик прокрутки страницы
         function scrollHandler(event: Event) {
-            // Условие: до конца полосы прокрутки меньше 100 единиц И номер текущей игры меньше их общего количества
-            if (document.documentElement.scrollHeight - document.documentElement.scrollTop - window.innerHeight < 100 && currentGameNumberRef.current < totalGamesNumberRef.current) {
-                // Запрашиваем игры из БД
-                setFetching(true);
+            if (!fetching.current) {
+                // Условие: до конца полосы прокрутки меньше 100 единиц И номер текущей игры меньше их общего количества
+                if (document.documentElement.scrollHeight - document.documentElement.scrollTop - window.innerHeight < 100) {
+                    // Запрашиваем игры из БД
+                    getGames();
+                }
             }
         }
 
         // Добавляем слушатель для прокрутки
         document.addEventListener("scroll", scrollHandler);
 
-        //console.log(`requestSize: ${requestSize}`);
-
-        // Запрашиваем игры из БД
-        setFetching(true);
-
         return function() {
+            console.log("quit");
             document.removeEventListener("scroll", scrollHandler);
         }
-    }, [])
-
-    // Выполняется при изменении состояния индикатора fetching
-    useEffect(() => {
-        if (fetching) {
-            // console.log("fetching games");
-            // console.log(`Current: ${currentGameNumberRef.current}`);
-
-            // Запрашиваем игры, передаём лимит, стартовую позицию, искомое имя, id пользователя и тип сортировки
-            api.get(gameRequestName, { params: {limit: requestSize, start: currentGameNumberRef.current, name: searchQueryEvent, sort: sortTypes.get(selectedSort)} }).then(function (response) {
-                setGames(gms => {
-                    if (!gms) {
-                        return response.data;
-                    }
-                    else {
-                        return gms.concat(response.data);
-                    }
-                })
-                
-                // Увеличиваем текущую позицию
-                currentGameNumberRef.current += requestSize;
-            }).catch(() => {
-                if (!modalIsShow)
-                    showModal("Не удалось получить список игр");
-            }).finally(() => {
-                setFetching(false);
-                setFormIsDisabled(false);
-            })
-        }
-    }, [fetching])
+    }, [getGames])
 
     // Основной компонент
     return (
