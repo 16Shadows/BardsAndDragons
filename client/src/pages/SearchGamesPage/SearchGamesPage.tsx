@@ -27,8 +27,9 @@ const SearchGamesPage = () => {
     // ===Запрос данных из БД===
     // Индикатор, что нужно выполнить запрос игр из БД
     const [fetching, setFetching] = useState(false)
-    
-    const inputForm = useRef(null)
+
+    // Отключение формы при запросе данных
+    const [formIsDisabled, setFormIsDisabled] = useState<boolean>(false);
 
     // Строка запроса для поиска
     const [searchQuery, setSearchQuery] = useState('')
@@ -60,15 +61,6 @@ const SearchGamesPage = () => {
     const [selectedSort, setSelectedSort] = useState(Array.from(sortTypes.keys())[0])
 
     // ===Функции===
-    // Обработчик прокрутки страницы
-    function scrollHandler(event: Event) {
-        // Условие: до конца полосы прокрутки меньше 100 единиц И номер текущей игры меньше их общего количества
-        if (document.documentElement.scrollHeight - document.documentElement.scrollTop - window.innerHeight < 100 && currentGameNumberRef.current < totalGamesNumberRef.current) {
-            // Запрашиваем игры из БД
-            setFetching(true);
-        }
-    }
-
     // Обработчик для кнопки поиска игр
     function searchGames(e: FormEvent<HTMLFormElement>) 
     {
@@ -82,8 +74,8 @@ const SearchGamesPage = () => {
     // Запрашиваем общее число игр из БД, а затем сами игры
     function getTotalNumber() {
         if (!fetching) {
-            if (inputForm.current)
-                ((inputForm.current) as HTMLFieldSetElement).disabled = true;
+
+            setFormIsDisabled(true);
 
             api.get('game/games-number', { params: {name: searchQueryEvent} }).then(function (response) {
                 totalGamesNumberRef.current = response.data;
@@ -101,8 +93,7 @@ const SearchGamesPage = () => {
                     // Для анимации
                     setTimeout(() => {
                         setGames([]);
-                        if (inputForm.current)
-                            ((inputForm.current) as HTMLFieldSetElement).disabled = false;
+                        setFormIsDisabled(false);
                     }, 750);
                 }
             }).catch(() => {
@@ -153,6 +144,15 @@ const SearchGamesPage = () => {
 
     // Выполняется при первой загрузке страницы
     useEffect(() => {
+        // Обработчик прокрутки страницы
+        function scrollHandler(event: Event) {
+            // Условие: до конца полосы прокрутки меньше 100 единиц И номер текущей игры меньше их общего количества
+            if (document.documentElement.scrollHeight - document.documentElement.scrollTop - window.innerHeight < 100 && currentGameNumberRef.current < totalGamesNumberRef.current) {
+                // Запрашиваем игры из БД
+                setFetching(true);
+            }
+        }
+
         // Добавляем слушатель для прокрутки
         document.addEventListener("scroll", scrollHandler);
 
@@ -190,8 +190,7 @@ const SearchGamesPage = () => {
                     showModal("Не удалось получить список игр");
             }).finally(() => {
                 setFetching(false);
-                if (inputForm.current)
-                    ((inputForm.current) as HTMLFieldSetElement).disabled = false;
+                setFormIsDisabled(false);
             })
         }
     }, [fetching])
@@ -203,7 +202,7 @@ const SearchGamesPage = () => {
             <Col md="6">
                 <div id="search-box" className="static-item">
                     <Form onSubmit={searchGames}>
-                        <fieldset ref={inputForm}>
+                        <fieldset disabled={formIsDisabled}>
                             {/* Поиск по названию */}
                             <div style={{ fontSize: "24px" }}><b>Название</b></div>
                             <input style={{ width: "100%" }} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
@@ -212,7 +211,7 @@ const SearchGamesPage = () => {
                                 {/* Сортировка */}
                                 <span style={{ width: "48%", display: "inline-block", verticalAlign: "middle" }}>
                                     <span style={{ fontWeight: "bolder", fontSize: "20px" }}>Сортировка:</span>
-                                    <select id="select-list" value={selectedSort} onChange={event => setSelectedSort(event.target.value)}>
+                                    <select id="select-list" value={selectedSort} onChange={event => {setSelectedSort(event.target.value)}}>
                                         <option disabled value={""}>Сортировка</option>
                                         {Array.from(sortTypes.keys()).map((option) =>
                                             <option key={option}>{option}</option>
