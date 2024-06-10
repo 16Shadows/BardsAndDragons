@@ -134,25 +134,34 @@ const SearchGamesPage = () => {
         }).catch(() => {
             if (!modalIsShow)
                 showModal("Не удалось получить список игр");
+            setGames([]);
         })
     }, [requestSize, searchQueryEvent, selectedSort, api])
 
     // Подписка на игру
-    function subscribe(gameId: number) {
-        api.post(`game/${gameId}/subscribe`).then(function (response) {
+    async function subscribe(gameId: number): Promise<boolean | undefined> {
+        let result;
+        await api.post(`game/${gameId}/subscribe`).then(function (response) {
             // console.log("Subscribed");
+            result = true;
         }).catch((error) => {
             showModal(error.response?.data?.message || "Не удалось подписаться на игру");
+            result = false;
         });
+        return result;
     }
 
     // Отписка от игры
-    function unsubscribe(gameId: number) {
-        api.post(`game/${gameId}/unsubscribe`).then(function (response) {
+    async function unsubscribe(gameId: number): Promise<boolean | undefined> {
+        let result;
+        await api.post(`game/${gameId}/unsubscribe`).then(function (response) {
             // console.log("Unsubscribed");
+            result = true;
         }).catch((error) => {
             showModal(error.response?.data?.message || "Игра не найдена");
-        });
+            result = false;
+        })
+        return result;
     }
 
     // Открыть модальное окно с сообщением

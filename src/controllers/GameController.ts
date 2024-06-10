@@ -16,7 +16,7 @@ import { gameNotFound, sortTypeNotFound, subscriptionAlreadyExist, subscriptionN
 const sortTypes = new Set(["id", "name"])
 
 // Лимит получаемых в запросе объектов
-const defaultRequestLimit = 50
+const maxRequestLimit = 50
 
 // Информация об игре
 interface GameData 
@@ -75,13 +75,13 @@ export class GameController extends Object {
         let repository = this._dbContext.getRepository(Game);
         let games;
 
-        // Базовый лимит - requestLimit
-        let limit = defaultRequestLimit;
-        if (query.limit && query.limit > 0)
+        // Базовый лимит - maxRequestLimit
+        let limit = maxRequestLimit;
+        if (query.limit && query.limit > 0 && query.limit < maxRequestLimit)
             limit = query.limit;
 
         // Базовая сортировка - по id игры
-        let sort = query.sort ?? "id"
+        let sort = query.sort ?? sortTypes.keys().next().value;
 
         if (!sortTypes.has(sort))
             return badRequest({message: sortTypeNotFound});
@@ -147,13 +147,13 @@ export class GameController extends Object {
         let games: SelectQueryBuilder<Game>;
         let userId = bag.user.id;
 
-        // Базовый лимит - requestLimit
-        let limit = defaultRequestLimit;
-        if (query.limit && query.limit > 0)
+        // Базовый лимит - maxRequestLimit
+        let limit = maxRequestLimit;
+        if (query.limit && query.limit > 0 && query.limit < maxRequestLimit)
             limit = query.limit;
 
         // Базовая сортировка - по id игры
-        let sort = query.sort ?? "id"
+        let sort = query.sort ?? sortTypes.keys().next().value;
 
         if (!sortTypes.has(sort))
             return badRequest({message: sortTypeNotFound});
@@ -234,7 +234,7 @@ export class GameController extends Object {
     @Return('application/json')
     @Middleware(AuthMiddleware)
     async subscribe(bag: AuthMiddlewareBag, gameId:number) {
-        const game = new Game()
+        const game = new Game();
         game.id = gameId;
 
         // Проверка на существование игры
@@ -265,7 +265,7 @@ export class GameController extends Object {
     @Return('application/json')
     @Middleware(AuthMiddleware)
     async unsubscribe(bag: AuthMiddlewareBag, gameId:number) {
-        const game = new Game()
+        const game = new Game();
         game.id = gameId;
 
         // Проверка на существование игры
