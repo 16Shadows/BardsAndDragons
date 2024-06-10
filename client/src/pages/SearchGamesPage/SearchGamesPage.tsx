@@ -1,50 +1,38 @@
-import React, { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import GameItem, { IGameProps } from "../../components/GameItem/GameItem";
-import { Button, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import useApi from '../../http-common'
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 import "./SearchGamesPage.css"
-import { UserData } from "../../models/UserData";
-
-// interface IUser {
-//     id: number;
-//     username: string;
-//     passwordHash: string;
-//     email: string;
-//     isDeleted: boolean;
-//     birthday?: Date;
-//     displayName?: string;
-//     profileDescription?: string;
-//     contactInfo?: string;
-//     canDisplayAge: boolean;
-// }
+import ModalWindowAlert from "../../components/ModalWindowAlert/ModalWindowAlert";
 
 const SearchGamesPage = () => {
-
     // ===Авторизация===
     // Проверка, авторизован ли пользователь
     const isAuthenticated = useIsAuthenticated()
 
-    // Имя пользователя
-    const username = useAuthUser<UserData>()?.username
-
-    // Id пользователя (если был выполнен вход)
-    const [userId, setUserId] = useState<number>()
+    // Определение запроса в зависимости от статуса авторизации
+    const gameRequestName = isAuthenticated ? 'game/games-with-subscription' : 'game/games'
 
     // ===Пагинация===
     // Количество запрашиваемых за раз игр
-    const [requestSize, setRequestSize] = useState<number>()
+    const requestSize = useMemo(() => 5 + Math.round(document.documentElement.clientHeight / 200), [])
 
     // Общее число игр, которые соответствуют текущим условиям выбора
-    const totalGamesNumberRef = useRef(0)
+    const totalGamesNumber = useRef<number>(0)
 
     // Номер текущей игры, с которого начнётся выборка из БД
-    const currentGameNumberRef = useRef(0)
+    const currentGameNumber = useRef<number>(0)
+
+    // Номер текущего запроса, с которого начнётся выборка из БД
+    const currentRequestVersion = useRef<number>(0)
 
     // ===Запрос данных из БД===
-    // Индикатор, что нужно выполнить запрос игр из БД
-    const [fetching, setFetching] = useState(false)
+    // Индикатор, что выполяется запрос игр из БД
+    const fetching = useRef(false)
+
+    // Отключение формы при запросе данных
+    const [formIsDisabled, setFormIsDisabled] = useState<boolean | undefined>(undefined);
 
     // Строка запроса для поиска
     const [searchQuery, setSearchQuery] = useState('')
@@ -58,23 +46,24 @@ const SearchGamesPage = () => {
     // Axios API для запросов к беку
     const api = useApi();
 
+    // ===Модальное окно===
+    // Таймер закрытия окна
+    const modalTimeoutHandler = useRef<NodeJS.Timeout>()
+
+    // Сообщение об ошибке
+    const [modalMessage, setModalMessage ] = useState("Сообщение")
+
+    // Состояние модального окна скрыто/открыто
+    const [modalIsShow, setModalIsShow] = useState(false)
+
     // ===Сортировка===
     // Список опций
-    const sortTypes = new Map([["По номеру", "id"], ["По названию", "name"]])
+    const sortTypes = useMemo(() => new Map([["По номеру", "id"], ["По названию", "name"]]), [])
 
     // Выбранная опция
     const [selectedSort, setSelectedSort] = useState(Array.from(sortTypes.keys())[0])
 
     // ===Функции===
-    // Обработчик прокрутки страницы
-    function scrollHandler(event: Event) {
-        // Условие: до конца полосы прокрутки меньше 100 единиц И номер текущей игры меньше их общего количества
-        if (document.documentElement.scrollHeight - document.documentElement.scrollTop - window.innerHeight < 100 && currentGameNumberRef.current < totalGamesNumberRef.current) {
-            // Запрашиваем игры из БД
-            setFetching(true);
-        }
-    }
-
     // Обработчик для кнопки поиска игр
     function searchGames(e: FormEvent<HTMLFormElement>) 
     {
@@ -82,90 +71,141 @@ const SearchGamesPage = () => {
         setSearchQueryEvent(searchQuery);
     }
 
-    // Если изменится сортировка или строка запроса - делаем запрос игр из БД
-    useEffect(getTotalNumber, [searchQueryEvent, selectedSort])
-    
-    // Запрашиваем общее число игр из БД, а затем сами игры
-    function getTotalNumber() {
+    // Получение игр из БД
+    const getGames = useCallback(() => {
+        // Проверяем окончание данных в БД
+        if (currentGameNumber.current >= totalGamesNumber.current)
+            return;
+
+        // Указываем, что выполняем новый запрос
+        currentRequestVersion.current += 1;
+        let currentVersion = currentRequestVersion.current;
+        
+        if (!fetching.current)
+            fetching.current = true;
+
+        // Запрашиваем игры, передаём лимит, стартовую позицию, искомое имя, id пользователя и тип сортировки
+        api.get(gameRequestName, { params: { limit: requestSize, start: currentGameNumber.current, name: searchQueryEvent, sort: sortTypes.get(selectedSort) } }).then(function (response) {
+            // Проверяем, что этот запрос ещё актуален
+            if (currentVersion != currentRequestVersion.current)
+                return;
+            
+            setGames(gms => {
+                if (!gms) {
+                    return response.data;
+                }
+                else {
+                    return gms.concat(response.data);
+                }
+            })
+
+            // Увеличиваем текущую позицию
+            currentGameNumber.current += requestSize;
+        }).catch(() => {
+            if (!modalIsShow)
+                showModal("Не удалось получить список игр");
+            setGames([]);
+        }).finally(() => {
+            if (fetching.current)
+                fetching.current = false;
+        })
+    }, [requestSize, searchQueryEvent, selectedSort, api])
+
+    // Если изменятся сортировка или строка запроса - делаем запрос игр из БД
+    useEffect(() => {
+        // Запрашиваем общее число игр из БД
         api.get('game/games-number', { params: {name: searchQueryEvent} }).then(function (response) {
-            totalGamesNumberRef.current = response.data;
-            console.log(totalGamesNumberRef.current);
+            totalGamesNumber.current = response.data;
 
             // Очищаем список и обнуляем счётчик
             setGames(undefined);
-            currentGameNumberRef.current = 0;
+            currentGameNumber.current = 0;
 
             // Если игры нашлись, то делаем запрос
             if (response.data > 0) {
-                setFetching(true);
+                getGames();
             }
             else {
                 // Для анимации
-                setTimeout(() => setGames([]), 750);
+                setTimeout(() => {
+                    setGames([]);
+                }, 750);
             }
+        }).catch(() => {
+            if (!modalIsShow)
+                showModal("Не удалось получить список игр");
+            setGames([]);
         })
-    }
+    }, [requestSize, searchQueryEvent, selectedSort, api])
 
     // Подписка на игру
-    function subscribe(game: IGameProps) {
-        api.post('user-games/subscribe', { userId: userId,  game: game}).then(function (response) {
-            console.log("Subscribed");
-            //console.log(response.data);
-        })
+    async function subscribe(gameId: number): Promise<boolean | undefined> {
+        let result;
+        await api.post(`game/${gameId}/subscribe`).then(function (response) {
+            // console.log("Subscribed");
+            result = true;
+        }).catch((error) => {
+            showModal(error.response?.data?.message || "Не удалось подписаться на игру");
+            result = false;
+        });
+        return result;
     }
 
     // Отписка от игры
-    function unsubscribe(game: IGameProps) {
-        api.post('user-games/unsubscribe', { userId: userId,  game: game}).then(function (response) {
-            console.log("Unsubscribed");
-            //console.log(response.data);
+    async function unsubscribe(gameId: number): Promise<boolean | undefined> {
+        let result;
+        await api.post(`game/${gameId}/unsubscribe`).then(function (response) {
+            // console.log("Unsubscribed");
+            result = true;
+        }).catch((error) => {
+            showModal(error.response?.data?.message || "Игра не найдена");
+            result = false;
         })
+        return result;
     }
 
-    // Выполняется при первой загрузке страницы
+    // Открыть модальное окно с сообщением
+    function showModal(message: string, timeout = 5000) {
+        setModalMessage(message);
+        setModalIsShow(true);
+        modalTimeoutHandler.current = setTimeout(hideModal, timeout);
+    }
+
+    // Закрыть модальное окно
+    function hideModal() {
+        setModalIsShow(state => {
+            // Действия, если окно ещё не закрыто
+            if (state) {
+                clearTimeout(modalTimeoutHandler.current);
+                return false;
+            }
+            // Если закрыто, то состояние не сменится
+            else
+                return false;
+        });
+    }
+
+    // Выполняется при изменении обработчика
     useEffect(() => {
+        // Обработчик прокрутки страницы
+        function scrollHandler(event: Event) {
+            if (!fetching.current) {
+                // Условие: до конца полосы прокрутки меньше 100 единиц И номер текущей игры меньше их общего количества
+                if (document.documentElement.scrollHeight - document.documentElement.scrollTop - window.innerHeight < 100) {
+                    // Запрашиваем игры из БД
+                    getGames();
+                }
+            }
+        }
+
         // Добавляем слушатель для прокрутки
         document.addEventListener("scroll", scrollHandler);
 
-        // Устанавливаем количество игр для одного запроса
-        setRequestSize(Math.round(document.documentElement.clientHeight / 100));
-        //console.log(`requestSize: ${requestSize}`);
-
-        // Если вход выполнен, то получаем id пользователя по его имени
-        if (isAuthenticated) {
-            api.get('user/user-by-username', { params: {username: username} }).then(function (response) {
-                setUserId(response.data.id)
-            })
-        }
-
-        // Запрашиваем игры из БД
-        setFetching(true);
-
         return function() {
+            console.log("quit");
             document.removeEventListener("scroll", scrollHandler);
         }
-    }, [])
-
-    // Выполняется при изменении состояния индикатора fetching
-    useEffect(() => {
-        if (fetching) {
-            //console.log("fetching games");
-            //console.log(`Current: ${currentGameNumberRef.current}`);
-            // Запрашиваем игры, передаём лимит, стартовую позицию, искомое имя, id пользователя и тип сортировки
-            api.get('game/games', { params: {limit: requestSize, start: currentGameNumberRef.current, name: searchQueryEvent, userid: userId, sort: sortTypes.get(selectedSort)} }).then(function (response) {
-                if (!games) {
-                    //setGames((response.data as IGameProps[]).sort((a, b) => a["id"] - b["id"]));
-                    setGames(response.data);
-                }
-                else {
-                    setGames([...games, ...response.data]);
-                }
-                
-                // Увеличиваем текущую позицию
-                currentGameNumberRef.current += requestSize ?? 0;
-            }).finally(() => setFetching(false))
-        }
-    }, [fetching])
+    }, [getGames])
 
     // Основной компонент
     return (
@@ -174,27 +214,30 @@ const SearchGamesPage = () => {
             <Col md="6">
                 <div id="search-box" className="static-item">
                     <Form onSubmit={searchGames}>
-                        {/* Поиск по названию */}
-                        <div style={{fontSize: "24px"}}><b>Название</b></div>
-                        <input style={{width: "100%"}} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                        <fieldset disabled={formIsDisabled}>
+                            {/* Поиск по названию */}
+                            <div style={{ fontSize: "24px" }}><b>Название</b></div>
+                            <input style={{ width: "100%" }} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
 
-                        <div style={{marginTop: "15px", textAlign: "center"}}>
-                            {/* Сортировка */}
-                            <span style={{width: "48%", display: "inline-block"}}>
-                                <span style={{fontWeight: "bolder", fontSize: "20px"}}>Сортировка:</span>
-                                <select id="select-list" value={selectedSort} onChange={event => setSelectedSort(event.target.value)}>
-                                    <option disabled value={""}>Сортировка</option>
-                                    {Array.from(sortTypes.keys()).map((option) =>
-                                        <option key={option}>{option}</option>
-                                    )}
-                                </select>      
-                            </span>
-                            
-                            {/* Кнопка поиска */}
-                            <span id="search-button-block">                   
-                                <Button type="submit" id="search-button">Поиск</Button>
-                            </span>  
-                        </div>
+                            <div style={{ marginTop: "15px", textAlign: "center" }}>
+                                {/* Сортировка */}
+                                <span style={{ width: "48%", display: "inline-block", verticalAlign: "middle" }}>
+                                    <span style={{ fontWeight: "bolder", fontSize: "20px" }}>Сортировка:</span>
+                                    <select id="select-list" value={selectedSort} onChange={event => {setSelectedSort(event.target.value)}}>
+                                        <option disabled value={""}>Сортировка</option>
+                                        {Array.from(sortTypes.keys()).map((option) =>
+                                            <option key={option}>{option}</option>
+                                        )}
+                                    </select>
+                                </span>
+
+                                {/* Кнопка поиска */}
+                                <span id="search-button-block">
+                                    <Button type="submit" id="search-button">Поиск</Button>
+                                </span>
+                            </div>
+                        </fieldset>
+                        
                     </Form>
                 </div>
             </Col>
@@ -222,6 +265,8 @@ const SearchGamesPage = () => {
                     }
                 </div>
             </Col>
+            {/* Отображение ошибок */}
+            <ModalWindowAlert show={modalIsShow} onHide={hideModal} message={modalMessage} />
         </Row>
     );
 };

@@ -281,16 +281,4 @@ export class UserController extends Object {
         if (info.shouldDisplayAge != undefined)
             user.canDisplayAge = info.shouldDisplayAge;
     }
-
-    // TODO: delete this unsafe function
-    @GET('user-by-username')
-    @QueryArgument('username', {
-        canHaveMultipleValues: false,
-        optional: false
-    })
-    @Return('application/json')
-    async getGamesNumber(_: MiddlewareBag, query: QueryBag) {
-        let repository = this._dbContext.getRepository(User);
-        return await repository.findOneBy({username: query['username']});
-    }
 }
