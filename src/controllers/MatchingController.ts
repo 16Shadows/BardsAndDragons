@@ -86,41 +86,37 @@ export class MatchingController extends Object {
         }
     }
 
-    @POST('{receiver}/rejectMatch')
+    @POST('{receiver:user}/rejectMatch')
     @Middleware(AuthMiddleware)
     @Accept('application/json', 'text/plain')
-    async rejectMatch(bag: AuthMiddlewareBag, receiver: string) {
-        console.log(`Rejecting match between ${bag.user.username} and ${receiver}`);
-    }
+    async rejectMatch(bag: AuthMiddlewareBag, receiver: User) {
+        const repo = this._dbContext.getRepository(RejectedMatch);
+        const initiator = bag.user;
 
-    // @POST('{receiver:user}/rejectMatch')
-    // @Middleware(AuthMiddleware)
-    // @Accept('application/json', 'text/plain')
-    // async rejectMatch(bag: AuthMiddlewareBag, receiver: User) {
-    //     const repo = this._dbContext.getRepository(RejectedMatch);
-    //     const initiator = bag.user;
-    //
-    //     // Check if match already exists
-    //     const match = await repo.createQueryBuilder('rejectedMatch')
-    //         .where('(rejectedMatch.initiator = :initiator AND rejectedMatch.receiver = :receiver)', {
-    //             initiator,
-    //             receiver
-    //         })
-    //         .orWhere('(rejectedMatch.initiator = :receiver AND rejectedMatch.receiver = :initiator)', {
-    //             initiator: receiver,
-    //             receiver: initiator
-    //         })
-    //         .getOne();
-    //
-    //     if (match)
-    //         return conflict();
-    //
-    //     // Create the rejected match
-    //     const rejectedMatch = new RejectedMatch();
-    //     rejectedMatch.initiator = Promise.resolve(initiator);
-    //     rejectedMatch.receiver = Promise.resolve(receiver);
-    //
-    //     // Save the rejected match
-    //     await repo.save(rejectedMatch);
-    // }
+        if (!receiver)
+            return badRequest();
+
+        // Check if match already exists
+        const match = await repo.createQueryBuilder('rejectedMatch')
+            .where('(rejectedMatch.initiatorId = :initiatorId AND rejectedMatch.receiverId = :receiverId)', {
+                initiatorId: initiator.id,
+                receiverId: receiver.id
+            })
+            .orWhere('(rejectedMatch.initiatorId = :receiverId AND rejectedMatch.receiverId = :initiatorId)', {
+                initiatorId: receiver.id,
+                receiverId: initiator.id
+            })
+            .getOne();
+
+        if (match)
+            return conflict();
+
+        // Create the rejected match
+        const rejectedMatch = new RejectedMatch();
+        rejectedMatch.initiator = Promise.resolve(initiator);
+        rejectedMatch.receiver = Promise.resolve(receiver);
+
+        // Save the rejected match
+        await repo.save(rejectedMatch);
+    }
 }
