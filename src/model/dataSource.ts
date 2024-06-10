@@ -1,13 +1,14 @@
-import { DataSource } from "typeorm";
-import { User } from "./user";
-import { Game } from "./game";
-import { GameTag } from "./gameTag";
-import { Image } from "./image";
-import { UsersGame } from "./usersGame";
-import { City } from "./city";
-import { NotificationBase } from "./notifications/notificationBase";
-import { FriendRequestNotification } from "./notifications/friendRequestNotification";
-import { FriendRequestAcceptedNotification } from "./notifications/friendRequestAcceptedNotification";
+import {DataSource} from "typeorm";
+import {User} from "./user";
+import {Game} from "./game";
+import {GameTag} from "./gameTag";
+import {Image} from "./image";
+import {UsersGame} from "./usersGame";
+import {City} from "./city";
+import {NotificationBase} from "./notifications/notificationBase";
+import {FriendRequestNotification} from "./notifications/friendRequestNotification";
+import {FriendRequestAcceptedNotification} from "./notifications/friendRequestAcceptedNotification";
+import {Token} from "./token";
 
 export class ModelDataSource extends DataSource {
     constructor() {
@@ -22,6 +23,7 @@ export class ModelDataSource extends DataSource {
             logging: true,
             entities: [
                 User,
+                Token,
                 Game,
                 GameTag,
                 Image,
