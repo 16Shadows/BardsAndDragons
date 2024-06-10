@@ -37,7 +37,6 @@ const usePlayersPage = () => {
         }
     }, [api, showError]);
 
-    // TODO: check handling error in matching
     // Function to get matches from API
     const getMatches = useCallback(async () => {
         if (isUserValidForMatching) {
