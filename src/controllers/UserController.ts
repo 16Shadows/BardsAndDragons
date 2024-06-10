@@ -29,6 +29,7 @@ import {
     wrongPasswordError
 } from "../utils/errorMessages";
 import {TokenService} from "../services/TokenService";
+import { Token } from "../model/token";
 
 type UserInfo = {
     // TODO заменить на хранение на клиенте, не запрашивать
@@ -237,6 +238,7 @@ export class UserController extends Object {
     @Middleware(AuthMiddleware)
     @Accept('application/json')
     async postMyInfo(bag: AuthMiddlewareBag, info: Partial<PersonalUserInfo>) {
+
         const user = bag.user;
 
         let city: City;
@@ -260,37 +262,37 @@ export class UserController extends Object {
                 return status(400);
         }
 
-        if (city != undefined)
+        if (city !== undefined)
             user.city = Promise.resolve(city);
 
-        if (avatar != undefined)
+        if (avatar !== undefined)
             user.avatar = Promise.resolve(avatar);
 
-        if (info.displayName != undefined)
+        if (info.displayName !== undefined)
             user.displayName = info.displayName;
-
-        if (info.description != undefined)
+        
+        if (info.description !== undefined)
             user.profileDescription = info.description;
 
-        if (info.contactInfo != undefined)
+        if (info.contactInfo !== undefined)
             user.contactInfo = info.contactInfo;
 
-        if (info.birthday != undefined)
+        if (info.birthday !== undefined)
             user.birthday = info.birthday;
 
-        if (info.shouldDisplayAge != undefined)
+        if (info.shouldDisplayAge !== undefined)
             user.canDisplayAge = info.shouldDisplayAge;
+
+        await this._dbContext.getRepository(User).save(user);
     }
 
-    // TODO: delete this unsafe function
-    @GET('user-by-username')
-    @QueryArgument('username', {
-        canHaveMultipleValues: false,
-        optional: false
-    })
-    @Return('application/json')
-    async getGamesNumber(_: MiddlewareBag, query: QueryBag) {
-        let repository = this._dbContext.getRepository(User);
-        return await repository.findOneBy({username: query['username']});
+    @POST('@current/delete')
+    @Middleware(AuthMiddleware)
+    @Middleware(AuthHeaderMiddleware)
+    @Accept('application/json')
+    async deleteMe(bag: AuthMiddlewareBag & AuthHeaderMiddlewareBag) {
+        const repo = this._dbContext.getRepository(User);
+        await (this._dbContext.getRepository(Token).remove(await bag.user.tokens));
+        await repo.softRemove(bag.user);
     }
 }

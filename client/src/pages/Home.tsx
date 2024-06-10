@@ -1,37 +1,34 @@
-import React from 'react'
-import {useNavigate} from 'react-router-dom'
-import useApi from "../http-common";
+import { useNavigate } from "react-router-dom";
+import homepage from "../resources/homepage.jpg";
+import "../css/Home.css";
+import Button from "../components/Button";
+import { getPlayersPageRoute } from "../components/routes/Navigation";
 
 const Home = () => {
-    const navigate = useNavigate()
-    const api = useApi()
+  const navigate = useNavigate();
 
-    const testQuery = () => {
-        // POST запрос к серверу
-        api.post('user/test-query-with-auth', {})
-            .then(
-                (response) => {
-                    // Показать текст сообшения
-                    alert(response.data.message)
-                }
-            )
-            .catch((error) => {
-                console.error(error)
-                // Вывести текст ошибки
-                alert(error.message)
-            });
-    }
-
-    return (
+  return (
+    <div>
+      <div className="split left home-text d-grid align-items-center ms-5">
         <div>
-            <h1>Home</h1>
-            <button onClick={testQuery}>Check Auth</button>
-            <button onClick={() => navigate('/login')}>Go to Login</button>
-            <button onClick={() => navigate('/register')}>Go to Register</button>
-            <button onClick={() => navigate('/secure')}>Go to Secure Dashboard</button>
-            <button onClick={() => navigate('/test-page')}>Go to Test Page</button>
+          <h1>Лучшее приложение для поиска игроков в настолочки</h1>
+          <Button
+            onClick={() => {
+              navigate(getPlayersPageRoute());
+            }}
+            color="primary"
+            children={"Начать поиск игроков!"}
+          />
         </div>
-    )
-}
+      </div>
 
-export default Home
+      <div className="split right">
+        <div className="image_preview_container">
+          <img className="image" src={homepage} alt="Home boardgame"></img>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Home;

@@ -13,9 +13,13 @@ import PlayersPage from "../../pages/PlayersPage/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
 import TestPage from "../../pages/TestPage";
 import {
-    getFriendsPageRoute, getGamesPageRoute, getHomeRoute,
-    getLoginPageRoute, getMyGamesPageRoute,
-    getMyProfilePageRoute, getNotFoundRoute,
+    getFriendsPageRoute,
+    getGamesPageRoute,
+    getHomeRoute,
+    getLoginPageRoute,
+    getMyGamesPageRoute,
+    getMyProfilePageRoute,
+    getNotFoundRoute,
     getPlayersPageRoute,
     getRegistrationPageRoute
 } from "./Navigation";
@@ -33,8 +37,7 @@ const RoutesComponent = () => {
             <Route path={"test-page"} element={<TestPage/>}/>
 
             {/* Protected routes */}
-            <Route element={<ProtectedRoutes fallbackPath={getLoginPageRoute()}/>
-            }>
+            <Route element={<ProtectedRoutes fallbackPath={getLoginPageRoute()}/>}>
                 <Route path={getMyProfilePageRoute()} element={<ProfilePage/>}/>
                 <Route path={getMyGamesPageRoute()} element={<MyGamesPage/>}/>
                 <Route path={getFriendsPageRoute()} element={<MyFriendsPage/>}/>

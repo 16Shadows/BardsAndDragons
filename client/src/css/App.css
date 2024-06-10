@@ -14,7 +14,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1;
+  z-index: 20;
 
   color: #333;
 }
@@ -32,9 +32,23 @@
 .navbar a:hover span:hover {
   color: #f0472a;
 }
-.content {
-  margin: 40px auto;
+.content{
+  margin: 20px auto;
   padding: 20px;
+  width: 800px;
+  max-width: 800px;
+  align-self: center;
+}
+.profile_image {
+  width: 200px;
+  height: 200px;
+  outline-color: #6e6e6e;
+  outline-width: 2px;
+  outline-style: solid;
+}
+.navbar-image {
+  width: 50px;
+  height: 50px;
 }
 
 :root {
