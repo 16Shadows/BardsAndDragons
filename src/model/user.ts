@@ -12,7 +12,7 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    //Basic account info (required)
+    // Basic account info (required)
 
     @Column({
         unique: true
@@ -30,7 +30,8 @@ export class User {
     @DeleteDateColumn()
     deletedAt: Date;
 
-    //Extended account info (optional)
+    // Extended account info (optional)
+
     @Column({
         nullable: true
     })
@@ -61,14 +62,14 @@ export class User {
     })
     city?: Promise<City>;
 
-    //Settings
+    // Settings
 
     @Column({
         default: false
     })
     canDisplayAge: boolean;
 
-    //Relations
+    // Relations
 
     @OneToMany(() => UsersGame, game => game.user, {
         cascade: true
