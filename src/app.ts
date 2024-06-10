@@ -6,9 +6,10 @@ import {discoverControllers} from './modules/core/controllers/discovery';
 import {getDefaultConverters} from './modules/core/converters/default';
 import {getDefaultMimeTypes} from './modules/core/mimeType/default';
 import {ModelDataSource} from './model/dataSource';
-import { discoverConverters } from './modules/core/converters/discovery';
-import { discoverMimeTypeConverters } from './modules/core/mimeType/mimeTypeConverter';
+import {discoverMimeTypeConverters} from './modules/core/mimeType/mimeTypeConverter';
 import {TokenService} from "./services/TokenService";
+import {discoverConverters} from './modules/core/converters/discovery';
+import {UserNotificationService} from './services/UserNotificationService';
 import {TestService} from "./services/TestService";
 import {MatchingService} from "./services/MatchingService";
 
@@ -24,6 +25,7 @@ import {MatchingService} from "./services/MatchingService";
     app.useSingleton(TestService);
 
     app.useSingleton(TokenService);
+    app.useSingleton(UserNotificationService);
     app.useSingleton(MatchingService);
 
     //Note: looks like serve doesn't interrupt middleware chain even if it finds a file to serve

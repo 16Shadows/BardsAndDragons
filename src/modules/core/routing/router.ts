@@ -221,7 +221,8 @@ export class Router implements IRouter {
                 body: body,
                 query: queryBag,
                 headers: headers,
-                args: args
+                args: args,
+                res: request.res
             };
 
             var middlewareInstance: IMiddleware;
