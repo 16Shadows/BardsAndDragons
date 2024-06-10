@@ -195,11 +195,11 @@ export class UserController extends Object {
     }
 
     @POST('logout')
-    @Accept('application/json')
+    @Accept('application/json', 'text/plain')
     @Return('application/json')
     @Middleware(AuthMiddleware)
     @Middleware(AuthHeaderMiddleware)
-    async logout(bag: AuthHeaderMiddlewareBag, _: Object) {
+    async logout(bag: AuthHeaderMiddlewareBag) {
         if (!bag.token) {
             return badRequest({message: invalidTokenError});
         }
@@ -209,10 +209,10 @@ export class UserController extends Object {
     }
 
     @POST('test-query-with-auth')
-    @Accept('application/json')
+    @Accept('application/json', 'text/plain')
     @Return('application/json')
     @Middleware(AuthMiddleware)
-    async testAuth(bag: AuthMiddlewareBag, _: Object) {
+    async testAuth(bag: AuthMiddlewareBag) {
         return json({message: `Test query with auth successful. User: ${bag.user.username}`});
     }
 
