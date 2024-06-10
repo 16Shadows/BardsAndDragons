@@ -51,7 +51,7 @@ const NotificationTemplate = (props: NotificationObject) => {
                     navigate("/my-friends");
                     console.log("ddd");
                   }}
-                ></Button>
+                 color={"primary"}></Button>
                 {/* <button
                   className="btn btn-primary"
                   onClick={() => {
