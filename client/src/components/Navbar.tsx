@@ -130,8 +130,8 @@ const Navbar = () => {
                   aria-expanded="false"
                 >
                   <img
-                    className="rounded-circle me-2"
-                    alt="ProfileAvatar"
+                    className="rounded-circle me-2 navbar-image"
+                    alt="Ошибка загрузки аватара"
                     src={profileAvatar}
                   />
                   {profileName}

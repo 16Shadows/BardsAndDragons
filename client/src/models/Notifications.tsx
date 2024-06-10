@@ -1,21 +1,28 @@
-import { IntegerType } from "typeorm";
-
-type NotificationTypes = "friendRequest" | "friendRequestAccepted";
-
-export interface QueryNotificationObject {
-  id: IntegerType;
-  type: NotificationTypes;
-  seen: boolean;
-  friendRequestAcceptedBy?: { username: string; displayName: string | null };
-  friendRequestSentBy?: { username: string; displayName: string | null };
-  avatar: string | null;
+export enum NotificationTypes {
+  FriendRequestAccepted = "friendRequestAccepted",
+  FriendRequest = "friendRequest",
 }
 
-export interface NotificationObject {
-  id: IntegerType;
-  type: NotificationTypes;
-  seen: boolean;
-  displayName: string | null;
+export type UserData = {
+  avatar: string | null;
   username: string;
-  avatar: string | null;
-}
+  displayName: string | null;
+};
+
+export type QueryNotificationObjectBase = {
+  id: number;
+  seen: boolean;
+  type: NotificationTypes;
+};
+
+export type QueryNotificationObjectFriendRequestAccepted =
+  QueryNotificationObjectBase & {
+    type: NotificationTypes.FriendRequestAccepted;
+    friendRequestAcceptedBy: UserData;
+  };
+
+export type QueryNotificationObjectFriendRequest =
+  QueryNotificationObjectBase & {
+    type: NotificationTypes.FriendRequest;
+    friendRequestSentBy: UserData;
+  };

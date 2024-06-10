@@ -1,13 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import useApi from "../http-common";
-import NotificationTemplate from "./NotificationTemplate";
+import NotificationTemplate, {
+  NotificationTemplateFriendRequest,
+  NotificationTemplateRequestAccepted,
+} from "./NotificationTemplate";
 import notificationPic from "../resources/notification_50px.png";
 import notificationRedPic from "../resources/notification_red_50px.png";
-import { NotificationObject } from "../models/Notifications";
+import {
+  NotificationTypes,
+  QueryNotificationObjectBase,
+  QueryNotificationObjectFriendRequest,
+  QueryNotificationObjectFriendRequestAccepted,
+} from "../models/Notifications";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import Button from "./Button";
 import useDynamicList from "../utils/useDynamicList";
+import { Dropdown } from "react-bootstrap";
 
 const NotificationsPanel = () => {
   const api = useApi();
@@ -17,14 +26,14 @@ const NotificationsPanel = () => {
   const abortSignal = useRef(new AbortController());
 
   const getNotificationsQuery = useCallback(
-    async (oldArr: ReadonlyArray<NotificationObject>) => {
+    async (oldArr: ReadonlyArray<QueryNotificationObjectBase>) => {
       try {
         const response = await api.get("notifications", {
           params: { start: oldArr.length, count: notifOnPageCount },
         });
         const items = response.data;
         setGotNotifications(
-          items.some((elem: NotificationObject) => elem.seen === false)
+          items.some((elem: QueryNotificationObjectBase) => elem.seen === false)
         );
 
         return {
@@ -70,101 +79,98 @@ const NotificationsPanel = () => {
   const [gotNotifications, setGotNotifications] = useState(false);
 
   // Индикатор открытости списка панели уведомлений, для ререндера
-  const [openState, setOpenState] = useState(false);
+  const [panelOpenState, setPanelOpenState] = useState(false);
 
   // Количество уведомлений, отображаемых/добавляемых за раз
   const notifOnPageCount = 2;
 
-  const setSeenNotifications = (event: any) => {
+  const setSeenNotifications = () => {
+    const dropdown = document.getElementById("NotificationDropdown");
     // При открытии меню отправляем в БД запрос на изменение статуса уведомлений
-    if (event.target.classList.contains("show")) {
-      setOpenState(true);
-      notifications?.forEach((notif) => {
-        if (!notif.seen) {
-          api
-            .post("notifications/" + notif.id + "/seen", {})
-            .then(async (response) => {})
-            .catch((error) => {
-              console.error(error);
-            });
-        }
-      });
+    if (dropdown && dropdown.classList.contains("show")) {
+      setPanelOpenState(true);
     } // При закрытии - обновляем поле seen и рамку вокруг прочитанных объектов
-    else {
-      setOpenState(false);
+    if (dropdown && !dropdown.classList.contains("show")) {
+      setPanelOpenState(false);
       notifications?.forEach((notif) => {
         notif.seen = true;
       });
     }
   };
 
-  async function loadMoreNotificationsHandler() {
-    setNotifications();
-    setOpenState(true);
-  }
-
-  return (
-    <div>
-      {/* Для дебага */}
-      {/* <Button
-        color={"primary"}
-        children="Тестовая отправка уведомления от сервера"
-        onClick={function (): void {
-          api
-            .get("notifications/testSourceEvent", {})
+  useEffect(() => {
+    async function SetSeenNotificationsQuery() {
+      console.log("зашли в запрос", notifications);
+      notifications?.forEach(async (notif) => {
+        if (!notif.seen) {
+          console.log("emae");
+          await api
+            .post("notifications/" + notif.id + "/seen", {})
             .then(async (response) => {
-              console.log("Тестовая отправка уведомления от сервиса", response);
+              console.log(response);
             })
             .catch((error) => {
               console.error(error);
             });
-        }}
-      ></Button> */}
-      <div
-        id="notification_dropdown_toggle"
-        className="nav-link dropdown-toggle "
-        onClick={(event) => {
-          setGotNotifications(false);
-          setSeenNotifications(event);
-        }}
-        role="button"
-        data-bs-toggle="dropdown"
-        data-bs-auto-close="outside"
-        aria-expanded="false"
-      >
-        {gotNotifications ? (
-          <img
-            className="rounded-circle me-2"
-            alt="Новые уведомления"
-            src={notificationRedPic}
-          />
-        ) : (
-          <img
-            className="rounded-circle me-2"
-            alt="Нет новых уведомлений"
-            src={notificationPic}
-          />
-        )}
-      </div>
-      <ul
-        className={
-          "overflow-auto dropdown-menu notifications-menu dropdown-menu-end "
         }
+      });
+    }
+
+    if (panelOpenState) {
+      SetSeenNotificationsQuery();
+    }
+  }, [api, notifications, panelOpenState]);
+
+  return (
+    <div>
+      <Dropdown
+        id="NotificationDropdown"
+        autoClose="outside"
+        onToggle={() => {
+          setGotNotifications(false);
+          setSeenNotifications();
+        }}
       >
-        <div>
+        <Dropdown.Toggle variant="none">
+          {gotNotifications ? (
+            <img
+              className="rounded-circle me-2"
+              alt="Новые уведомления"
+              src={notificationRedPic}
+            />
+          ) : (
+            <img
+              className="rounded-circle me-2"
+              alt="Нет новых уведомлений"
+              src={notificationPic}
+            />
+          )}
+        </Dropdown.Toggle>
+
+        <Dropdown.Menu className="notifications-menu">
           {notifications
-            ? notifications.map((item, index) => (
+            ? notifications.map((item) => (
                 <NotificationTemplate
-                  key={index}
+                  key={item.id}
                   id={item.id}
-                  type={item.type}
                   seen={item.seen}
-                  displayName={item.displayName}
-                  username={item.username}
-                  avatar={item.avatar}
-                />
+                >
+                  {(item.type === NotificationTypes.FriendRequest && (
+                    <NotificationTemplateFriendRequest
+                      item={item as QueryNotificationObjectFriendRequest}
+                    />
+                  )) ||
+                    (item.type === NotificationTypes.FriendRequestAccepted && (
+                      <NotificationTemplateRequestAccepted
+                        item={
+                          item as QueryNotificationObjectFriendRequestAccepted
+                        }
+                      />
+                    ))}
+                </NotificationTemplate>
               ))
             : "Уведомлений пока нет"}
+
           <div className="d-flex justify-content-center">
             <Button
               color={"primary"}
@@ -175,12 +181,12 @@ const NotificationsPanel = () => {
                   : "Новых уведомлений пока нет"
               }
               onClick={() => {
-                loadMoreNotificationsHandler();
+                setNotifications();
               }}
             ></Button>
           </div>
-        </div>
-      </ul>
+        </Dropdown.Menu>
+      </Dropdown>
     </div>
   );
 };
