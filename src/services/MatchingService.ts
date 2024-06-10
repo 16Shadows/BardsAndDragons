@@ -117,7 +117,7 @@ export class MatchingService {
      */
     private applyMatchingCriteria(qb: SelectQueryBuilder<User>): SelectQueryBuilder<User> {
         return qb
-            .andWhere("user.isDeleted = false") // only active users
+            .andWhere("user.deletedAt IS NULL") // only active users
 
             .andWhere("user.birthday IS NOT NULL") // only users with a birthday
             .andWhere("user.displayName IS NOT NULL AND user.displayName != ''") // only users with a display name
