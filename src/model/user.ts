@@ -1,8 +1,8 @@
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Image } from './image';
-import { City } from './city';
-import { UsersGame } from './usersGame';
-import { NotificationBase } from './notifications/notificationBase';
+import {Column, Entity, DeleteDateColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Image} from './image';
+import {City} from './city';
+import {UsersGame} from './usersGame';
+import {NotificationBase} from './notifications/notificationBase';
 import {Token} from "./token";
 import { UsersFriend } from './usersFriend';
 
@@ -26,13 +26,10 @@ export class User {
     })
     email: string;
 
-    @Column({
-        default: false
-    })
-    isDeleted: boolean;
+    @DeleteDateColumn()
+    deletedAt: Date;
 
     //Extended account info (optional)
-
     @Column({
         nullable: true
     })

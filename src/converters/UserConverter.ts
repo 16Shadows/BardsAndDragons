@@ -12,7 +12,7 @@ export class UserConverter implements ITypeConverter {
     
     async convertFromString(str: string): Promise<User | undefined> {
         var repo = this._dbContext.getRepository(User);
-        var user = repo.findOneBy({
+        var user = await repo.findOneBy({
             username: str
         });
 

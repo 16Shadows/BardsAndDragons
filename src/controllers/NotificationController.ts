@@ -41,8 +41,9 @@ export class NotificationController {
                     seen: notif.seen,
                     friendRequestSentBy: {
                         username: sender.username,
-                        displayName: sender.displayName
-                    }
+                        displayName: sender.displayName,
+                        avatar: sender.avatar
+                    }                    
                 };
             }
             case 'friendRequestAccepted': {
@@ -53,8 +54,10 @@ export class NotificationController {
                     seen: notif.seen,
                     friendRequestAcceptedBy: {
                         username: acceptedBy.username,
-                        displayName: acceptedBy.displayName
+                        displayName: acceptedBy.displayName, 
+                        avatar: acceptedBy.avatar
                     }
+                    
                 };
             }
         }
@@ -142,15 +145,5 @@ export class NotificationController {
         }
 
         return new HTTPResponse(200, { 'Content-Type': 'text/event-stream', 'Connection': 'Keep-Alive', 'Cache-Control': 'no-cache' }, stream);
-    }
-    @GET('testSourceEvent')
-    @Middleware(AuthMiddleware)
-    async sendTestSourceEvent(middlewareBag: AuthMiddlewareBag) {
-
-        this._NotificationController.sendNotification(middlewareBag.user.username, 
-            {id:4,
-            type:"friendRequest", 
-            seen:false, 
-            friendRequestSentBy:{username:"123"}});    
     }
 }

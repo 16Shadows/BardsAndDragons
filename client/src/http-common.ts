@@ -32,18 +32,20 @@ const useApi = (): AxiosInstance => {
         api.defaults.headers.Authorization = authHeader;
     }, [authHeader]);
 
-    api.interceptors.response.use(function (response) {
-        return response;
-    }, function (error) {
-        if (error.response) {
-            // If unauthorized, redirect to log in
-            if (error.response.status === 401) {
-                signOut();
-                navigate("/login", {state: {from: location}});
+    useEffect(() => {
+        api.interceptors.response.use(function (response) {
+            return response;
+        }, function (error) {
+            if (error.response) {
+                // If unauthorized, redirect to log in
+                if (error.response.status === 401) {
+                    signOut();
+                    navigate("/login", {state: {from: location}});
+                }
             }
-        }
-        return Promise.reject(error);
-    });
+            return Promise.reject(error);
+        });
+    }, [location, navigate, signOut]);
 
     return api;
 }

@@ -1,16 +1,25 @@
-import React from "react";
+import { PropsWithChildren } from "react";
 
 interface Props {
-  children: string;
-  onClick: () => void;
-  color?: "primary" | "secondary" | "danger" | "success";
+  onClick?: () => void;
+  color: "primary" | "secondary" | "danger" | "success";
+  outline?: boolean;
   style?: {};
+  disabled?: boolean;
 }
-
-const Button = ({ children, onClick, color = "primary", style={} }: Props) => {
+const Button = (props: PropsWithChildren<Props>) => {
   return (
-    <button className={"btn btn-" + color} onClick={onClick} style={style}>
-      {children}
+    <button
+      disabled={props.disabled ?? false}
+      className={
+        props.outline
+          ? "btn btn-outline-" + props.color
+          : "btn btn-" + props.color
+      }
+      onClick={props.onClick}
+      style={props.style}
+    >
+      {props.children}
     </button>
   );
 };

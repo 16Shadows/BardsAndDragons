@@ -1,7 +1,7 @@
-
 .notifications-menu {
-    min-width: 500px !important; 
+    min-width: 500px; 
     max-width: 900px;
     width: auto;
-    max-height: 600px;
+    max-height: 300px;
+    overflow-y: scroll;
 }

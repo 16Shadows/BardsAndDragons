@@ -20,7 +20,7 @@ module SSEStream {
             if (message.event)
                 this.push('event: ' + message.event + '\n', 'utf-8');
 
-            for (var dataChunk of (message.id ?? '').split('\n'))
+            for (var dataChunk of (message.data ?? '').split('\n'))
                 this.push('data: ' + dataChunk + '\n', 'utf-8');
 
             this.push('\n', 'utf-8');

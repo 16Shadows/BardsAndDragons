@@ -1,150 +1,180 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useApi from "../http-common";
-import NotificationTemplate from "./NotificationTemplate";
+import NotificationTemplate, {
+  NotificationTemplateFriendRequest,
+  NotificationTemplateRequestAccepted,
+} from "./NotificationTemplate";
 import notificationPic from "../resources/notification_50px.png";
 import notificationRedPic from "../resources/notification_red_50px.png";
 import {
-  NotificationObject,
-  QueryNotificationObject,
+  NotificationTypes,
+  QueryNotificationObjectBase,
+  QueryNotificationObjectFriendRequest,
+  QueryNotificationObjectFriendRequestAccepted,
 } from "../models/Notifications";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
+import Button from "./Button";
+import useDynamicList from "../utils/useDynamicList";
+import { Dropdown } from "react-bootstrap";
 
 const NotificationsPanel = () => {
   const api = useApi();
 
   const authHeader = useAuthHeader();
 
-  // Подписка на уведомления от сервера, новые уведомления пользователю
-  if (authHeader) {
-    fetchEventSource("api/v1/notifications/subscribe", {
-      onmessage(event) {
-        setGotNotifications(true);
-      },
-      headers: { Authorization: authHeader },
-    });
-  }
+  const abortSignal = useRef(new AbortController());
 
-  // Список уведомлений, каждое из которых нужно отрендерить через map
-  const [notifications, setNotifications] = useState<NotificationObject[]>([]);
+  const getNotificationsQuery = useCallback(
+    async (oldArr: ReadonlyArray<QueryNotificationObjectBase>) => {
+      try {
+        const response = await api.get("notifications", {
+          params: { start: oldArr.length, count: notifOnPageCount },
+        });
+        const items = response.data;
+        setGotNotifications(
+          items.some((elem: QueryNotificationObjectBase) => elem.seen === false)
+        );
+
+        return {
+          list: oldArr.concat(items),
+          isFinal: !(items.length === notifOnPageCount),
+        };
+      } catch {
+        return {
+          list: oldArr,
+          isFinal: false,
+        };
+      }
+    },
+    [api]
+  );
+
+  // Список уведомлений
+  const [
+    notifications,
+    requestMoreNotifications,
+    isNotificationsFinal,
+    updateNotifications,
+  ] = useDynamicList(getNotificationsQuery);
+
+  useEffect(() => {
+    abortSignal.current.abort();
+    abortSignal.current = new AbortController();
+    // Подписка на уведомления от сервера, новые уведомления пользователю
+    if (authHeader) {
+      fetchEventSource("api/v1/notifications/subscribe", {
+        onmessage(event) {
+          setGotNotifications(true);
+          let notif = JSON.parse(event.data);
+          updateNotifications((x) => [notif].concat(x));
+        },
+        headers: { Authorization: authHeader },
+        signal: abortSignal.current.signal,
+      });
+    }
+  }, [authHeader, abortSignal, api, updateNotifications]);
+
+  // Индикатор наличия уведомлений
   const [gotNotifications, setGotNotifications] = useState(false);
 
-  const getNotificationsQuery = async () => {
-    // GET запрос списка городов к серверу
-    api
-      // TODO - добавить запрос только части уведомлений, например 10 штук, кнопку "загрузить еще"
-      .get("notifications", {})
-      .then(async (response) => {
-        let gotNotif = false;
-        const items = response.data;
+  // Индикатор открытости списка панели уведомлений, для ререндера
+  const [panelOpenState, setPanelOpenState] = useState(false);
 
-        const resPromise = items.map((item: QueryNotificationObject) => {
-          const resultItem: NotificationObject = {
-            id: item.id,
-            type: item.type,
-            seen: item.seen,
-            displayName: null,
-            username: null,
-          };
+  // Количество уведомлений, отображаемых/добавляемых за раз
+  const notifOnPageCount = 2;
 
-          if (resultItem.type === "friendRequest") {
-            resultItem.username = item.friendRequestSentBy
-              ? item.friendRequestSentBy.username
-              : null;
-            resultItem.displayName = item.friendRequestSentBy
-              ? item.friendRequestSentBy.displayName
-              : null;
-          } else if (resultItem.type === "friendRequestAccepted") {
-            resultItem.username = item.friendRequestAcceptedBy
-              ? item.friendRequestAcceptedBy.username
-              : null;
-            resultItem.displayName = item.friendRequestAcceptedBy
-              ? item.friendRequestAcceptedBy.displayName
-              : null;
-          }
-
-          if (!gotNotif && resultItem.seen === false) gotNotif = true;
-
-          return resultItem;
-        });
-        const res = await Promise.all(resPromise);
-
-        setNotifications(res);
-        setGotNotifications(gotNotif);
-      })
-      .catch((error) => {
-        console.error(error);
+  const setSeenNotifications = (nextShow: boolean) => {
+    // При открытии меню отправляем в БД запрос на изменение статуса уведомлений
+    if (nextShow) {
+      setPanelOpenState(true);
+      setGotNotifications(false);
+    } // При закрытии - обновляем поле seen и рамку вокруг прочитанных объектов
+    else {
+      setPanelOpenState(false);
+      notifications?.forEach((notif) => {
+        notif.seen = true;
       });
-  };
-  // Тестовый запрос для проверки EventSource
-  const sendTestSourceEvent = async () => {
-    api
-      .get("notifications/testSourceEvent", {})
-      .then(async (response) => {
-        console.log("Тестовая отправка уведомления от сервиса", response);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    }
   };
 
-  useEffect(
-    () => {
-      getNotificationsQuery();
-      sendTestSourceEvent();
-    },
-    [] // Запуск только после первого рендера
-  );
+  useEffect(() => {
+    async function SetSeenNotificationsQuery() {
+      notifications?.forEach(async (notif) => {
+        if (!notif.seen) {
+          await api
+            .post("notifications/" + notif.id + "/seen", {})
+            .catch((error) => {
+              console.error(error);
+            });
+        }
+      });
+    }
+
+    if (panelOpenState) {
+      SetSeenNotificationsQuery();
+    }
+  }, [api, notifications, panelOpenState]);
 
   return (
     <div>
-      <script src="/eventsource-polyfill.js"></script>
-      <a
-        className="nav-link dropdown-toggle "
-        // TODO при прочитывании уведов добавить запрос в бд - прочитаны
-        onClick={() => setGotNotifications(false)}
-        role="button"
-        data-bs-toggle="dropdown"
-        data-bs-auto-close="outside"
-        aria-expanded="false"
+      <Dropdown
+        id="NotificationDropdown"
+        autoClose="outside"
+        onToggle={setSeenNotifications}
       >
-        {gotNotifications ? (
-          <img
-            className="rounded-circle me-2"
-            alt="GotNotifications"
-            src={notificationRedPic}
-          />
-        ) : (
-          <img
-            className="rounded-circle me-2"
-            alt="NoNotifications"
-            src={notificationPic}
-          />
-        )}
-      </a>
-      <ul
-        className={
-          false
-            ? "overflow-auto dropdown-menu notifications-menu dropdown-menu-end "
-            : "overflow-auto dropdown-menu notifications-menu dropdown-menu-end "
-        }
-      >
-        {/* TODO Добавить изменение стиля в зависимости от дропдауна уведов */}
-        <div className={"" + (true ? "a" : "b")}>
+        <Dropdown.Toggle variant="none">
+          {gotNotifications ? (
+            <img
+              className="rounded-circle me-2"
+              alt="Новые уведомления"
+              src={notificationRedPic}
+            />
+          ) : (
+            <img
+              className="rounded-circle me-2"
+              alt="Нет новых уведомлений"
+              src={notificationPic}
+            />
+          )}
+        </Dropdown.Toggle>
+
+        <Dropdown.Menu className="notifications-menu">
           {notifications
-            ? notifications.map((item, index) => (
-                <NotificationTemplate
-                  key={index}
-                  id={item.id}
-                  type={item.type}
-                  seen={item.seen}
-                  displayName={item.displayName}
-                  username={item.username}
-                />
+            ? notifications.map((item) => (
+                <NotificationTemplate key={item.id} seen={item.seen}>
+                  {(item.type === NotificationTypes.FriendRequest && (
+                    <NotificationTemplateFriendRequest
+                      item={item as QueryNotificationObjectFriendRequest}
+                    />
+                  )) ||
+                    (item.type === NotificationTypes.FriendRequestAccepted && (
+                      <NotificationTemplateRequestAccepted
+                        item={
+                          item as QueryNotificationObjectFriendRequestAccepted
+                        }
+                      />
+                    ))}
+                </NotificationTemplate>
               ))
             : "Уведомлений пока нет"}
-        </div>
-      </ul>
+
+          <div className="d-flex justify-content-center">
+            <Button
+              color={"primary"}
+              disabled={isNotificationsFinal}
+              children={
+                !isNotificationsFinal
+                  ? "Загрузить еще"
+                  : "Новых уведомлений пока нет"
+              }
+              onClick={() => {
+                requestMoreNotifications();
+              }}
+            ></Button>
+          </div>
+        </Dropdown.Menu>
+      </Dropdown>
     </div>
   );
 };
