@@ -39,6 +39,7 @@ export class FriendsController {
         this._NotificationService = notificationService;
     }
 
+    //Query current friends list
     @GET('@current/friends/current')
     @Middleware(AuthMiddleware)
     @QueryArgument('start', {
@@ -72,9 +73,10 @@ export class FriendsController {
         const repo = this._dbContext.getRepository(UsersFriend);
         
         const usersFriends = await repo.createQueryBuilder('friendLink')
-                                       .innerJoin(UsersFriend, 'backwardsLink', 'friendLink.userId = :userId AND backwardsLink.userId = friendLink.friendId', {userId: bag.user.id})
+                                       .innerJoin(UsersFriend, 'backwardsLink', 'backwardsLink.userId = friendLink.friendId') //By using inner join here we only keep the entries which have a backwards link (thus a two-way friend link between users exists)
                                        .innerJoin('friendLink.friend', 'friend')
                                        .leftJoin('friend.avatar', 'avatar')
+                                       .where('friendLink.userId = :userId', {userId: bag.user.id})
                                        .addSelect('COALESCE(friend.displayName, friend.username)', 'name')
                                        .orderBy(sortBy, sortOrder)
                                        .skip(start)
@@ -91,6 +93,7 @@ export class FriendsController {
         }));
     }
 
+    //Query incoming friends list
     @GET('@current/friends/incoming')
     @Middleware(AuthMiddleware)
     @QueryArgument('start', {
@@ -124,10 +127,11 @@ export class FriendsController {
         const repo = this._dbContext.getRepository(UsersFriend);
         
         const incomingRequests = await repo.createQueryBuilder('friendLink')
-                                       .leftJoin(UsersFriend, 'backwardsLink', 'friendLink.userId = backwardsLink.friendId')
-                                       .innerJoin('friendLink.user', 'friend', 'friendLink.friendId = :userId', {userId: bag.user.id})
+                                       .where('friendLink.friendId = :userId', {userId: bag.user.id}) //Select entries where target is this user
+                                       .leftJoin(UsersFriend, 'backwardsLink', 'friendLink.userId = backwardsLink.friendId') //Left join to check if the entry has a backwards link
+                                       .innerJoin('friendLink.user', 'friend')
                                        .leftJoin('friend.avatar', 'avatar')
-                                       .where('backwardsLink.id IS NULL')
+                                       .andWhere('backwardsLink.id IS NULL') //Skip entries which have backwards link (thus a link from this to the other exists). Remaining links are one-way from the other user to this user.
                                        .addSelect('COALESCE(friend.displayName, friend.username)', 'name')
                                        .orderBy(sortBy, sortOrder)
                                        .skip(start)
@@ -144,6 +148,7 @@ export class FriendsController {
         }));
     }
 
+    //Query outgoing friends list
     @GET('@current/friends/outgoing')
     @Middleware(AuthMiddleware)
     @QueryArgument('start', {
@@ -177,10 +182,10 @@ export class FriendsController {
         const repo = this._dbContext.getRepository(UsersFriend);
         
         const incomingRequests = await repo.createQueryBuilder('friendLink')
-                                       .leftJoin(UsersFriend, 'backwardsLink', 'friendLink.friendId = backwardsLink.userId')
+                                       .leftJoin(UsersFriend, 'backwardsLink', 'friendLink.friendId = backwardsLink.userId') //Left join to find backwards links
                                        .innerJoin('friendLink.friend', 'friend')
                                        .leftJoin('friend.avatar', 'avatar')
-                                       .where('backwardsLink.id IS NULL AND friendLink.userId = :userId', {userId: bag.user.id})
+                                       .where('backwardsLink.id IS NULL AND friendLink.userId = :userId', {userId: bag.user.id}) //Keep only links which come from this user and have no associated backwards link
                                        .addSelect('COALESCE(friend.displayName, friend.username)', 'name')
                                        .orderBy(sortBy, sortOrder)
                                        .skip(start)

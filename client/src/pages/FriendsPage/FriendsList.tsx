@@ -8,8 +8,8 @@ export type FriendsListSortBy = 'name';
 export type FriendsListSortOrder = 'ASC' | 'DESC';
 
 export type FriendsListProps = {
-    friendItemTemplate: (friend: FriendData) => JSX.Element;
-    friendListUrlBuilder: (currentLength: number, sortBy: string, sortOrder: string) => string;
+    friendItemTemplate: (friend: FriendData) => JSX.Element; //A function used to convert each friend entry into a JSXElement
+    friendListUrlBuilder: (currentLength: number, sortBy: string, sortOrder: string) => string; //A function used to build batch loader's URL based on the parameters.
 }
 
 type SortOption = {
@@ -29,9 +29,10 @@ const FriendsList = ({ friendItemTemplate, friendListUrlBuilder }: FriendsListPr
     const [sortBy, setSortBy] = useState<FriendsListSortBy>(SORT_OPTIONS[0].sortBy);
     const [sortOrder, setSortOrder] = useState<FriendsListSortOrder>(SORT_OPTIONS[0].sortOrder);
 
+    //Batch-loader for friends list
     const friendsListLoader = useCallback(async (oldArr: ReadonlyArray<FriendData>) => {
         try {
-            const response = await api.get(friendListUrlBuilder(oldArr.length, sortBy, sortOrder));
+            const response = await api.get(friendListUrlBuilder(oldArr.length, sortBy, sortOrder)); //Query API for the next batch using url builder
             return {
                 list: oldArr.concat(response.data),
                 isFinal: response.data.length === 0
@@ -47,13 +48,16 @@ const FriendsList = ({ friendItemTemplate, friendListUrlBuilder }: FriendsListPr
 
     const [friendsList, loadFriendsList] = useDynamicList(friendsListLoader);
 
+    //Callback for scrolling
     const scrollCallback = useCallback((event: Event) => {
         if (document.documentElement.scrollHeight - window.scrollY - window.innerHeight < window.innerHeight)
             loadFriendsList();
     }, [loadFriendsList]);
 
+    //Invoke the callback when document is scrolled
     useScroll(document, scrollCallback);
 
+    //sort change handler
     const sortChangedCallback = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
         const name = event.currentTarget.value;
         const option = SORT_OPTIONS.find(x => x.name === name);

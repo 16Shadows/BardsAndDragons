@@ -1,10 +1,9 @@
-import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import AuthProvider from "react-auth-kit";
 import createStore from "react-auth-kit/createStore";
 import RoutesComponent from "./components/routes/Routes";
 import "./css/App.css";
-import Container from 'react-bootstrap/Container';
+import Container from "react-bootstrap/Container";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -15,20 +14,20 @@ const store = createStore({
 });
 
 function App() {
-    return (
-        <AuthProvider store={store}>
-            <BrowserRouter>
-                <header>
-                    <Navbar/>
-                </header>
-                <main className="main">
-                    <Container>
-                        <RoutesComponent/>
-                    </Container>
-                </main>
-            </BrowserRouter>
-        </AuthProvider>
-    );
+  return (
+    <AuthProvider store={store}>
+      <BrowserRouter>
+        <header>
+          <Navbar />
+        </header>
+        <main className="main">
+          <Container>
+            <RoutesComponent />
+          </Container>
+        </main>
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
 export default App;
