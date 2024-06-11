@@ -43,6 +43,7 @@ import {MatchingService} from "./services/MatchingService";
     app.useControllers(discoverControllers('./images', __dirname));
     app.useTypeConverters(getDefaultConverters());
     app.useMimeTypes(discoverMimeTypeConverters('./images', __dirname));
+    app.useTypeConverters(discoverConverters('./converters', __dirname));
     app.useMimeTypes(getDefaultMimeTypes());
 
     // Перенаправление всех оставшихся запросов на index.html React-приложения
