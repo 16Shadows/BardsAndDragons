@@ -104,7 +104,6 @@ const NotificationsPanel = () => {
         if (!notif.seen) {
           await api
             .post("notifications/" + notif.id + "/seen", {})
-            .then(async (response) => {})
             .catch((error) => {
               console.error(error);
             });
@@ -122,9 +121,7 @@ const NotificationsPanel = () => {
       <Dropdown
         id="NotificationDropdown"
         autoClose="outside"
-        onToggle={(nextShow: boolean) => {
-          setSeenNotifications(nextShow);
-        }}
+        onToggle={setSeenNotifications}
       >
         <Dropdown.Toggle variant="none">
           {gotNotifications ? (
