@@ -1,9 +1,10 @@
-import {Column, DeleteDateColumn, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, Entity, DeleteDateColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {Image} from './image';
 import {City} from './city';
 import {UsersGame} from './usersGame';
 import {NotificationBase} from './notifications/notificationBase';
 import {Token} from "./token";
+import { UsersFriend } from './usersFriend';
 
 @Entity()
 export class User {
@@ -73,8 +74,10 @@ export class User {
     })
     games: Promise<UsersGame[]>;
 
-    @ManyToMany(() => User, user => user.friends)
-    friends: Promise<User[]>;
+    @OneToMany(() => UsersFriend, user => user.user, {
+        cascade: true
+    })
+    friends: Promise<UsersFriend[]>;
 
     @OneToMany(() => NotificationBase, notif => notif.receiver)
     notifications: Promise<NotificationBase[]>;

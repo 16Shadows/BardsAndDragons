@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import useSignOut from "../utils/useSignOut";
 import useApi from "../http-common";
+import { getFriendsPageRoute } from "./routes/Navigation";
 import "../css/Notifications.css";
 import { FaUserFriends } from "react-icons/fa";
 import { IoDice } from "react-icons/io5";
@@ -17,8 +18,9 @@ const iconSize = 20;
 const Navbar = () => {
   // Запрос, вошел пользователь в профиль или нет
   const isAuthenticated = useIsAuthenticated();
-  // TODO добавить обновление навбара после изменения, добавлено в feat-notifications
-  const [profileName, setProfileName] = useState("");
+
+  // TODO Добавить запрос на данные профиля
+  const [profileName, setProfileName] = useState("Имя профиля");
   const [profileAvatar, setProfileAvatar] = useState(avatar);
   const [isOpenCollapseState, setIsOpenCollapseState] = useState(false);
 
@@ -164,7 +166,7 @@ const Navbar = () => {
                   <li>
                     <NavLink
                       className="dropdown-item"
-                      to="/my-friends"
+                      to={getFriendsPageRoute()}
                       onClick={() => setIsOpenCollapseState(false)}
                     >
                       <FaUserFriends size={iconSize} />
