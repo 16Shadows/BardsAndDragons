@@ -45,7 +45,7 @@ const useApi = (): AxiosInstance => {
             }
             return Promise.reject(error);
         });
-    }, []);
+    }, [location, navigate, signOut]);
 
     return api;
 }

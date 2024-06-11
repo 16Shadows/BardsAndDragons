@@ -7,6 +7,7 @@ import {getDefaultConverters} from './modules/core/converters/default';
 import {getDefaultMimeTypes} from './modules/core/mimeType/default';
 import {ModelDataSource} from './model/dataSource';
 import { discoverConverters } from './modules/core/converters/discovery';
+import { UserNotificationService } from './services/UserNotificationService';
 import { discoverMimeTypeConverters } from './modules/core/mimeType/mimeTypeConverter';
 import {TokenService} from "./services/TokenService";
 
@@ -17,6 +18,7 @@ import {TokenService} from "./services/TokenService";
 
     app.useSingleton(dataSource);
     app.useSingleton(ExampleService);
+    app.useSingleton(UserNotificationService);
     app.useSingleton(TokenService);
 
     //Note: looks like serve doesn't interrupt middleware chain even if it finds a file to serve

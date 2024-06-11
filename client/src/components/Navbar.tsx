@@ -1,13 +1,12 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import logo from "../resources/bdlogo_mini.png";
 import avatar from "../resources/EmptyProfileAvatar_50px.png";
-import notificationPic from "../resources/notification_50px.png";
-import notificationRedPic from "../resources/notification_red_50px.png";
 import NotificationsPanel from "./NotificationsPanel";
 import { useState, useEffect, useCallback } from "react";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import useSignOut from "../utils/useSignOut";
 import useApi from "../http-common";
+import "../css/Notifications.css";
 import { FaUserFriends } from "react-icons/fa";
 import { IoDice } from "react-icons/io5";
 import { LuLogOut } from "react-icons/lu";
@@ -18,13 +17,9 @@ const iconSize = 20;
 const Navbar = () => {
   // Запрос, вошел пользователь в профиль или нет
   const isAuthenticated = useIsAuthenticated();
-
-  const [profileName, setProfileName] = useState(null);
-
+  // TODO добавить обновление навбара после изменения, добавлено в feat-notifications
+  const [profileName, setProfileName] = useState("");
   const [profileAvatar, setProfileAvatar] = useState(avatar);
-  // TODO Добавить запрос на наличие уведомлений, исправлено в feat-notifications
-  const [gotNotifications, setGotNotifications] = useState(false);
-
   const [isOpenCollapseState, setIsOpenCollapseState] = useState(false);
 
   const navigate = useNavigate();
@@ -124,32 +119,10 @@ const Navbar = () => {
             // Кнопка профиля, если пользователь вошел в аккаунт
             <div className="navbar-nav  ms-auto">
               <li className="nav-item dropdown">
-                <div
-                  className="nav-link dropdown-toggle"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  {/* Изменение иконки уведомлений в зависимости от состояния gotNotifications */}
-                  {gotNotifications ? (
-                    <img
-                      className="rounded-circle me-2 navbar-image"
-                      alt="Notifications"
-                      src={notificationRedPic}
-                    />
-                  ) : (
-                    <img
-                      className="rounded-circle me-2 navbar-image"
-                      alt="Notifications"
-                      src={notificationPic}
-                    />
-                  )}
-                </div>
-                <ul className="dropdown-menu notifications_panel">
-                  <NotificationsPanel />
-                </ul>
+                <NotificationsPanel />
               </li>
-              <li className="nav-item dropdown">
+
+              <li className="nav-item dropdown profile_menu">
                 <div
                   className="nav-link dropdown-toggle"
                   role="button"
@@ -163,6 +136,7 @@ const Navbar = () => {
                   />
                   {profileName}
                 </div>
+
                 <ul className="dropdown-menu">
                   <li>
                     <NavLink
