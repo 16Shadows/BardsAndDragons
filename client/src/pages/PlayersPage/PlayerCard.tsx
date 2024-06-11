@@ -36,8 +36,7 @@ const PlayerCard = ({
                     <Row>
                         <Col md={5}>
                             <Card.Img variant="top"
-                                // TODO: how to show avatar?
-                                      src={avatarPath ? `http://localhost:3000/${avatarPath}` : NoAvatarImage}
+                                      src={avatarPath ?? NoAvatarImage}
                                       className="card-img mb-2"/>
                         </Col>
 
