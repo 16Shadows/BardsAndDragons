@@ -122,7 +122,7 @@ const Navbar = () => {
                 <NotificationsPanel />
               </li>
 
-              <li className="nav-item dropdown">
+              <li className="nav-item dropdown profile_menu">
                 <div
                   className="nav-link dropdown-toggle"
                   role="button"

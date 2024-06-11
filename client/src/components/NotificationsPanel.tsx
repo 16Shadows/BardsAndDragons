@@ -53,7 +53,7 @@ const NotificationsPanel = () => {
   // Список уведомлений
   const [
     notifications,
-    setNotifications,
+    requestMoreNotifications,
     isNotificationsFinal,
     updateNotifications,
   ] = useDynamicList(getNotificationsQuery);
@@ -84,13 +84,13 @@ const NotificationsPanel = () => {
   // Количество уведомлений, отображаемых/добавляемых за раз
   const notifOnPageCount = 2;
 
-  const setSeenNotifications = () => {
-    const dropdown = document.getElementById("NotificationDropdown");
+  const setSeenNotifications = (nextShow: boolean) => {
     // При открытии меню отправляем в БД запрос на изменение статуса уведомлений
-    if (dropdown && dropdown.classList.contains("show")) {
+    if (nextShow) {
       setPanelOpenState(true);
+      setGotNotifications(false);
     } // При закрытии - обновляем поле seen и рамку вокруг прочитанных объектов
-    if (dropdown && !dropdown.classList.contains("show")) {
+    else {
       setPanelOpenState(false);
       notifications?.forEach((notif) => {
         notif.seen = true;
@@ -100,15 +100,11 @@ const NotificationsPanel = () => {
 
   useEffect(() => {
     async function SetSeenNotificationsQuery() {
-      console.log("зашли в запрос", notifications);
       notifications?.forEach(async (notif) => {
         if (!notif.seen) {
-          console.log("emae");
           await api
             .post("notifications/" + notif.id + "/seen", {})
-            .then(async (response) => {
-              console.log(response);
-            })
+            .then(async (response) => {})
             .catch((error) => {
               console.error(error);
             });
@@ -126,9 +122,8 @@ const NotificationsPanel = () => {
       <Dropdown
         id="NotificationDropdown"
         autoClose="outside"
-        onToggle={() => {
-          setGotNotifications(false);
-          setSeenNotifications();
+        onToggle={(nextShow: boolean) => {
+          setSeenNotifications(nextShow);
         }}
       >
         <Dropdown.Toggle variant="none">
@@ -150,11 +145,7 @@ const NotificationsPanel = () => {
         <Dropdown.Menu className="notifications-menu">
           {notifications
             ? notifications.map((item) => (
-                <NotificationTemplate
-                  key={item.id}
-                  id={item.id}
-                  seen={item.seen}
-                >
+                <NotificationTemplate key={item.id} seen={item.seen}>
                   {(item.type === NotificationTypes.FriendRequest && (
                     <NotificationTemplateFriendRequest
                       item={item as QueryNotificationObjectFriendRequest}
@@ -181,7 +172,7 @@ const NotificationsPanel = () => {
                   : "Новых уведомлений пока нет"
               }
               onClick={() => {
-                setNotifications();
+                requestMoreNotifications();
               }}
             ></Button>
           </div>

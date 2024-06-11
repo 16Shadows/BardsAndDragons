@@ -100,13 +100,11 @@ export const NotificationTemplateRequestAccepted = (props: {
 };
 
 interface Props {
-  id: number;
   seen: boolean;
 }
 const NotificationTemplate = (props: PropsWithChildren<Props>) => {
   return (
     <div
-      id={"notification_" + props.id}
       className={
         props.seen
           ? "notification-template d-flex border border-3 rounded m-2"
