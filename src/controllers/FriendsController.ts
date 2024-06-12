@@ -181,10 +181,10 @@ export class FriendsController {
         const repo = this._dbContext.getRepository(UsersFriend);
         
         const incomingRequests = await repo.createQueryBuilder('friendLink')
-                                       .leftJoin(UsersFriend, 'backwardsLink', 'friendLink.friendId = backwardsLink.userId') //Left join to find backwards links
+                                       .leftJoin(UsersFriend, 'backwardsLink', 'friendLink.userId = backwardsLink.friendId AND friendLink.friendId = backwardsLink.userId') //Left join to find backwards links
+                                       .where('backwardsLink.id IS NULL AND friendLink.userId = :userId', {userId: bag.user.id}) //Keep only links which come from this user and have no associated backwards link
                                        .innerJoin('friendLink.friend', 'friend')
                                        .leftJoin('friend.avatar', 'avatar')
-                                       .where('backwardsLink.id IS NULL AND friendLink.userId = :userId', {userId: bag.user.id}) //Keep only links which come from this user and have no associated backwards link
                                        .addSelect('COALESCE(friend.displayName, friend.username)', 'name')
                                        .orderBy(sortBy, sortOrder)
                                        .skip(start)
