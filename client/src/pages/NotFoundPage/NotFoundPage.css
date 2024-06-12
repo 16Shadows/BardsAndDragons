@@ -21,15 +21,6 @@
   font-size: 1.1em;
 }
 
-
-.not-found-text h2{
-  font-family: 'Arial , sans-serif';
-}
-
-.not-found-text p {
-  font-family: 'Arial, serif';
-}
-
 .home-button {
   padding: 10px 20px;
   font-size: 16px;
@@ -42,4 +33,9 @@
 
 .home-button:hover {
   background-color: #750404cc;
+}
+
+
+* {
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
