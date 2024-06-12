@@ -75,7 +75,7 @@ body {
   align-items: flex-start;
   flex-wrap: wrap;
   width: 100%;
-  max-width: 1200px;
+  
   gap: 2rem;
 }
 
