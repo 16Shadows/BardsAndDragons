@@ -3,6 +3,7 @@ import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import {useEffect} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
+import {getLoginPageRoute} from "./components/routes/Navigation";
 
 // Create axios instance
 const api = axios.create({
@@ -16,7 +17,7 @@ const api = axios.create({
 /**
  * Creates an instance of the API with specified baseURL and headers.
  *
- * Authorization header updates with useEffect and useAuthHeader hooks.
+ * Authorization header updates with useEffect hook which depends on useAuthHeader hook.
  *
  * @return {AxiosInstance} The configured axios instance for making API calls.
  * @see https://axios-http.com/docs/example
@@ -33,19 +34,21 @@ const useApi = (): AxiosInstance => {
     }, [authHeader]);
 
     useEffect(() => {
-        api.interceptors.response.use(function (response) {
-            return response;
-        }, function (error) {
-            if (error.response) {
+        // Add an interceptor to handle unauthorized responses
+        const interceptor = api.interceptors.response.use(
+            response => response,
+            error => {
                 // If unauthorized, redirect to log in
-                if (error.response.status === 401) {
+                if (error.response?.status === 401) {
                     signOut();
-                    navigate("/login", {state: {from: location}});
+                    navigate(getLoginPageRoute(), {state: {from: location}});
                 }
+                return Promise.reject(error);
             }
-            return Promise.reject(error);
-        });
-    }, [location, navigate, signOut]);
+        );
+        // Eject the interceptor when the component is unmounted to prevent memory leaks
+        return () => api.interceptors.response.eject(interceptor);
+    }, [navigate, location, signOut]);
 
     return api;
 }

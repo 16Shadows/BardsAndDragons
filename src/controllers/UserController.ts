@@ -11,7 +11,6 @@ import {
     AuthMiddleware,
     AuthMiddlewareBag
 } from "../middleware/AuthMiddleware";
-import {QueryArgument, QueryBag} from "../modules/core/routing/query";
 import {badRequest, json, status} from "../modules/core/routing/response";
 import {City} from "../model/city";
 import {Image} from "../model/image";
@@ -25,11 +24,12 @@ import {
     logoutSuccessful,
     nicknameAlreadyUseError,
     notFilledError,
+    tokenIsValid,
     userNotFoundError,
     wrongPasswordError
 } from "../utils/errorMessages";
 import {TokenService} from "../services/TokenService";
-import { Token } from "../model/token";
+import {Token} from "../model/token";
 
 type UserInfo = {
     // TODO заменить на хранение на клиенте, не запрашивать
@@ -196,7 +196,7 @@ export class UserController extends Object {
     }
 
     @POST('logout')
-    @Accept('application/json')
+    @Accept('application/json', 'text/plain')
     @Return('application/json')
     @Middleware(AuthMiddleware)
     @Middleware(AuthHeaderMiddleware)
@@ -209,12 +209,12 @@ export class UserController extends Object {
         return json({message: logoutSuccessful});
     }
 
-    @POST('test-query-with-auth')
-    @Accept('application/json')
+    @POST('is-token-valid')
+    @Accept('application/json', 'text/plain')
     @Return('application/json')
     @Middleware(AuthMiddleware)
-    async testAuth(bag: AuthMiddlewareBag, _: Object) {
-        return json({message: `Test query with auth successful. User: ${bag.user.username}`});
+    async isTokenValid() {
+        return json({message: tokenIsValid});
     }
 
     @GET('@current')
@@ -270,7 +270,7 @@ export class UserController extends Object {
 
         if (info.displayName !== undefined)
             user.displayName = info.displayName;
-        
+
         if (info.description !== undefined)
             user.profileDescription = info.description;
 
