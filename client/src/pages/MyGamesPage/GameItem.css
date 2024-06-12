@@ -1,0 +1,125 @@
+/* .game-item {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 50px;
+    background-color: white;
+    border-radius: 7px;
+}
+
+.game-avatar {
+    border: 1px solid black;
+    max-width: 40px;
+    border-radius: 50%;
+    aspect-ratio: 1/1;
+    height: 100%;
+}
+ */
+
+ .game-item {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    background-color: white;
+    border-radius: 7px;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+    max-height: 150px; /* collapsed height */
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.game-item.expanded {
+    max-height: 300px; /* expanded height */
+}
+
+.game-icon img {
+    width: 100%;
+    height: 100%;
+}
+
+.game-describe {
+    flex-grow: 1;
+    padding-left: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-title {
+    text-decoration: none;
+    font-weight: bold;
+    color: black;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 10px;
+}
+
+.game-buttons {
+    margin-right: 10px;
+}
+
+.expand-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 20px;
+}
+
+.game-description {
+    margin-top: 10px;
+    height: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.game-item.expanded .game-description {
+    height: auto;
+    max-height: 150px;
+    overflow-y: auto;
+    white-space: normal;
+}
+
+.game-details {
+    margin-top: 10px;
+    font-weight: bolder;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.tag {
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    padding: 2px 5px;
+}
+
+.game-title {
+    /* Определите цвет подсветки при наведении курсора */
+    color: #0b0b0c; 
+
+    /* эффект плавного перехода для плавности изменения цвета */
+    transition: color 0.3s ease;
+}
+
+.game-title:hover {
+    /* Измените цвет при наведении курсора */
+    color: #f00a0a; 
+}

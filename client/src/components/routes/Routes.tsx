@@ -6,12 +6,14 @@ import Home from "../../pages/Home";
 import Login from "../../pages/login/LoginForm";
 import Registration from "../../pages/registration/RegistrationForm";
 import ProfilePage from "../../pages/ProfilePage";
-import MyGamesPage from "../../pages/MyGamesPage";
+import MyGamesPage from "../../pages/MyGamesPage/MyGamesPage";
 import MyFriendsPage from "../../pages/FriendsPage/FriendsPage";
 import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
 import PlayersPage from "../../pages/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
 import TestPage from "../../pages/TestPage";
+import GamePage from "../../pages/GamePage";
+
 import {
   getFriendsPageRoute,
   getGamesPageRoute,
@@ -22,6 +24,7 @@ import {
   getNotFoundRoute,
   getPlayersPageRoute,
   getRegistrationPageRoute,
+  getGamePageRoute,
 } from "./Navigation";
 
 const RoutesComponent = () => {
@@ -32,6 +35,8 @@ const RoutesComponent = () => {
       <Route path={getLoginPageRoute()} element={<Login />} />
       <Route path={getRegistrationPageRoute()} element={<Registration />} />
       <Route path={getGamesPageRoute()} element={<SearchGamesPage />} />
+
+      <Route path={getGamePageRoute(":gamename")} element={<GamePage />} />
 
       {/* TODO: delete test page in production */}
       <Route path={"test-page"} element={<TestPage />} />
