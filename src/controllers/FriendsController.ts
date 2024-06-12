@@ -73,15 +73,15 @@ export class FriendsController {
         const repo = this._dbContext.getRepository(UsersFriend);
         
         const usersFriends = await repo.createQueryBuilder('friendLink')
-                                       .innerJoin(UsersFriend, 'backwardsLink', 'backwardsLink.userId = friendLink.friendId') //By using inner join here we only keep the entries which have a backwards link (thus a two-way friend link between users exists)
-                                       .innerJoin('friendLink.friend', 'friend')
-                                       .leftJoin('friend.avatar', 'avatar')
-                                       .where('friendLink.userId = :userId', {userId: bag.user.id})
-                                       .addSelect('COALESCE(friend.displayName, friend.username)', 'name')
-                                       .orderBy(sortBy, sortOrder)
-                                       .skip(start)
-                                       .take(count)
-                                       .getMany();
+                                        .innerJoin(UsersFriend, 'backwardsLink', 'backwardsLink.userId = friendLink.friendId AND backwardsLink.friendId = friendLink.userId') //By using inner join here we only keep the entries which have a backwards link (thus a two-way friend link between users exists)
+                                        .innerJoin('friendLink.friend', 'friend')
+                                        .leftJoin('friend.avatar', 'avatar')
+                                        .where('friendLink.userId = :userId', {userId: bag.user.id})
+                                        .addSelect('COALESCE(friend.displayName, friend.username)', 'name')
+                                        .orderBy(sortBy, sortOrder)
+                                        .skip(start)
+                                        .take(count)
+                                        .getMany();
 
         return await Promise.all(usersFriends.map(async x => {
             let user = await x.friend;
