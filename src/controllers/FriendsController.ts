@@ -214,7 +214,12 @@ export class FriendsController {
         friendLink.user = Promise.resolve(bag.user);
         friendLink.friend = Promise.resolve(friendUser);
         
-        await repo.save(friendLink);
+        try {
+            await repo.save(friendLink);
+        }
+        catch {
+            return conflict();
+        }
 
         await this._NotificationService.sendNotification(friendUser.username,
             await repo.existsBy({user:friendUser,friend: bag.user})
@@ -251,9 +256,14 @@ export class FriendsController {
         });
 
         if (!friendLink)
-            return notFound();
+            return badRequest();
 
-        await repo.remove(friendLink);
+        try {
+            await repo.remove(friendLink);
+        }
+        catch {
+            return badRequest();
+        }
 
         const notifRepo = this._dbContext.getRepository(NotificationBase);
         await notifRepo.remove(
