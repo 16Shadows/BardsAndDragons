@@ -67,6 +67,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: 100px; /* Минимальная высота футера */
 }
 
 .footer-content {
@@ -75,12 +76,12 @@ body {
   align-items: flex-start;
   flex-wrap: wrap;
   width: 100%;
-  
   gap: 2rem;
 }
 
 .footer-content div {
   margin: 0 1rem;
+  
 }
 
 .footer-links a, .footer-contact a {
@@ -115,11 +116,14 @@ body {
     text-align: center;
     padding: 2rem;
   }
+
   .footer-content {
     flex-direction: column;
     align-items: center;
   }
+
   .footer-content div {
     margin: 0.5rem 0;
+    width: 100%; /* Элементы растягиваются на всю ширину */
   }
 }
