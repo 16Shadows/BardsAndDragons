@@ -127,11 +127,10 @@ export class FriendsController {
         const repo = this._dbContext.getRepository(UsersFriend);
         
         const incomingRequests = await repo.createQueryBuilder('friendLink')
-                                       .where('friendLink.friendId = :userId', {userId: bag.user.id}) //Select entries where target is this user
-                                       .leftJoin(UsersFriend, 'backwardsLink', 'friendLink.userId = backwardsLink.friendId') //Left join to check if the entry has a backwards link
+                                       .leftJoin(UsersFriend, 'backwardsLink', 'friendLink.userId = backwardsLink.friendId AND friendLink.friendId = backwardsLink.userId') //Left join to check if the entry has a backwards link
+                                       .where('backwardsLink.id IS NULL AND friendLink.friendId = :userId', {userId: bag.user.id}) //Select entries where target is this user. Skip entries which have backwards link. Remaining links are incoming requests.
                                        .innerJoin('friendLink.user', 'friend')
                                        .leftJoin('friend.avatar', 'avatar')
-                                       .andWhere('backwardsLink.id IS NULL') //Skip entries which have backwards link (thus a link from this to the other exists). Remaining links are one-way from the other user to this user.
                                        .addSelect('COALESCE(friend.displayName, friend.username)', 'name')
                                        .orderBy(sortBy, sortOrder)
                                        .skip(start)
