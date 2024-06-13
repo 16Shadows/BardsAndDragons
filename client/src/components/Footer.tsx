@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
         <div className="footer-contact">
           <span className="highlight">Поддержка - напишите нам, если у вас проблема или предложение</span>
            {/* поменять ссылку! */}
-          <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLetg744TF10BrdPjaEXf4EsJ1wz6fyf95&index=1">почта администрации</a>
+          <a href="mailto:info@bardsdragons.ru">info@bardsdragons.ru</a>
 
           <span></span>
            {/* поменять ссылку! */}

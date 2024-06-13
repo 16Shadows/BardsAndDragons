@@ -27,9 +27,9 @@ function App() {
                         <RoutesComponent/>
                     </Container>
                 </main>
-                <footer>
-                    <Footer />
-                </footer>
+                
+                <Footer />
+                
             </BrowserRouter>
         </AuthProvider>
     );
