@@ -1,4 +1,3 @@
-// client/src/pages/PlayersPage/PlayersPage.tsx
 import React from "react";
 import PlayerCard from "./PlayerCard";
 import usePlayersMatching from "./usePlayersMatching";
@@ -63,22 +62,27 @@ const PlayersPage = () => {
                             <h4>Для поиска других игроков, пожалуйста, заполните следующие поля в вашем профиле:</h4>
                             <ul>
                                 {missingFields.map(field => (
-                                    <li key={field.key}>{field.message}</li>
+                                    <li key={field.key}><h5>{field.message}</h5></li>
                                 ))}
                             </ul>
-                            <Button variant="primary" className="w-25 mb-3"
-                                    onClick={() => navigate(getMyProfilePageRoute())}>
-                                Мой профиль
-                            </Button>
+                            <div className={"text-end"}>
+                                <Button variant="primary" className="w-25 mb-3"
+                                        onClick={() => navigate(getMyProfilePageRoute())}>
+                                    Мой профиль
+                                </Button>
+                            </div>
                         </div>
                     )}
                     {userValidation.missingFields.games && (
                         <div>
                             <h4 className={"mt-4"}>Для участия в мэтчинге, у вас должна быть хотя бы одна игра в
                                 подписках</h4>
-                            <Button variant="primary" className="w-25" onClick={() => navigate(getGamesPageRoute())}>
-                                Все игры
-                            </Button>
+                            <div className={"text-end"}>
+                                <Button variant="primary" className="w-25 mt-3"
+                                        onClick={() => navigate(getGamesPageRoute())}>
+                                    Все игры
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </div>
