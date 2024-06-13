@@ -63,3 +63,80 @@
   position: sticky;
   top: var(--top-indent);
 }
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.footer {
+  background-color: #f1f1f1;
+  color: black;
+  text-align: left;
+  padding: 1rem 2rem;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100px; /* Минимальная высота футера */
+}
+
+.footer-content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 2rem;
+}
+
+.footer-content div {
+  margin: 0 1rem;
+  
+}
+
+.footer-links a, .footer-contact a {
+  text-decoration: none;
+  color: gray;
+  transition: 0.5s;
+}
+
+.footer-links a:hover, .footer-contact a:hover {
+  color: #f0472a;
+}
+
+.footer-support span, .footer-contact span {
+  color: gray;
+  display: block;
+}
+
+.footer-support .highlight, .footer-contact .highlight {
+  font-weight: bold;
+  color: black;
+}
+
+.footer-copyright {
+  text-align: center;
+  margin-top: 1rem;
+  color: gray;
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .footer {
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .footer-content div {
+    margin: 0.5rem 0;
+    width: 100%; /* Элементы растягиваются на всю ширину */
+  }
+}
