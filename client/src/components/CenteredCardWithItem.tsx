@@ -1,10 +1,10 @@
-import React, {ReactElement, ReactNode} from "react";
+import React, {ReactNode} from "react";
 import {Col, Row, Card} from "react-bootstrap";
 
 interface CenteredCardWithItemProps {
     cardBody: ReactNode;
     cardClassName?: string;
-    itemAfterCard?: ReactElement;
+    itemAfterCard?: ReactNode;
     title?: string;
     columnWidth?: number;
 }

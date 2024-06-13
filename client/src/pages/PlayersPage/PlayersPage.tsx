@@ -1,14 +1,16 @@
+// client/src/pages/PlayersPage/PlayersPage.tsx
 import React from "react";
 import PlayerCard from "./PlayerCard";
-import usePlayersPage from "./usePlayersPage";
+import usePlayersMatching from "./usePlayersMatching";
 import {getFriendsPageRoute, getGamesPageRoute, getMyProfilePageRoute} from "../../components/routes/Navigation";
 import {Button, Row, Spinner} from "react-bootstrap";
 import {useNavigate} from "react-router-dom";
 import CenteredCardWithItem from "../../components/CenteredCardWithItem";
 
+const title = "Поиск игроков";
+
 const PlayersPage = () => {
     const navigate = useNavigate();
-    const title = "Поиск игроков";
 
     const {
         matches,
@@ -17,7 +19,7 @@ const PlayersPage = () => {
         handleReject,
         isLoading,
         isUserValidForMatching
-    } = usePlayersPage();
+    } = usePlayersMatching();
 
     // Matches are loading from API
     if (isLoading) {
@@ -42,12 +44,9 @@ const PlayersPage = () => {
                 <div>
                     <h4>Для поиска других игроков, пожалуйста, заполните следующие поля в вашем профиле:</h4>
                     <ul>
-                        <li>Дата рождения</li>
-                        <li>Ваше имя</li>
-                        <li>Аватар</li>
-                        <li>Город</li>
-                        <li>Описание профиля</li>
-                        <li>Контактная информация</li>
+                        {["Дата рождения", "Ваше имя", "Аватар", "Город", "Описание профиля", "Контактная информация"].map(field => (
+                            <li key={field}>{field}</li>
+                        ))}
                     </ul>
                     <Button variant="primary" className="w-25 mb-3" onClick={() => navigate(getMyProfilePageRoute())}>
                         Мой профиль

@@ -10,42 +10,33 @@ interface GameListProps {
     gamesPerPage: number;
 }
 
-const OnlineItem = React.memo(() => {
-    return (
-        <Badge pill className="online-item-badge">online</Badge>
-    )
-});
+const OnlineItem = React.memo(() => (
+    <Badge pill className="online-item-badge">online</Badge>
+));
 
-const GameItem = React.memo(({name, playsOnline}: GameData) => {
-    return (
-        <Badge className="game-item-badge mb-1 mt-1">
-            <MdGames className="game-item-icon"/>&nbsp;
-            {name}&nbsp;
-            {playsOnline ? <OnlineItem/> : null}
-        </Badge>
-    )
-});
+const GameItem = React.memo(({name, playsOnline}: GameData) => (
+    <Badge className="game-item-badge mb-1 mt-1">
+        <MdGames className="game-item-icon"/>&nbsp;
+        {name}&nbsp;
+        {playsOnline ? <OnlineItem/> : null}
+    </Badge>
+));
 
 const GameList = ({games, gamesPerPage}: GameListProps) => {
     const [currentPage, setCurrentPage] = useState(0);
     const totalPages = useMemo(() => Math.ceil(games.length / gamesPerPage), [games.length, gamesPerPage]);
 
     const handlePrevious = useCallback(() => {
-        if (currentPage > 0) {
-            setCurrentPage(currentPage - 1);
-        }
-    }, [currentPage]);
+        setCurrentPage(page => page > 0 ? page - 1 : page);
+    }, []);
 
     const handleNext = useCallback(() => {
-        if (currentPage < totalPages - 1) {
-            setCurrentPage(currentPage + 1);
-        }
-    }, [currentPage, totalPages]);
+        setCurrentPage(page => page < totalPages - 1 ? page + 1 : page);
+    }, [totalPages]);
 
     const currentGames = useMemo(() => {
         const startIndex = currentPage * gamesPerPage;
-        const endIndex = startIndex + gamesPerPage;
-        return games.slice(startIndex, endIndex);
+        return games.slice(startIndex, startIndex + gamesPerPage);
     }, [currentPage, games, gamesPerPage]);
 
     return (
@@ -59,7 +50,7 @@ const GameList = ({games, gamesPerPage}: GameListProps) => {
                 <Row className={"justify-content-center"}>
                     {currentGames.map((game, index) => (
                         <Col xs={"auto"} sm={"auto"} key={index}>
-                            <GameItem {...game}/>
+                            <GameItem {...game} />
                         </Col>
                     ))}
                 </Row>
