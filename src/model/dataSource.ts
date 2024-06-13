@@ -9,6 +9,7 @@ import {NotificationBase} from "./notifications/notificationBase";
 import {FriendRequestNotification} from "./notifications/friendRequestNotification";
 import {FriendRequestAcceptedNotification} from "./notifications/friendRequestAcceptedNotification";
 import {Token} from "./token";
+import { UsersFriend } from "./usersFriend";
 
 export class ModelDataSource extends DataSource {
     constructor() {
@@ -31,7 +32,8 @@ export class ModelDataSource extends DataSource {
                 City,
                 NotificationBase,
                 FriendRequestNotification,
-                FriendRequestAcceptedNotification
+                FriendRequestAcceptedNotification,
+                UsersFriend
             ]
         })
     }

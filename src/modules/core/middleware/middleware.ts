@@ -2,6 +2,8 @@ import { HTTPResponse, IncomingHttpHeaders, RouteDefinitionPart, RouteEndpoint }
 import { Metadata_Prefix } from "../constants";
 import { constructor } from "../types";
 import { QueryBag } from "../routing/query";
+import { IncomingMessage, ServerResponse } from 'http';
+import { Http2ServerResponse } from 'http2';
 
 module Middleware {
     export type MiddlewareContext = {
@@ -10,6 +12,7 @@ module Middleware {
         readonly query: Readonly<QueryBag>;
         readonly headers: Readonly<IncomingHttpHeaders>;
         readonly args: ReadonlyArray<any>;
+        readonly res: Readonly<Http2ServerResponse | ServerResponse<IncomingMessage>>
     };
 
     export type MiddlewareBag = {};

@@ -5,7 +5,6 @@
 
 .navbar {
   padding: 20px;
-  /* display: flex; */
   align-items: center;
   margin: 0 auto;
   border-bottom: 1px solid #f2f2f2;
@@ -14,7 +13,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1;
+  z-index: 20;
 
   color: #333;
 }
@@ -22,9 +21,6 @@
   color: #f0472a;
   margin-left: 6px;
 }
-/* .navbar .links {
-  margin-left: 6px;
-} */
 .navbar a {
   text-decoration: none;
   padding: 6px;
@@ -32,9 +28,26 @@
 .navbar a:hover span:hover {
   color: #f0472a;
 }
-.content {
-  margin: 40px auto;
+.content{
+  margin: 20px auto;
   padding: 20px;
+  width: 800px;
+  max-width: 800px;
+  align-self: center;
+}
+.profile_image {
+  width: 200px;
+  height: 200px;
+  outline-color: #6e6e6e;
+  outline-width: 2px;
+  outline-style: solid;
+}
+.profile_menu {
+  padding-left: 12px;
+}
+.navbar-image {
+  width: 50px;
+  height: 50px;
 }
 
 :root {
