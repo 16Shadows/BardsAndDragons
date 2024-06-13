@@ -3,7 +3,7 @@ import {ModelDataSource} from "../model/dataSource";
 import {GET, POST} from "../modules/core/routing/decorators";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
 import {Middleware} from "../modules/core/middleware/middleware";
-import {MatchingService, PlayerData} from "../services/MatchingService";
+import {MatchingService, PlayerData, UserMatchingValidationResult} from "../services/MatchingService";
 import {AuthMiddleware, AuthMiddlewareBag} from "../middleware/AuthMiddleware";
 import {TestService} from "../services/TestService";
 import {badRequest, conflict} from "../modules/core/routing/response";
@@ -58,9 +58,9 @@ export class MatchingController extends Object {
     @GET('is-valid-for-matching')
     @Middleware(AuthMiddleware)
     @Return('application/json')
-    async isValidForMatching(bag: AuthMiddlewareBag): Promise<HTTPResponseConvertBody | boolean> {
+    async isValidForMatching(bag: AuthMiddlewareBag): Promise<HTTPResponseConvertBody | UserMatchingValidationResult> {
         try {
-            return await this._matchingService.isUserValidForMatching(bag.user.id);
+            return await this._matchingService.isUserValidForMatching(bag.user);
         } catch (e) {
             return badRequest();
         }

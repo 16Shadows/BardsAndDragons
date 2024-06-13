@@ -9,6 +9,20 @@ import CenteredCardWithItem from "../../components/CenteredCardWithItem";
 
 const title = "Поиск игроков";
 
+type RequiredField = {
+    key: string;
+    message: string;
+};
+
+const requiredFields: RequiredField[] = [
+    {key: "birthday", message: "Дата рождения"},
+    {key: "displayName", message: "Ваше имя"},
+    {key: "avatar", message: "Аватар"},
+    {key: "profileDescription", message: "Описание профиля"},
+    {key: "contactInfo", message: "Контактная информация"},
+    {key: "city", message: "Город"}
+];
+
 const PlayersPage = () => {
     const navigate = useNavigate();
 
@@ -18,7 +32,7 @@ const PlayersPage = () => {
         handleAccept,
         handleReject,
         isLoading,
-        isUserValidForMatching
+        userValidation
     } = usePlayersMatching();
 
     // Matches are loading from API
@@ -36,31 +50,43 @@ const PlayersPage = () => {
     }
 
     // User is not valid for matching
-    if (!isUserValidForMatching) {
+    if (!userValidation || !userValidation.isValid) {
+        const missingFields = requiredFields.filter(field => userValidation.missingFields[field.key]);
+
         return (<CenteredCardWithItem
             title={title}
             columnWidth={8}
             cardBody={
                 <div>
-                    <h4>Для поиска других игроков, пожалуйста, заполните следующие поля в вашем профиле:</h4>
-                    <ul>
-                        {["Дата рождения", "Ваше имя", "Аватар", "Город", "Описание профиля", "Контактная информация"].map(field => (
-                            <li key={field}>{field}</li>
-                        ))}
-                    </ul>
-                    <Button variant="primary" className="w-25 mb-3" onClick={() => navigate(getMyProfilePageRoute())}>
-                        Мой профиль
-                    </Button>
-                    <h4 className={"mt-4"}>Для участия в мэтчинге, у вас должна быть хотя бы одна игра в подписках</h4>
-                    <Button variant="primary" className="w-25" onClick={() => navigate(getGamesPageRoute())}>
-                        Все игры
-                    </Button>
+                    {missingFields.length > 0 && (
+                        <div>
+                            <h4>Для поиска других игроков, пожалуйста, заполните следующие поля в вашем профиле:</h4>
+                            <ul>
+                                {missingFields.map(field => (
+                                    <li key={field.key}>{field.message}</li>
+                                ))}
+                            </ul>
+                            <Button variant="primary" className="w-25 mb-3"
+                                    onClick={() => navigate(getMyProfilePageRoute())}>
+                                Мой профиль
+                            </Button>
+                        </div>
+                    )}
+                    {userValidation.missingFields.games && (
+                        <div>
+                            <h4 className={"mt-4"}>Для участия в мэтчинге, у вас должна быть хотя бы одна игра в
+                                подписках</h4>
+                            <Button variant="primary" className="w-25" onClick={() => navigate(getGamesPageRoute())}>
+                                Все игры
+                            </Button>
+                        </div>
+                    )}
                 </div>
             }/>);
     }
 
     // No matches
-    if (!matches.length || !matches[currentMatchId]) {
+    if (!matches || !matches.length || !matches[currentMatchId]) {
         return (<CenteredCardWithItem
             title={title}
             columnWidth={8}

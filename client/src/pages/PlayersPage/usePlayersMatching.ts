@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useState} from "react";
-import {PlayerData} from "./PlayerData";
+import {PlayerData, UserMatchingValidationResult} from "./PlayerData";
 import useApi from "../../http-common";
 import {errorLoadingData} from "../../utils/errorMessages";
 
@@ -14,7 +14,18 @@ const usePlayersMatching = () => {
     const [matches, setMatches] = useState<PlayerData[]>([]);
     const [currentMatchId, setCurrentMatchId] = useState<number>(0);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [isUserValidForMatching, setIsUserValidForMatching] = useState<boolean>(false);
+    const [userValidation, setUserValidation] = useState<UserMatchingValidationResult>({
+        isValid: true,
+        missingFields: {
+            birthday: false,
+            displayName: false,
+            avatar: false,
+            profileDescription: false,
+            contactInfo: false,
+            city: false,
+            games: false,
+        }
+    });
 
     const api = useApi();
 
@@ -23,11 +34,12 @@ const usePlayersMatching = () => {
         const fetchUserValidity = async () => {
             try {
                 setIsLoading(true);
-                const response = await api.get('matching/is-valid-for-matching');
-                const isUserValidForMatching: boolean = response.data;
-                if (isUserValidForMatching) {
+                const response = await api.get<UserMatchingValidationResult>('matching/is-valid-for-matching');
+                const userValidation = response.data;
+                setUserValidation(userValidation);
+
+                if (userValidation.isValid) {
                     // Continue state is loading
-                    setIsUserValidForMatching(true);
                     // Get matches
                     await getMatches();
                 } else {
@@ -94,7 +106,7 @@ const usePlayersMatching = () => {
         handleAccept,
         handleReject,
         isLoading,
-        isUserValidForMatching
+        userValidation
     };
 };
 

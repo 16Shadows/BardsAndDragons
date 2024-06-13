@@ -24,6 +24,21 @@ export type PlayerData = {
     games: GameData[];
 }
 
+type RequiredFieldsForMatching = {
+    birthday: boolean;
+    displayName: boolean;
+    avatar: boolean;
+    profileDescription: boolean;
+    contactInfo: boolean;
+    city: boolean;
+    games: boolean;
+};
+
+export type UserMatchingValidationResult = {
+    isValid: boolean;
+    missingFields: RequiredFieldsForMatching;
+}
+
 @injectable()
 export class MatchingService {
     // Points for calculating the score for each potential player
@@ -52,18 +67,48 @@ export class MatchingService {
     }
 
     /**
-     * Checks if a user with the given ID meets the matching criteria.
+     * Checks if a user with the given ID meets the matching criteria and returns missing fields if any.
      */
-    async isUserValidForMatching(userId: number): Promise<boolean> {
-        const repo = this._dbContext.getRepository(User);
-        const qb = repo
+    async isUserValidForMatching(currentUser: User): Promise<UserMatchingValidationResult> {
+        const qb = this._dbContext.getRepository(User)
             .createQueryBuilder("user")
-            .where("user.id = :userId", {userId});
+            .where("user.id = :userId", {userId: currentUser.id});
 
         this.applyMatchingCriteria(qb);
 
         const user = await qb.getOne();
-        return !!user;
+        const isValid = !!user;
+
+        // Get missing fields
+
+        const missingFields: RequiredFieldsForMatching = {
+            birthday: false,
+            displayName: false,
+            avatar: false,
+            profileDescription: false,
+            contactInfo: false,
+            city: false,
+            games: false,
+        };
+
+        if (!isValid) {
+            if (!currentUser.birthday) missingFields.birthday = true;
+            if (!currentUser.displayName || currentUser.displayName.trim() === '') missingFields.displayName = true;
+            if (!(await currentUser.avatar)?.id) missingFields.avatar = true;
+            if (!currentUser.profileDescription || currentUser.profileDescription.trim() === '') missingFields.profileDescription = true;
+            if (!currentUser.contactInfo || currentUser.contactInfo.trim() === '') missingFields.contactInfo = true;
+            if (!(await currentUser.city)?.id) missingFields.city = true;
+
+            const hasGames = await this._dbContext.getRepository(UsersGame)
+                .createQueryBuilder("usersGame")
+                .select("usersGame.gameId")
+                .where("usersGame.userId = :userId", {userId: currentUser.id})
+                .getExists();
+
+            if (!hasGames) missingFields.games = true;
+        }
+
+        return {isValid, missingFields};
     }
 
     /**
