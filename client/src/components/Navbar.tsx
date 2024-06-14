@@ -6,7 +6,16 @@ import { useState, useEffect, useCallback } from "react";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import useSignOut from "../utils/useSignOut";
 import useApi from "../http-common";
-import { getFriendsPageRoute } from "./routes/Navigation";
+import {
+  getFriendsPageRoute,
+  getGamesPageRoute,
+  getHomeRoute,
+  getLoginPageRoute,
+  getMyGamesPageRoute,
+  getMyProfilePageRoute,
+  getPlayersPageRoute,
+  getRegistrationPageRoute,
+} from "./routes/Navigation";
 import "../css/Notifications.css";
 import { FaUserFriends } from "react-icons/fa";
 import { IoDice } from "react-icons/io5";
@@ -88,7 +97,7 @@ const Navbar = () => {
                 <NavLink
                   className="nav-link"
                   aria-current="page"
-                  to="/"
+                  to={getHomeRoute()}
                   onClick={() => setIsOpenCollapseState(false)}
                 >
                   Главная
@@ -98,7 +107,7 @@ const Navbar = () => {
               <li className="nav-item">
                 <NavLink
                   className="nav-link"
-                  to="/players"
+                  to={getPlayersPageRoute()}
                   onClick={() => setIsOpenCollapseState(false)}
                 >
                   Поиск игроков
@@ -108,7 +117,7 @@ const Navbar = () => {
               <li className="nav-item">
                 <NavLink
                   className="nav-link"
-                  to="/games"
+                  to={getGamesPageRoute()}
                   onClick={() => setIsOpenCollapseState(false)}
                 >
                   Поиск игр
@@ -143,7 +152,7 @@ const Navbar = () => {
                   <li>
                     <NavLink
                       className="dropdown-item"
-                      to="/my-profile"
+                      to={getMyProfilePageRoute()}
                       onClick={() => setIsOpenCollapseState(false)}
                     >
                       <IoMdSettings size={iconSize} />
@@ -156,7 +165,7 @@ const Navbar = () => {
                   <li>
                     <NavLink
                       className="dropdown-item"
-                      to="/my-games"
+                      to={getMyGamesPageRoute()}
                       onClick={() => setIsOpenCollapseState(false)}
                     >
                       <IoDice size={iconSize} />
@@ -184,7 +193,7 @@ const Navbar = () => {
                         signOut();
                         setIsOpenCollapseState(false);
                       }}
-                      to="#"
+                      to={getHomeRoute()}
                     >
                       <LuLogOut size={iconSize} /> Выйти
                     </Link>{" "}
@@ -198,7 +207,7 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={() => {
-                  navigate("/login");
+                  navigate(getLoginPageRoute());
                   setIsOpenCollapseState(false);
                 }}
                 className="btn btn-primary me-2"
@@ -208,7 +217,7 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={() => {
-                  navigate("/register");
+                  navigate(getRegistrationPageRoute());
                   setIsOpenCollapseState(false);
                 }}
                 className="btn btn-outline-primary"
