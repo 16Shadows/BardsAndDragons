@@ -310,6 +310,7 @@ const ProfilePage = () => {
                 required={true}
                 disabled={!isEditing}
                 name="name"
+                maxLength={32}
                 type="text"
                 placeholder={username}
                 value={name ?? ""}
