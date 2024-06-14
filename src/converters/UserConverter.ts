@@ -1,6 +1,6 @@
-import { ModelDataSource } from "../model/dataSource";
-import { User } from "../model/user";
-import { Converter, ITypeConverter } from "../modules/core/converters/converter";
+import {ModelDataSource} from "../model/dataSource";
+import {User} from "../model/user";
+import {Converter, ITypeConverter} from "../modules/core/converters/converter";
 
 @Converter('user')
 export class UserConverter implements ITypeConverter {
@@ -9,10 +9,10 @@ export class UserConverter implements ITypeConverter {
     constructor(dbContext: ModelDataSource) {
         this._dbContext = dbContext;
     }
-    
+
     async convertFromString(str: string): Promise<User | undefined> {
-        var repo = this._dbContext.getRepository(User);
-        var user = await repo.findOneBy({
+        const repo = this._dbContext.getRepository(User);
+        const user = await repo.findOneBy({
             username: str
         });
 

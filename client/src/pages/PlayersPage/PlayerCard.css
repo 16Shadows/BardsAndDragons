@@ -1,0 +1,19 @@
+.player-card .card-img {
+    max-height: 18rem;
+    object-fit: contain;
+}
+
+.round-button {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    font-size: 26px;
+}
+
+.cross-size {
+    font-size: 22px;
+}

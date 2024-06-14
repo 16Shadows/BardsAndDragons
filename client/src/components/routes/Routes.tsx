@@ -9,7 +9,7 @@ import ProfilePage from "../../pages/ProfilePage";
 import MyGamesPage from "../../pages/MyGamesPage";
 import MyFriendsPage from "../../pages/FriendsPage/FriendsPage";
 import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
-import PlayersPage from "../../pages/PlayersPage";
+import PlayersPage from "../../pages/PlayersPage/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
 import {
     getFriendsPageRoute,
@@ -20,7 +20,7 @@ import {
     getMyProfilePageRoute,
     getNotFoundRoute,
     getPlayersPageRoute,
-    getRegistrationPageRoute,
+    getRegistrationPageRoute
 } from "./Navigation";
 
 const RoutesComponent = () => {
