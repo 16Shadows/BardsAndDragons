@@ -156,7 +156,7 @@ const Navbar = () => {
                       onClick={() => setIsOpenCollapseState(false)}
                     >
                       <IoMdSettings size={iconSize} />
-                      Профиль
+                      &nbsp;Профиль
                     </NavLink>{" "}
                   </li>
                   <li>
@@ -169,7 +169,7 @@ const Navbar = () => {
                       onClick={() => setIsOpenCollapseState(false)}
                     >
                       <IoDice size={iconSize} />
-                      Мои игры
+                      &nbsp;Мои игры
                     </NavLink>
                   </li>
                   <li>
@@ -179,7 +179,7 @@ const Navbar = () => {
                       onClick={() => setIsOpenCollapseState(false)}
                     >
                       <FaUserFriends size={iconSize} />
-                      Мои друзья
+                      &nbsp;Мои друзья
                     </NavLink>
                   </li>
                   <li>
@@ -195,7 +195,7 @@ const Navbar = () => {
                       }}
                       to={getHomeRoute()}
                     >
-                      <LuLogOut size={iconSize} /> Выйти
+                      <LuLogOut size={iconSize} /> &nbsp;Выйти
                     </Link>{" "}
                   </li>
                 </ul>
