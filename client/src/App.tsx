@@ -7,6 +7,7 @@ import Container from "react-bootstrap/Container";
 
 // Components
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 const store = createStore({
   authName: "_auth",
@@ -14,20 +15,23 @@ const store = createStore({
 });
 
 function App() {
-  return (
-    <AuthProvider store={store}>
-      <BrowserRouter>
-        <header>
-          <Navbar />
-        </header>
-        <main className="main">
-          <Container>
-            <RoutesComponent />
-          </Container>
-        </main>
-      </BrowserRouter>
-    </AuthProvider>
-  );
+    return (
+        <AuthProvider store={store}>
+            <BrowserRouter>
+                <header>
+                    <Navbar/>
+                </header>
+                <main className="main">
+                    <Container>
+                        <RoutesComponent/>
+                    </Container>
+                </main>
+                
+                <Footer />
+                
+            </BrowserRouter>
+        </AuthProvider>
+    );
 }
 
 export default App;

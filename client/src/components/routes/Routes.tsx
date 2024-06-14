@@ -11,7 +11,6 @@ import MyFriendsPage from "../../pages/FriendsPage/FriendsPage";
 import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
 import PlayersPage from "../../pages/PlayersPage/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
-import TestPage from "../../pages/TestPage";
 import {
     getFriendsPageRoute,
     getGamesPageRoute,
@@ -33,9 +32,6 @@ const RoutesComponent = () => {
             <Route path={getRegistrationPageRoute()} element={<Registration/>}/>
             <Route path={getGamesPageRoute()} element={<SearchGamesPage/>}/>
 
-            {/* TODO: delete test page in production */}
-            <Route path={"test-page"} element={<TestPage/>}/>
-
             {/* Protected routes */}
             <Route element={<ProtectedRoutes fallbackPath={getLoginPageRoute()}/>}>
                 <Route path={getMyProfilePageRoute()} element={<ProfilePage/>}/>
@@ -47,7 +43,8 @@ const RoutesComponent = () => {
 
             {/* TODO: 404 page */}
             <Route path={getNotFoundRoute()} element={<div>404 Not found </div>}/>
-        </Routes>)
-}
+        </Routes>
+    );
+};
 
-export default RoutesComponent
+export default RoutesComponent;

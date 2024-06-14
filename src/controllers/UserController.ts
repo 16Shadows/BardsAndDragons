@@ -24,6 +24,7 @@ import {
     logoutSuccessful,
     nicknameAlreadyUseError,
     notFilledError,
+    tokenIsValid,
     userNotFoundError,
     wrongPasswordError
 } from "../utils/errorMessages";
@@ -208,12 +209,12 @@ export class UserController extends Object {
         return json({message: logoutSuccessful});
     }
 
-    @POST('test-query-with-auth')
+    @POST('is-token-valid')
     @Accept('application/json', 'text/plain')
     @Return('application/json')
     @Middleware(AuthMiddleware)
-    async testAuth(bag: AuthMiddlewareBag) {
-        return json({message: `Test query with auth successful. User: ${bag.user.username}`});
+    async isTokenValid() {
+        return json({message: tokenIsValid});
     }
 
     @GET('@current')
