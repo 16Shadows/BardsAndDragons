@@ -31,7 +31,7 @@ export const validateEmail = (value: string): boolean => {
 };
 
 export const validateNickname = (value: string): boolean => {
-    const nicknameRegex = /^[a-zA-Z0-9_]{5,}$/;
+    const nicknameRegex = /^[a-zA-Z0-9_]{5,32}$/;
     return nicknameRegex.test(value);
 };
 
