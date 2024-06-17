@@ -16,13 +16,13 @@ const store = createStore({
 
 function Main() {
     const location = useLocation();
-  
+    
     // Check if the current route is the homepage
     const isHomepage = location.pathname === "/";
   
     return (
       <main className={`${isHomepage ? "main-homepage-background" : "main"}`}>
-        <Container> {/* Ensure fluid container to take full width */}
+        <Container> 
           <RoutesComponent />
         </Container>
       </main>
