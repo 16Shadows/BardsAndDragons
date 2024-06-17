@@ -1,86 +1,52 @@
-
 * {
-  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
-.navbar {
-  padding: 20px;
-  align-items: center;
-  margin: 0 auto;
-  border-bottom: 1px solid #f2f2f2;
-
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 20;
-
-  color: #333;
-}
-.navbar h1 span {
-  color: #f0472a;
-  margin-left: 6px;
-}
-.navbar a {
-  text-decoration: none;
-  padding: 6px;
-}
-.navbar a:hover span:hover {
-  color: #f0472a;
-}
-.content{
-  margin: 20px auto;
-  padding: 20px;
-  width: 800px;
-  max-width: 800px;
-  align-self: center;
-}
-.profile_image {
-  width: 200px;
-  height: 200px;
-  outline-color: #6e6e6e;
-  outline-width: 2px;
-  outline-style: solid;
-}
-.profile_menu {
-  padding-left: 12px;
-}
-.navbar-image {
-  width: 50px;
-  height: 50px;
-}
-
-:root {
-  --top-indent: 115px;
-}
-
-.main {
-  top: var(--top-indent);
-  position: relative;
-}
-
-.static-item {
-  position: sticky;
-  top: var(--top-indent);
-}
-
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
   overflow-x: hidden;
 }
 
-.footer {
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1; /* This makes the main content expand to fill available space */
+  margin-top: var(--top-indent);
+  padding: 20px;
+  padding-bottom: 120px; /* Add bottom padding to make space for the footer */
+}
+
+.main-homepage-background {
+  flex: 1; /* This makes the main content expand to fill available space */
+  margin-top: var(--top-indent);
+  padding: 20px;
+  padding-bottom: 120px; /* Add bottom padding to make space for the footer */
+  background-image: linear-gradient(to right, rgb(255, 255, 255) 15%, transparent 100%), url('../resources/homepage.jpg'); /* Adjust the path as needed */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+  width: 100%; /* Ensure the container takes full width */
+}
+
+footer {
   background-color: #f1f1f1;
   color: black;
   text-align: left;
   padding: 1rem 2rem;
-  position: fixed;
   width: 100%;
-  bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100px; /* Минимальная высота футера */
+  min-height: 100px;
+  margin-top: auto; /* Ensures the footer is pushed to the bottom */
+  z-index: 0; /* Ensure footer has a lower z-index */
 }
 
 .footer-content {
@@ -94,25 +60,40 @@ body {
 
 .footer-content div {
   margin: 0 1rem;
-  
 }
 
-.footer-links a, .footer-contact a {
+.footer-links a {
+  text-decoration: none;
+  transition: 0.5s;
+  font-weight: bold;
+  color: black;
+}
+
+.footer-links span {
+  color: gray;
+  display: block;
+}
+
+
+.footer-contact a {
   text-decoration: none;
   color: gray;
   transition: 0.5s;
 }
 
-.footer-links a:hover, .footer-contact a:hover {
+.footer-links a:hover, 
+.footer-contact a:hover {
   color: #f0472a;
 }
 
-.footer-support span, .footer-contact span {
+.footer-support span, 
+.footer-contact span {
   color: gray;
   display: block;
 }
 
-.footer-support .highlight, .footer-contact .highlight {
+.footer-support .highlight, 
+.footer-contact .highlight {
   font-weight: bold;
   color: black;
 }
@@ -125,7 +106,7 @@ body {
 }
 
 @media (max-width: 720px) {
-  .footer {
+  footer {
     text-align: center;
     padding: 2rem;
   }
@@ -137,6 +118,77 @@ body {
 
   .footer-content div {
     margin: 0.5rem 0;
-    width: 100%; /* Элементы растягиваются на всю ширину */
+    width: 100%; /* Items stretch to full width */
   }
 }
+
+/* Additional Styles */
+.navbar {
+  padding: 20px;
+  align-items: center;
+  margin: 0 auto;
+  border-bottom: 1px solid #f2f2f2;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 20;
+  color: #333;
+}
+
+.navbar h1 span {
+  color: #f0472a;
+  margin-left: 6px;
+}
+
+.navbar a {
+  text-decoration: none;
+  padding: 6px;
+}
+
+.navbar a:hover span:hover {
+  color: #f0472a;
+}
+
+.content {
+  margin: 20px auto;
+  padding: 20px;
+  width: 800px;
+  max-width: 800px;
+  align-self: center;
+}
+
+.profile_image {
+  width: 200px;
+  height: 200px;
+  outline-color: #6e6e6e;
+  outline-width: 2px;
+  outline-style: solid;
+}
+
+.profile_menu {
+  padding-left: 12px;
+}
+
+.navbar-image {
+  width: 50px;
+  height: 50px;
+}
+
+:root {
+  --top-indent: 115px;
+}
+
+.static-item {
+  position: sticky;
+  top: var(--top-indent);
+}
+
+/* .main {
+  background-image: linear-gradient(to right, rgb(255, 255, 255) 20%, transparent 100%), url('../resources/homepage.jpg'); 
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+  width: 100%; 
+} */
