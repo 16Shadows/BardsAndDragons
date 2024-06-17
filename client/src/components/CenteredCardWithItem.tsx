@@ -1,20 +1,27 @@
-import React, {ReactElement, ReactNode} from "react";
+import React, {ReactNode} from "react";
 import {Col, Row, Card} from "react-bootstrap";
 
 interface CenteredCardWithItemProps {
     cardBody: ReactNode;
-    itemAfterCard?: ReactElement | null;
-    title: string;
+    cardClassName?: string;
+    itemAfterCard?: ReactNode;
+    title?: string;
     columnWidth?: number;
 }
 
-const CenteredCardWithItem = ({cardBody, itemAfterCard = null, title, columnWidth = 4}: CenteredCardWithItemProps) => {
+const CenteredCardWithItem = ({
+                                  cardBody,
+                                  cardClassName = "mb-3",
+                                  itemAfterCard,
+                                  title,
+                                  columnWidth = 4
+                              }: CenteredCardWithItemProps) => {
     return (
         <Row className="justify-content-md-center">
             <Col md={columnWidth}>
-                <Card className="mb-3">
+                <Card className={cardClassName}>
                     <Card.Body>
-                        <h1 className="text-center mb-4">{title}</h1>
+                        {title && <h1 className="text-center mb-4">{title}</h1>}
                         {cardBody}
                     </Card.Body>
                 </Card>

@@ -8,3 +8,4 @@ export const nicknameAlreadyUseError = "nicknameAlreadyUse";
 export const emailAlreadyUseError = "emailAlreadyUse";
 export const logoutSuccessful = "LogoutSuccessful";
 export const invalidTokenError = "InvalidToken";
+export const tokenIsValid = "TokenIsValid";
