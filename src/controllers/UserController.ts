@@ -295,4 +295,33 @@ export class UserController extends Object {
         await (this._dbContext.getRepository(Token).remove(await bag.user.tokens));
         await repo.softRemove(bag.user);
     }
+
+    @GET('public/{username}')
+    @Return('application/json')
+    async getPublicUserInfo(bag: MiddlewareBag, username: string) {
+        var repository = this._dbContext.getRepository(User);
+
+        const user = await repository.findOneBy({ username:username});
+
+        if (!user) {
+            return badRequest({ message: userNotFoundError });
+        }
+        
+        const publicUserInfo: PublicUserInfo = {
+            username: user.username,
+            email: user.email, 
+            displayName: user.displayName,
+            description: user.profileDescription,
+            contactInfo: user.contactInfo,
+            city: (await user.city)?.name,
+            avatar: (await user.avatar)?.blob
+        };
+
+        if (user.canDisplayAge && user.birthday) {
+            const age = new Date().getFullYear() - user.birthday.getFullYear();
+            publicUserInfo.age = age;
+        }
+
+        return publicUserInfo;
+    }
 }

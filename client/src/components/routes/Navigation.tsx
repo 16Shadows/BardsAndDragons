@@ -23,7 +23,11 @@ export function getMyGamesPageRoute() {
 }
 
 export function getUserProfileRoute(username: string) {
-    return `/${username}`;
+    return `/profile/${username}`;
+}
+
+export function getGamePageRoute(gamename: string) {
+    return `/${gamename}`;
 }
 
 export function getPlayersPageRoute() {

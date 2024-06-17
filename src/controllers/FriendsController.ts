@@ -273,4 +273,42 @@ export class FriendsController {
                             .getMany()
         );
     }
+
+    @GET('{username}/friendshipStatus')
+    @Middleware(AuthMiddleware)
+    @Return('application/json')
+    async getFriendshipStatus(bag: AuthMiddlewareBag, username: string): Promise<HTTPResponseConvertBody | { status: string }> {
+        const repo = this._dbContext.getRepository(UsersFriend);
+        const userRepo = this._dbContext.getRepository(User);
+        
+        const friendUser = await userRepo.findOne({ where: { username } });
+
+        if (!friendUser) {
+            return notFound();
+        }
+
+        const isFriend = await repo.findOne({
+            where: {
+                user: bag.user,
+                friend: friendUser
+            }
+        });
+
+        const isReverseFriend = await repo.findOne({
+            where: {
+                user: friendUser,
+                friend: bag.user
+            }
+        });
+
+        if (isFriend && isReverseFriend) {
+            return { status: 'friends' };
+        } else if (!isFriend && isReverseFriend) {
+            return { status: 'incomingRequest' };
+        } else if (isFriend && !isReverseFriend) {
+            return { status: 'outgoingRequest' };
+        } else {
+            return { status: 'none' };
+        }
+    }
 }
