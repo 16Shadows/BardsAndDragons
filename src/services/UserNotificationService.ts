@@ -10,7 +10,7 @@ import { Image } from "../model/image";
 export type UserData = {
     username: string,
     displayName?: string
-    avatar?: Promise<Image>
+    avatar?: string
 };
 
 export type NotificationDataBase = {
