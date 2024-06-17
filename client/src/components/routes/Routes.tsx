@@ -11,6 +11,9 @@ import MyFriendsPage from "../../pages/FriendsPage/FriendsPage";
 import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
 import PlayersPage from "../../pages/PlayersPage/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
+import TestPage from "../../pages/TestPage";
+import NotFoundPage from "../../pages/NotFoundPage/NotFoundPage";
+
 import {
     getFriendsPageRoute,
     getGamesPageRoute,
@@ -41,8 +44,8 @@ const RoutesComponent = () => {
                 <Route path={getPlayersPageRoute()} element={<PlayersPage/>}/>
             </Route>
 
-            {/* TODO: 404 page */}
-            <Route path={getNotFoundRoute()} element={<div>404 Not found </div>}/>
+            {/* 404 page */}
+            <Route path={getNotFoundRoute()} element={<NotFoundPage/>}/>
         </Routes>
     );
 };
