@@ -1,3 +1,4 @@
+import { ApplyValueTransformers } from "typeorm/util/ApplyValueTransformers.js";
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
 import { ModelDataSource } from "../model/dataSource";
 import { NotificationBase } from "../model/notifications/notificationBase";
@@ -228,7 +229,8 @@ export class FriendsController {
                 type: 'friendRequestAccepted',
                 friendRequestAcceptedBy: {
                     username: bag.user.username,
-                    displayName: bag.user.displayName ?? bag.user.username
+                    displayName: bag.user.displayName ?? bag.user.username,
+                    avatar: (await bag.user.avatar).blob
                 },
                 seen: false
             }
@@ -237,7 +239,8 @@ export class FriendsController {
                 type: 'friendRequest',
                 friendRequestSentBy: {
                     username: bag.user.username,
-                    displayName: bag.user.displayName ?? bag.user.username
+                    displayName: bag.user.displayName ?? bag.user.username,
+                    avatar: (await bag.user.avatar).blob
                 },
                 seen: false
             }
