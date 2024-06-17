@@ -5,9 +5,10 @@ const Footer: React.FC = () => {
   return (
     <footer className="footer">
       <div className="footer-content">
+
         <div className="footer-links">
            {/* поменять ссылку! */}
-          <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLetg744TF10BrdPjaEXf4EsJ1wz6fyf95&index=1">политика конфиденциальности и условия</a>
+          <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLetg744TF10BrdPjaEXf4EsJ1wz6fyf95&index=1">Политика конфиденциальности и условия</a>
           <br></br>
           <span>© 2024 — "Bards and Dragons"</span>
         </div>
