@@ -42,7 +42,7 @@ export class NotificationController {
                     friendRequestSentBy: {
                         username: sender.username,
                         displayName: sender.displayName,
-                        avatar: sender.avatar
+                        avatar: (await sender.avatar).blob
                     }                    
                 };
             }
@@ -55,7 +55,7 @@ export class NotificationController {
                     friendRequestAcceptedBy: {
                         username: acceptedBy.username,
                         displayName: acceptedBy.displayName, 
-                        avatar: acceptedBy.avatar
+                        avatar: (await acceptedBy.avatar).blob
                     }
                     
                 };
