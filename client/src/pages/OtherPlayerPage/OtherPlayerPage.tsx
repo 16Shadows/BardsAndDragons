@@ -308,16 +308,13 @@ const OtherPlayerPage = () => {
                     <GamesList
                         gameItemTemplate={(x) => {
                             return (
-                                <GameItem game={x} key={x.gamename}>
-
-                                </GameItem>
+                                <GameItem game={x} key={x.gamename}></GameItem>
                             )
                         }}
                         gameListUrlBuilder={(len, sortBy, sortOrder) => `user/public/games?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}&username=${playerUsername}`}
                     />
                 </Tab>
-            </Tabs >
-            
+            </Tabs >            
         </div >
     );
 };

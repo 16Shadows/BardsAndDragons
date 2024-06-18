@@ -63,8 +63,3 @@
   position: sticky;
   top: var(--top-indent);
 }
-
-.games-list-container {
-  max-height: 40vh; 
-  overflow-y: auto; 
-}

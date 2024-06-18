@@ -283,6 +283,9 @@ export class FriendsController {
         
         const friendUser = await userRepo.findOne({ where: { username } });
 
+        if (bag.user.username === friendUser.username)
+            return { status: 'youprofile' };
+
         if (!friendUser) {
             return notFound();
         }

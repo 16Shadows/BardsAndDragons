@@ -3,7 +3,7 @@ import useDynamicList from "../../utils/useDynamicList";
 import GameData from "./GameData";
 import useScroll from "../../utils/useScroll";
 import useApi from "../../http-common";
-import "../../css/App.css";
+import './GameItem.css';
 
 export type GamesListSortBy = 'name';
 export type GamesListSortOrder = 'ASC' | 'DESC';

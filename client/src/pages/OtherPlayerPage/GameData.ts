@@ -1,11 +1,11 @@
-type FriendData = {
+type GameData = {
     gamename: string;
     description: string;
     playerCount: string;
     ageRating: string;
-    images?: string[];
+    image?: string;
     tags? : string[];
     playsOnline: boolean;
 };
 
-export default FriendData;
+export default GameData;
