@@ -1,4 +1,4 @@
-type FriendData = {
+type GameData = {
     gamename: string;
     description: string;
     playerCount: string;
@@ -8,4 +8,4 @@ type FriendData = {
     playsOnline: boolean;
 };
 
-export default FriendData;
+export default GameData;

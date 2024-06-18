@@ -25,7 +25,7 @@ type GameData = {
     ageRating: string;
     images?: string[];
     tags? : string[];
-    //playsOnline: boolean;
+    playsOnline: boolean;
 };
 
 @Controller('api/v1/user')
@@ -94,7 +94,7 @@ export class GamesController {
                 ageRating: game.ageRating,
                 // images: (await game.images)?.map(image => image.blob),
                 //tags: (await game.tags)?.map(tag => tag.text),
-                // playsOnline: x.playsOnline
+                playsOnline: x.playsOnline
             };
         }));
     }
@@ -136,6 +136,30 @@ export class GamesController {
         
         try {
             await repo.remove(gameLink);
+        }
+        catch {
+            return badRequest();
+        }
+    }
+
+    @POST('{game:game}/updateOnlineStatus')
+    @Middleware(AuthMiddleware)
+    @Accept('application/json', 'text/plain')
+    async updateOnlineStatus(bag: AuthMiddlewareBag, game: Game, status: { playsOnline: boolean }) {
+        const repo = this._dbContext.getRepository(UsersGame);
+
+        const gameLink = await repo.findOneBy({
+            user: bag.user,
+            game: game
+        });
+
+        if (!gameLink)
+            return badRequest();
+
+        gameLink.playsOnline = status.playsOnline;
+
+        try {
+            await repo.save(gameLink);
         }
         catch {
             return badRequest();

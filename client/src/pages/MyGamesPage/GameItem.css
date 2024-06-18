@@ -1,25 +1,7 @@
-/* .game-item {
+.game-item {
     display: flex;
     flex-direction: row;
-    width: 100%;
-    height: 50px;
-    background-color: white;
-    border-radius: 7px;
-}
-
-.game-avatar {
-    border: 1px solid black;
-    max-width: 40px;
-    border-radius: 50%;
-    aspect-ratio: 1/1;
-    height: 100%;
-}
- */
-
- .game-item {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
+    width: 99%;
     background-color: white;
     border-radius: 7px;
     overflow: hidden;
@@ -123,3 +105,34 @@
     /* Измените цвет при наведении курсора */
     color: #f00a0a; 
 }
+
+.online-status {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Добавляет отступ между элементами */
+    margin-right: 15px;
+}
+
+.styled-checkbox {
+    width: 20px; /* Ширина чекбокса */
+    height: 20px; /* Высота чекбокса */
+    border: 1px solid #00aeff; /* Граница чекбокса */
+    border-radius: 4px; /* Закругленные углы */
+    appearance: none; /* Убирает стандартный вид */
+    
+    position: relative;
+}
+
+.styled-checkbox:checked::before {
+    content: '✔'; /* Символ галочки */
+    position: absolute;
+    top: 0;
+    left: 3px;
+    font-size: 16px;
+    color: rgb(0, 0, 0); /* Цвет галочки */
+}
+
+.games-list-container {
+    max-height: 70vh; 
+    overflow-y: auto; 
+  }

@@ -3,6 +3,7 @@ import useDynamicList from "../../utils/useDynamicList";
 import GameData from "./GameData";
 import useScroll from "../../utils/useScroll";
 import useApi from "../../http-common";
+import './GameItem.css';
 
 export type GamesListSortBy = 'name';
 export type GamesListSortOrder = 'ASC' | 'DESC';
@@ -73,19 +74,17 @@ const GamesList = ({ gameItemTemplate, gameListUrlBuilder }: GamesListProps) => 
             <div className="d-flex ">
                 <strong className="me-1">Сортировка:</strong>
                 <select onChange={sortChangedCallback} defaultValue={sortOption} className="mb-2">
-                    {
-                        SORT_OPTIONS.map(x => {
-                            return <option key={x.name} value={x.name}>{x.name}</option>
-                        })
-                    }
+                    {SORT_OPTIONS.map(x => <option key={x.name} value={x.name}>{x.name}</option>)}
                 </select>
             </div>
             <div className="bg-secondary-subtle p-2">
-                {gamesList ? (
-                    gamesList.map(gameItemTemplate)
-                ) : (
-                    <span>Загрузка...</span>
-                )}
+                <div className="games-list-container">
+                    {gamesList ? (
+                        gamesList.map(gameItemTemplate)
+                    ) : (
+                        <span>Загрузка...</span>
+                    )}
+                </div>
             </div>
         </div>
     );
