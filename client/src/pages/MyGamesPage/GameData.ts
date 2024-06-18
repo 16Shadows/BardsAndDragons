@@ -3,7 +3,7 @@ type GameData = {
     description: string;
     playerCount: string;
     ageRating: string;
-    images?: string[];
+    image?: string;
     tags? : string[];
     playsOnline: boolean;
 };

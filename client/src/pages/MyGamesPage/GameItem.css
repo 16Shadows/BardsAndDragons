@@ -9,10 +9,11 @@
     max-height: 150px; /* collapsed height */
     padding: 10px;
     box-sizing: border-box;
+    min-height: 150px; /* fixed height for collapsed state */
 }
 
 .game-item.expanded {
-    max-height: 300px; /* expanded height */
+    max-height: unset; /* remove height limit for expanded state */
 }
 
 .game-icon img {
@@ -71,6 +72,7 @@
     max-height: 150px;
     overflow-y: auto;
     white-space: normal;
+    margin-bottom: 10px; /* Add margin-bottom to provide space between description and details */
 }
 
 .game-details {
@@ -81,58 +83,104 @@
     align-items: center;
 }
 
-.game-tags {
+.game-details,
+.game-item.expanded .game-details {
+    position: relative;
+    flex-shrink: 0; /* Ensure game-details does not shrink */
+}
+
+.game-tags-container {
     display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
+    flex-wrap: wrap; /* Allow line breaks */
+    overflow: hidden;
+    position: relative;
 }
 
 .tag {
     background-color: #f0f0f0;
     border-radius: 3px;
     padding: 2px 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+    margin-right: 5px;
+    flex-shrink: 0; /* Prevent tags from shrinking inside container */
+}
+
+.tag-indicator {
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    padding: 2px 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+    margin-right: 5px;
+    color: #888;
+}
+
+.hidden-tag {
+    display: none;
 }
 
 .game-title {
-    /* Определите цвет подсветки при наведении курсора */
-    color: #0b0b0c; 
-
-    /* эффект плавного перехода для плавности изменения цвета */
+    color: #0b0b0c;
     transition: color 0.3s ease;
 }
 
 .game-title:hover {
-    /* Измените цвет при наведении курсора */
-    color: #f00a0a; 
+    color: #f00a0a;
 }
 
 .online-status {
     display: flex;
     align-items: center;
-    gap: 8px; /* Добавляет отступ между элементами */
+    gap: 8px;
     margin-right: 15px;
 }
 
 .styled-checkbox {
-    width: 20px; /* Ширина чекбокса */
-    height: 20px; /* Высота чекбокса */
-    border: 1px solid #00aeff; /* Граница чекбокса */
-    border-radius: 4px; /* Закругленные углы */
-    appearance: none; /* Убирает стандартный вид */
-    
+    width: 20px;
+    height: 20px;
+    border: 1px solid #00aeff;
+    border-radius: 4px;
+    appearance: none;
     position: relative;
 }
 
 .styled-checkbox:checked::before {
-    content: '✔'; /* Символ галочки */
+    content: '✔';
     position: absolute;
     top: 0;
     left: 3px;
     font-size: 16px;
-    color: rgb(0, 0, 0); /* Цвет галочки */
+    color: rgb(0, 0, 0);
 }
 
 .games-list-container {
-    max-height: 70vh; 
-    overflow-y: auto; 
-  }
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 15px; /* Add padding to the right to prevent overlap */
+    box-sizing: content-box; /* Ensure padding is included in the total width */
+}
+
+/* Optional: Custom scrollbar styles */
+.games-list-container::-webkit-scrollbar {
+    width: 12px; /* Set the width of the scrollbar */
+}
+
+.games-list-container::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Background of the scrollbar track */
+    border-radius: 10px;
+}
+
+.games-list-container::-webkit-scrollbar-thumb {
+    background: #888; /* Color of the scrollbar thumb */
+    border-radius: 10px;
+    border: 3px solid #f1f1f1; /* Create padding around thumb */
+}
+
+.games-list-container::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Darker color on hover */
+}

@@ -23,16 +23,16 @@ type GameData = {
     description: string;
     playerCount: string;
     ageRating: string;
-    images?: string[];
-    tags? : string[];
+    image: string;
+    tags?: string[];
     playsOnline: boolean;
 };
 
 @Controller('api/v1/user')
 export class GamesController {
-    protected static readonly MAX_QUERY_COUNT : number = 100;
-    protected static readonly SORT_OPTIONS : Set<string> = new Set(['name']);
-    protected static readonly SORT_ORDER_OPTIONS : Set<string> = new Set(['ASC', 'DESC']);
+    protected static readonly MAX_QUERY_COUNT: number = 100;
+    protected static readonly SORT_OPTIONS: Set<string> = new Set(['name']);
+    protected static readonly SORT_ORDER_OPTIONS: Set<string> = new Set(['ASC', 'DESC']);
 
     protected _dbContext: ModelDataSource;
 
@@ -72,18 +72,21 @@ export class GamesController {
             return badRequest();
 
         const repo = this._dbContext.getRepository(UsersGame);
-        
+
         const usersGames = await repo.createQueryBuilder('gameLink')
-                                    
-                                    .innerJoin('gameLink.game', 'game')
-                                    // .leftJoinAndSelect('game.images', 'images')
-                                    // .leftJoinAndSelect('game.tags', 'tags')
-                                    .where('gameLink.userId = :userId', { userId: bag.user.id })
-                                    .addSelect('COALESCE(game.name)', 'name')
-                                    .orderBy(sortBy, sortOrder)
-                                    .skip(start)
-                                    .take(count)
-                                    .getMany();
+
+            .innerJoin('gameLink.game', 'game')
+            .leftJoinAndSelect('game.tags', 'tags')
+            .leftJoinAndSelect('game.images', 'images')
+            .where('gameLink.userId = :userId', { userId: bag.user.id })
+            .addSelect('COALESCE(game.name)', 'name')
+            .orderBy(sortBy, sortOrder)
+            .skip(start)
+            .take(count)
+            .getMany();
+
+
+        
 
         return await Promise.all(usersGames.map(async x => {
             let game = await x.game;
@@ -92,8 +95,8 @@ export class GamesController {
                 description: game.description,
                 playerCount: game.playerCount,
                 ageRating: game.ageRating,
-                // images: (await game.images)?.map(image => image.blob),
-                //tags: (await game.tags)?.map(tag => tag.text),
+                image: (await game.images[0])?.blob,
+                tags: (await game.tags)?.map(tag => tag.text),
                 playsOnline: x.playsOnline
             };
         }));
@@ -105,13 +108,13 @@ export class GamesController {
     async addGame(bag: AuthMiddlewareBag, userGame: Game) {
         const repo = this._dbContext.getRepository(UsersGame);
 
-        if (await repo.existsBy({user: bag.user, game: userGame}))
+        if (await repo.existsBy({ user: bag.user, game: userGame }))
             return conflict();
 
         const gameLink = new UsersGame();
         gameLink.user = Promise.resolve(bag.user);
         gameLink.game = Promise.resolve(userGame);
-        
+
         try {
             await repo.save(gameLink);
         }
@@ -133,7 +136,7 @@ export class GamesController {
 
         if (!gameLink)
             return badRequest();
-        
+
         try {
             await repo.remove(gameLink);
         }
