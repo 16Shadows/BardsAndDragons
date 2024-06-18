@@ -20,7 +20,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="footer-contact">
-          <span className="highlight">Поддержка - напишите нам, если у вас проблема или предложение</span>
+          <span className="highlight">Поддержка – напишите нам, если у вас проблема или предложение</span>
           <a href="mailto:info@bardsdragons.ru">info@bardsdragons.ru</a>
         </div>
         
