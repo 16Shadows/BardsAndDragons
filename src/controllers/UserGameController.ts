@@ -1,22 +1,20 @@
+import { UserConverter } from "../converters/UserConverter";
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
 import { ModelDataSource } from "../model/dataSource";
-import { Game } from "../model/game";
-import { User } from "../model/user";
 import { UsersGame } from "../model/usersGame";
 import { Controller } from "../modules/core/controllers/decorators";
 import { Middleware } from "../modules/core/middleware/middleware";
-import { Accept, Return } from "../modules/core/mimeType/decorators";
+import { Return } from "../modules/core/mimeType/decorators";
 import { HTTPResponseConvertBody } from "../modules/core/routing/core";
-import { GET, POST } from "../modules/core/routing/decorators";
+import { GET } from "../modules/core/routing/decorators";
 import { QueryArgument } from "../modules/core/routing/query";
-import { badRequest, conflict, notFound } from "../modules/core/routing/response";
+import { badRequest, notFound } from "../modules/core/routing/response";
 
 type SortedListQuery = {
     start?: number;
     count?: number;
     sortBy?: string;
     sortOrder?: string;
-    username: string;
 };
 
 type GameData = {
@@ -41,7 +39,7 @@ export class GamesController {
         this._dbContext = dbContext;
     }
 
-    @GET('public/games')
+    @GET('{username}/games')
     @Middleware(AuthMiddleware)
     @QueryArgument('start', {
         typeId: 'int',
@@ -61,24 +59,19 @@ export class GamesController {
         optional: true,
         canHaveMultipleValues: false
     })
-    @QueryArgument('username', {
-        optional: true,
-        canHaveMultipleValues: false
-    })
     @Return('application/json')
-    async getUserGamesList(bag: AuthMiddlewareBag, queryBag: SortedListQuery): Promise<HTTPResponseConvertBody | GameData[]> {
+    async getUserGamesList(bag: AuthMiddlewareBag, username: string, queryBag: SortedListQuery): Promise<HTTPResponseConvertBody | GameData[]> {
         const start = queryBag.start ?? 0;
         const count = queryBag.count ?? GamesController.MAX_QUERY_COUNT;
         const sortBy = queryBag.sortBy ?? GamesController.SORT_OPTIONS.keys().next().value;
         const sortOrder = queryBag.sortOrder ?? GamesController.SORT_ORDER_OPTIONS.keys().next().value;
-        const username = queryBag.username;
 
 
         if (count < 0 || count > GamesController.MAX_QUERY_COUNT || !GamesController.SORT_OPTIONS.has(sortBy) || !GamesController.SORT_ORDER_OPTIONS.has(sortOrder))
             return badRequest();
 
-        var userRepo = this._dbContext.getRepository(User);
-        const user = await userRepo.findOneBy({username: username});
+        const userConverter = new UserConverter(this._dbContext);
+        const user = await userConverter.convertFromString(username);
 
         if (!user) {
             return notFound();  // Возвращаем 404 ошибку, если пользователь не найден

@@ -132,6 +132,28 @@ function OutgoingRequestButtons({ playerUsername }: { playerUsername: string }) 
         );
 }
 
+function getAgeString(age: number | null): string {
+    if (age === null || age === undefined) {
+        return "Возраст скрыт";
+    }
+
+    const lastDigit = age % 10;
+    const lastTwoDigits = age % 100;
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+        return `${age} лет`;
+    }
+    switch (lastDigit) {
+        case 1:
+            return `${age} год`;
+        case 2:
+        case 3:
+        case 4:
+            return `${age} года`;
+        default:
+            return `${age} лет`;
+    }
+}
+
 const OtherPlayerPage = () => {
 
     const api = useApi();
@@ -143,11 +165,9 @@ const OtherPlayerPage = () => {
     const [friendshipStatus, setFriendshipStatus] = useState<string | null>(null);
 
     // Add loading state
-    const [loading, setLoading] = useState(true); 
+    const [loading, setLoading] = useState(true);
 
     // TODO сохранить на клиенте почту и никнейм, сделать константами и не запрашивать их
-    const [username, setUsername] = useState<string>("");
-    const [email, setEmail] = useState<string>("");
     const [displayName, setName] = useState<string | null>(null);
     const [description, setProfileDescription] = useState<string | null>(null);
     const [contactInfo, setContactInfo] = useState<string | null>(null);
@@ -155,39 +175,36 @@ const OtherPlayerPage = () => {
     const [avatar, setAvatar] = useState<string | null>(null);
     const [age, setAge] = useState<number | null>(null);
 
-    const fetchPlayerProfile = useCallback(async () => {
-        setLoading(true); // Start loading
-        try {
-            const response = await api.get(`user/public/${playerUsername}`);
-            const data = response.data;
+    useEffect(() => {
+        const fetchPlayerProfile = async () => {
+            setLoading(true);
+            try {
+                const response = await api.get(`user/${playerUsername}`);
+                const data = response.data;
 
-            // Fetch friendship status
-            const friendshipResponse = await api.get(`user/${playerUsername}/friendshipStatus`);
-            setFriendshipStatus(friendshipResponse.data.status);
+                setFriendshipStatus(data.friendstatus);
 
-            setUsername(data.username);
-            setEmail(data.email);
-            data.displayName && setName(data.displayName);
-            data.description && setProfileDescription(data.description);
-            data.contactInfo && setContactInfo(data.contactInfo);
-            data.city && setCity(data.city);
-            data.avatar && setAvatar("/" + data.avatar);
-            if (data.age !== undefined) {
-                setAge(data.age);
+                data.displayName && setName(data.displayName);
+                data.description && setProfileDescription(data.description);
+                data.city && setCity(data.city);
+                data.avatar && setAvatar("/" + data.avatar);
+                if (data.age !== undefined) {
+                    setAge(data.age);
+                }
+                if (data.contactInfo !== undefined) {
+                    setContactInfo(data.contactInfo);
+                }
+            } catch (e) {
+                alert("Не удалось загрузить данные профиля.\n" + e);
+            } finally {
+                setLoading(false);
             }
+        };
 
-        } catch (e) {
-            alert("Не удалось загрузить данные профиля.\n" + e);
-        } finally {
-            setLoading(false); // End loading
-        }
+        fetchPlayerProfile();
     }, [api, playerUsername]);
 
-    useEffect(() => {
-        fetchPlayerProfile();
-    }, [fetchPlayerProfile]);
-
-    const renderFriendButton = () => {
+    const renderFriendButton = useCallback(() => {
         if (!playerUsername) return null;
         switch (friendshipStatus) {
             case "friends":
@@ -198,34 +215,12 @@ const OtherPlayerPage = () => {
                 return <OutgoingRequestButtons playerUsername={playerUsername} />;
             case "none":
                 return (
-                    <Button onClick={() => api.post(`user/${username}/addFriend`).then(fetchPlayerProfile)} variant='outline-success'>
+                    <Button onClick={() => api.post(`user/${playerUsername}/addFriend`)} variant='outline-success'>
                         Добавить в друзья
                     </Button>
                 );
         }
-    };
-
-    function getAgeString(age: number | null): string {
-        if (age === null || age === undefined) {
-            return "Возраст скрыт";
-        }
-
-        const lastDigit = age % 10;
-        const lastTwoDigits = age % 100;
-        if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
-            return `${age} лет`;
-        }
-        switch (lastDigit) {
-            case 1:
-                return `${age} год`;
-            case 2:
-            case 3:
-            case 4:
-                return `${age} года`;
-            default:
-                return `${age} лет`;
-        }
-    }
+    }, [playerUsername, friendshipStatus, api]);
 
     if (loading) {
         return (
@@ -258,7 +253,7 @@ const OtherPlayerPage = () => {
                 <div className="label-col text_column col">
 
                     <div className="mb-2">
-                        <span className="d-block font-weight-bold">{displayName ?? username}</span>
+                        <span className="d-block font-weight-bold">{displayName ?? playerUsername}</span>
                         <span className="d-block text-weight-bold">{city === "" ? ("Город: не указан") : ("Город: " + city)}</span>
                         <span>{getAgeString(age)}</span>
                     </div>
@@ -277,7 +272,7 @@ const OtherPlayerPage = () => {
 
                     <div>
                         <label htmlFor="ProfileContacts" className="d-block">Контакты:</label>
-                        {friendshipStatus === "friends" ? (
+                        {(friendshipStatus === "friends" || friendshipStatus === "youprofile")? (
                             <textarea
                                 rows={4}
                                 maxLength={300}
@@ -293,7 +288,7 @@ const OtherPlayerPage = () => {
                                 className="form-control"
                                 id="ProfileContacts"
                                 disabled={true}
-                                value={"Для просмотра контактов необдходимо быть в друзьях у пользователя"}
+                                value={"Для просмотра контактов необходимо быть в друзьях у пользователя"}
                             ></textarea>
                         )}
                     </div>
@@ -311,10 +306,10 @@ const OtherPlayerPage = () => {
                                 <GameItem game={x} key={x.gamename}></GameItem>
                             )
                         }}
-                        gameListUrlBuilder={(len, sortBy, sortOrder) => `user/public/games?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}&username=${playerUsername}`}
+                        gameListUrlBuilder={(len, sortBy, sortOrder) => `user/${playerUsername}/games?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
                     />
                 </Tab>
-            </Tabs >            
+            </Tabs >
         </div >
     );
 };

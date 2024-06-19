@@ -9,7 +9,7 @@ import { Accept, Return } from "../modules/core/mimeType/decorators";
 import { HTTPResponseConvertBody } from "../modules/core/routing/core";
 import { GET, POST } from "../modules/core/routing/decorators";
 import { QueryArgument } from "../modules/core/routing/query";
-import { badRequest, conflict, notFound } from "../modules/core/routing/response";
+import { badRequest, conflict} from "../modules/core/routing/response";
 import { UserNotificationService } from "../services/UserNotificationService";
 
 type SortedListQuery = {
@@ -274,44 +274,5 @@ export class FriendsController {
         );
     }
 
-    @GET('{username}/friendshipStatus')
-    @Middleware(AuthMiddleware)
-    @Return('application/json')
-    async getFriendshipStatus(bag: AuthMiddlewareBag, username: string): Promise<HTTPResponseConvertBody | { status: string }> {
-        const repo = this._dbContext.getRepository(UsersFriend);
-        const userRepo = this._dbContext.getRepository(User);
-        
-        const friendUser = await userRepo.findOne({ where: { username } });
-
-        if (bag.user.username === friendUser.username)
-            return { status: 'youprofile' };
-
-        if (!friendUser) {
-            return notFound();
-        }
-
-        const isFriend = await repo.findOne({
-            where: {
-                user: bag.user,
-                friend: friendUser
-            }
-        });
-
-        const isReverseFriend = await repo.findOne({
-            where: {
-                user: friendUser,
-                friend: bag.user
-            }
-        });
-
-        if (isFriend && isReverseFriend) {
-            return { status: 'friends' };
-        } else if (!isFriend && isReverseFriend) {
-            return { status: 'incomingRequest' };
-        } else if (isFriend && !isReverseFriend) {
-            return { status: 'outgoingRequest' };
-        } else {
-            return { status: 'none' };
-        }
-    }
+    
 }
