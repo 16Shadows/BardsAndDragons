@@ -1,5 +1,6 @@
 import KoaCoreApp from './modules/integration/koa/app';
 import serve from 'koa-static';
+import send from 'koa-send';
 import path from 'path';
 import {ExampleService} from './services/ExampleService';
 import {discoverControllers} from './modules/core/controllers/discovery';
@@ -31,8 +32,13 @@ import {MatchingService} from "./services/MatchingService";
     //Note: looks like serve doesn't interrupt middleware chain even if it finds a file to serve
     //May cause side effects, should find another package or implement it manually
     //UPD: Looking through its sources, it gives priority to other middleware first. Is this desired behaviour?
+    app.use(async (ctx, next) => {
+        await next();
+
+        if (ctx.status == 404)
+            await send(ctx, './public/index.html');
+    })
     app.use(serve('./public'));
-    app.use(serve(path.join(__dirname, '..', 'client', 'build')));
 
     //Inject custom routing middleware where needed
     app.useControllerRouting();
@@ -45,11 +51,6 @@ import {MatchingService} from "./services/MatchingService";
     app.useMimeTypes(discoverMimeTypeConverters('./images', __dirname));
     app.useTypeConverters(discoverConverters('./converters', __dirname));
     app.useMimeTypes(getDefaultMimeTypes());
-
-    // Перенаправление всех оставшихся запросов на index.html React-приложения
-    app.use(async (ctx, next) => {
-        await serve(path.join(__dirname, '..', 'client', 'build', 'index.html'))(ctx, next);
-    });
 
     //Start server
     const port = process.env.PORT || 3000;
