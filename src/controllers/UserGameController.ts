@@ -1,6 +1,7 @@
 import { UserConverter } from "../converters/UserConverter";
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
 import { ModelDataSource } from "../model/dataSource";
+import { User } from "../model/user";
 import { UsersGame } from "../model/usersGame";
 import { Controller } from "../modules/core/controllers/decorators";
 import { Middleware } from "../modules/core/middleware/middleware";
@@ -39,7 +40,7 @@ export class GamesController {
         this._dbContext = dbContext;
     }
 
-    @GET('{username}/games')
+    @GET('{username:user}/games')
     @Middleware(AuthMiddleware)
     @QueryArgument('start', {
         typeId: 'int',
@@ -60,18 +61,14 @@ export class GamesController {
         canHaveMultipleValues: false
     })
     @Return('application/json')
-    async getUserGamesList(bag: AuthMiddlewareBag, username: string, queryBag: SortedListQuery): Promise<HTTPResponseConvertBody | GameData[]> {
+    async getUserGamesList(bag: AuthMiddlewareBag, user: User, queryBag: SortedListQuery): Promise<HTTPResponseConvertBody | GameData[]> {
         const start = queryBag.start ?? 0;
         const count = queryBag.count ?? GamesController.MAX_QUERY_COUNT;
         const sortBy = queryBag.sortBy ?? GamesController.SORT_OPTIONS.keys().next().value;
         const sortOrder = queryBag.sortOrder ?? GamesController.SORT_ORDER_OPTIONS.keys().next().value;
 
-
         if (count < 0 || count > GamesController.MAX_QUERY_COUNT || !GamesController.SORT_OPTIONS.has(sortBy) || !GamesController.SORT_ORDER_OPTIONS.has(sortOrder))
             return badRequest();
-
-        const userConverter = new UserConverter(this._dbContext);
-        const user = await userConverter.convertFromString(username);
 
         if (!user) {
             return notFound();  // Возвращаем 404 ошибку, если пользователь не найден

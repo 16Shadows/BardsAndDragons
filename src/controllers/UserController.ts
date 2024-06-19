@@ -301,14 +301,10 @@ export class UserController extends Object {
         await repo.softRemove(bag.user);
     }
 
-    @GET('{username}')
+    @GET('{username:user}')
     @Middleware(AuthMiddleware)
     @Return('application/json')
-    async getPublicUserInfo(bag: AuthMiddlewareBag, username: string): Promise<HTTPResponseConvertBody | PublicUserInfo>  {
-        
-
-        const userConverter = new UserConverter(this._dbContext);
-        const userfriend = await userConverter.convertFromString(username);
+    async getPublicUserInfo(bag: AuthMiddlewareBag, userfriend: User): Promise<HTTPResponseConvertBody | PublicUserInfo>  {
 
         if (!userfriend) {
             return badRequest({ message: userNotFoundError });
@@ -331,7 +327,7 @@ export class UserController extends Object {
             }
         });
 
-        const status: string = bag.user.username === username ? 'youprofile' :
+        const status: string = bag.user.username === userfriend.username ? 'youprofile' :
         (isFriend && isReverseFriend) ? 'friends' :
         (!isFriend && isReverseFriend) ? 'incomingRequest' :
         (isFriend && !isReverseFriend) ? 'outgoingRequest' :
