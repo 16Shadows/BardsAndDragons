@@ -9,10 +9,12 @@ import ProfilePage from "../../pages/ProfilePage";
 import MyGamesPage from "../../pages/MyGamesPage";
 import MyFriendsPage from "../../pages/FriendsPage/FriendsPage";
 import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
-import PlayersPage from "../../pages/PlayersPage";
+import PlayersPage from "../../pages/PlayersPage/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
 import OtherPlayerPage from "../../pages/OtherPlayerPage/OtherPlayerPage";
 import GamePage from "../../pages/GamePage";
+import NotFoundPage from "../../pages/NotFoundPage/NotFoundPage";
+
 import {
     getFriendsPageRoute,
     getGamesPageRoute,
@@ -51,8 +53,9 @@ const RoutesComponent = () => {
                 
             </Route>
 
-            {/* TODO: 404 page */}
-            <Route path={getNotFoundRoute()} element={<div>404 Not found </div>} />
+            {/* 404 page */}
+            <Route path={getNotFoundRoute()} element={<NotFoundPage/>}/>
+
         </Routes>
     );
 };

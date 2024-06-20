@@ -17,11 +17,9 @@ export const NotificationTemplateFriendRequest = (props: {
   const navigate = useNavigate();
 
   return (
-    <div className="row ms-1 w-100">
-      <div className="d-grid col-2 col-sm-auto justify-content-center">
-        <div className="row align-items-start mt-2">
-          <img
-            className="rounded-circle"
+    <div className="d-flex p-2">
+      <img
+            className="rounded-circle navbar-image me-2"
             alt="Ошибка загрузки аватара"
             src={
               props.item.friendRequestSentBy.avatar
@@ -29,12 +27,8 @@ export const NotificationTemplateFriendRequest = (props: {
                 : defaultAvatarPic
             }
           />
-        </div>
-      </div>
-      <div className="col w-auto">
-        <div>
-          <p className="mt-2">
-            Пользователь
+      <span className="text-wrap">
+      Пользователь
             <Link
               to={getUserProfileRoute(props.item.friendRequestSentBy.username)}
               className="text-decoration-none"
@@ -43,8 +37,7 @@ export const NotificationTemplateFriendRequest = (props: {
                 props.item.friendRequestSentBy.username}
             </Link>
             отправил вам заявку в друзья!
-          </p>
-          <div className="d-flex justify-content-evenly mb-2">
+            <div className="d-flex justify-content-evenly mb-2">
             <Button
               color={"primary"}
               onClick={() => {
@@ -54,49 +47,40 @@ export const NotificationTemplateFriendRequest = (props: {
               Мои друзья <IoMdArrowForward />
             </Button>
           </div>
-        </div>
-      </div>
+      </span>
     </div>
-  );
+  )
 };
 
 export const NotificationTemplateRequestAccepted = (props: {
   item: QueryNotificationObjectFriendRequestAccepted;
 }) => {
   return (
-    <div className="row ms-1 w-100">
-      <div className="d-grid col-2 col-sm-auto justify-content-center">
-        <div className="row align-items-start mt-2">
-          <img
-            className="rounded-circle"
-            alt="Ошибка загрузки аватара"
-            src={
-              props.item.friendRequestAcceptedBy.avatar
-                ? "/" + props.item.friendRequestAcceptedBy.avatar
-                : defaultAvatarPic
-            }
-          />
-        </div>
-      </div>
-      <div className="col w-auto">
-        <div>
-          <p className="mt-2">
-            Пользователь
-            <Link
-              to={getUserProfileRoute(
-                props.item.friendRequestAcceptedBy.username
-              )}
-              className="text-decoration-none"
-            >
-              {props.item.friendRequestAcceptedBy.displayName ??
-                props.item.friendRequestAcceptedBy.username}
-            </Link>
-            принял вашу заявку в друзья
-          </p>
-        </div>
-      </div>
+    <div className="d-flex p-2">
+      <img
+        className="rounded-circle navbar-image me-2"
+        alt="Ошибка загрузки аватара"
+        src={
+          props.item.friendRequestAcceptedBy.avatar
+            ? "/" + props.item.friendRequestAcceptedBy.avatar
+            : defaultAvatarPic
+        }
+      />
+      <span className="text-wrap">
+        Пользователь
+        <Link
+          to={getUserProfileRoute(
+            props.item.friendRequestAcceptedBy.username
+          )}
+          className="text-decoration-none"
+        >
+          {props.item.friendRequestAcceptedBy.displayName ??
+            props.item.friendRequestAcceptedBy.username}
+        </Link>
+        принял вашу заявку в друзья
+      </span>
     </div>
-  );
+  )
 };
 
 interface Props {

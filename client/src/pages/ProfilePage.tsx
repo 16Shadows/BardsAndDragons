@@ -27,6 +27,7 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   // setUsername setEmail используются при запросе данных из бд, они не меняют данные в бд
   // TODO сохранить на клиенте почту и никнейм, сделать константами и не запрашивать их
+  // TODO - сделать state sharing для username и displayName, передавать стейты и в навбар и в профиль, чтобы при обновлении информации профиля имя в навбаре тоже менялось
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [avatarPic, setAvatarPic] = useState<string | null>(null);
@@ -310,6 +311,7 @@ const ProfilePage = () => {
                 required={true}
                 disabled={!isEditing}
                 name="name"
+                maxLength={32}
                 type="text"
                 placeholder={username}
                 value={name ?? ""}
