@@ -1,0 +1,24 @@
+name: deploy
+on:
+  push:
+    branches:
+      - master
+      - developer
+  workflow_dispatch:
+
+  
+jobs:
+  build:
+    runs-on: [self-hosted, local-debian]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Environment
+        run: |
+          if [ ${{ github.ref }} == 'refs/heads/main' ]; then echo "BUILD_TARGET=prod" >> GITHUB_ENV
+        shell: bash
+      - name: Build docker
+        env:
+          BUILD_TARGET: production
+        run: |
+          docker build --cache-from $IMAGE -t bad:v1 .
