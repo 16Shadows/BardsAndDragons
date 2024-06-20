@@ -45,6 +45,7 @@
     "dev": "nodemon -r dotenv/config src/app.ts",
     "build": "npm run clear && npx tsc && npx copyfiles -u 1 ./src/**/*.js dist/ && del-cli --force ./src/**/*.js",
     "build-react": "cd client && npm run build",
+    "build-docker": "npx tsc && cp -ra ./src dist/ && del-cli --force ./dist/**/*.ts",
     "prod": "npm run build && npm run build-react && node dist/app.js --env-file=.env",
     "clear": "del-cli --force dist",
     "test": "npx jest",
