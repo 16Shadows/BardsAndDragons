@@ -10,7 +10,7 @@ import { Accept, Return } from "../modules/core/mimeType/decorators";
 import { HTTPResponseConvertBody } from "../modules/core/routing/core";
 import { GET, POST } from "../modules/core/routing/decorators";
 import { QueryArgument } from "../modules/core/routing/query";
-import { badRequest, conflict, notFound } from "../modules/core/routing/response";
+import { badRequest, conflict} from "../modules/core/routing/response";
 import { UserNotificationService } from "../services/UserNotificationService";
 
 type SortedListQuery = {
@@ -276,4 +276,6 @@ export class FriendsController {
                             .getMany()
         );
     }
+
+    
 }

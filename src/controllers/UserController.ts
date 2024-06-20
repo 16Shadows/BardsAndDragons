@@ -11,7 +11,7 @@ import {
     AuthMiddleware,
     AuthMiddlewareBag
 } from "../middleware/AuthMiddleware";
-import {badRequest, json, status} from "../modules/core/routing/response";
+import {badRequest, json, notFound, status} from "../modules/core/routing/response";
 import {City} from "../model/city";
 import {Image} from "../model/image";
 import {validateEmail, validateNickname, validatePassword} from "../utils/userValidation";
@@ -30,11 +30,13 @@ import {
 } from "../utils/errorMessages";
 import {TokenService} from "../services/TokenService";
 import {Token} from "../model/token";
+import { HTTPResponseConvertBody } from "../modules/core/routing/core";
+import { UsersFriend } from "../model/usersFriend";
 
 type UserInfo = {
     // TODO заменить на хранение на клиенте, не запрашивать
     username: string;
-    email: string;
+    //здесь был email, теперь он в PersonalUserInfo ниже
     //
     displayName?: string;
     description?: string;
@@ -48,6 +50,7 @@ type UserInfo = {
  */
 type PublicUserInfo = UserInfo & {
     age?: number; //SHOULD ONLY BE RETURNED IF THE USER HAS SPECIFIED THAT THEIR AGE SHOULD BE DISPLAYED
+    friendstatus: string;
 };
 
 /**
@@ -56,6 +59,7 @@ type PublicUserInfo = UserInfo & {
 type PersonalUserInfo = UserInfo & {
     birthday?: Date;
     shouldDisplayAge: boolean;
+    email: string;
 };
 
 // Константы
@@ -294,5 +298,57 @@ export class UserController extends Object {
         const repo = this._dbContext.getRepository(User);
         await (this._dbContext.getRepository(Token).remove(await bag.user.tokens));
         await repo.softRemove(bag.user);
+    }
+
+    @GET('{username:user}')
+    @Middleware(AuthMiddleware)
+    @Return('application/json')
+    async getPublicUserInfo(bag: AuthMiddlewareBag, userfriend: User): Promise<HTTPResponseConvertBody | PublicUserInfo>  {
+
+        if (!userfriend) {
+            return notFound();
+        }
+
+        const repo = this._dbContext.getRepository(UsersFriend);
+
+        const isFriend = await repo.findOne({
+            where: {
+                user: bag.user,
+                friend: userfriend
+            }
+        });
+
+        const isReverseFriend = await repo.findOne({
+            where: {
+                user: userfriend,
+                friend: bag.user
+            }
+        });
+
+        const status: string = bag.user.username === userfriend.username ? 'youprofile' :
+        (isFriend && isReverseFriend) ? 'friends' :
+        (!isFriend && isReverseFriend) ? 'incomingRequest' :
+        (isFriend && !isReverseFriend) ? 'outgoingRequest' :
+        'none';
+
+        const publicUserInfo: PublicUserInfo = {
+            username: userfriend.username,
+            displayName: userfriend.displayName,
+            description: userfriend.profileDescription,
+            city: (await userfriend.city)?.name,
+            avatar: (await userfriend.avatar)?.blob,
+            friendstatus: status
+        };
+
+        if (userfriend.canDisplayAge && userfriend.birthday) {
+            const age = new Date().getFullYear() - userfriend.birthday.getFullYear();
+            publicUserInfo.age = age;
+        }
+
+        if (status === 'friends' || status === 'youprofile') {
+            publicUserInfo.contactInfo = userfriend.contactInfo;
+        }
+
+        return publicUserInfo;
     }
 }
