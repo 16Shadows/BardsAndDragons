@@ -37,7 +37,7 @@ const RoutesComponent = () => {
             <Route path={getGamesPageRoute()} element={<SearchGamesPage />} />
 
             {/* Dynamic Game Page route */}
-            <Route path={getGamePageRoute(":gamename")} element={<GamePage />} />
+            <Route path={getGamePageRoute(":id")} element={<GamePage />} />
 
             {/* Protected routes */}
             <Route element={<ProtectedRoutes fallbackPath={getLoginPageRoute()} />}>

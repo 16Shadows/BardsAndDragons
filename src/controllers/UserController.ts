@@ -11,7 +11,7 @@ import {
     AuthMiddleware,
     AuthMiddlewareBag
 } from "../middleware/AuthMiddleware";
-import {badRequest, json, status} from "../modules/core/routing/response";
+import {badRequest, json, notFound, status} from "../modules/core/routing/response";
 import {City} from "../model/city";
 import {Image} from "../model/image";
 import {validateEmail, validateNickname, validatePassword} from "../utils/userValidation";
@@ -30,7 +30,6 @@ import {
 } from "../utils/errorMessages";
 import {TokenService} from "../services/TokenService";
 import {Token} from "../model/token";
-import { UserConverter } from "../converters/UserConverter";
 import { HTTPResponseConvertBody } from "../modules/core/routing/core";
 import { UsersFriend } from "../model/usersFriend";
 
@@ -307,8 +306,7 @@ export class UserController extends Object {
     async getPublicUserInfo(bag: AuthMiddlewareBag, userfriend: User): Promise<HTTPResponseConvertBody | PublicUserInfo>  {
 
         if (!userfriend) {
-            return badRequest({ message: userNotFoundError });
-            // return notFound(); есть разница????
+            return notFound();
         }
 
         const repo = this._dbContext.getRepository(UsersFriend);

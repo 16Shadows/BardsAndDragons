@@ -1,4 +1,3 @@
-import { UserConverter } from "../converters/UserConverter";
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
 import { ModelDataSource } from "../model/dataSource";
 import { User } from "../model/user";
@@ -19,6 +18,7 @@ type SortedListQuery = {
 };
 
 type GameData = {
+    id: number;
     gamename: string;
     description: string;
     playerCount: string;
@@ -91,6 +91,7 @@ export class GamesController {
         return await Promise.all(usersGames.map(async x => {
             let game = await x.game;
             return {
+                id: game.id,
                 gamename: game.name,
                 description: game.description,
                 playerCount: game.playerCount,
