@@ -14,6 +14,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.2.0
+          cache: 'npm'
       - name: Environment
         run: |
           echo "DATABASE_HOSTNAME=${{ secrets.DATABASE_HOSTNAME }}" > .env
@@ -23,6 +28,10 @@ jobs:
           echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
           echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
         shell: bash
+      - name: Run jest test
+        run: |
+          npm ci
+          npm run test
       - name: Build docker
         env:
           IMAGE: bad:v1
