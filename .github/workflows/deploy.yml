@@ -16,11 +16,17 @@ jobs:
         uses: actions/checkout@v4
       - name: Environment
         run: |
-          if [ ${{ github.ref }} == 'refs/heads/main' ]; then echo "BUILD_TARGET=prod" >> GITHUB_ENV; fi
+          echo "${{ secrets.DATABASE_HOSTNAME }}\n" > .env
+          echo "${{ secrets.DATABASE_PASSWORD }}\n" >> .env
+          echo "${{ secrets.DATABASE_PORT }}\n" >> .env
+          echo "${{ secrets.DATABASE_USERNAME }}\n" >> .env
+          echo "${{ secrets.JWT_SECRET_KEY }}\n" >> .env
+          cat .env
         shell: bash
       - name: Build docker
         env:
-          BUILD_TARGET: production
           IMAGE: bad:v1
+          STORAGE_PATH: /prog/web_dad/storage/userimages
         run: |
           docker build --cache-from $IMAGE -t $IMAGE .
+          docker run -d -p 3001:3001 -v $STORAGE_PATH:/app/public/userimages $IMAGE
