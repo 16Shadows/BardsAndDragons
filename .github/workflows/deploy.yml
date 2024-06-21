@@ -3,10 +3,10 @@ on:
   push:
     branches:
       - master
-      - feat-pipeline
-  workflow_dispatch:
+      - developer
+      - release*
+  pull_request:
 
-  
 jobs:
   test:
     runs-on: [self-hosted]
@@ -27,6 +27,7 @@ jobs:
   build:
     runs-on: [self-hosted]
     environment: production
+    if: github.ref == 'refs/heads/master'
     needs: [test]
     steps:
       - name: Checkout
