@@ -42,7 +42,7 @@ jobs:
           echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
           echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
         shell: bash
-      - name: Build docker
+      - name: Build and run docker
         env:
           IMAGE: bad:v1
           STORAGE_PATH: /prog/web_dad/storage/userimages
