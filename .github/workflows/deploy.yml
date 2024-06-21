@@ -27,7 +27,7 @@ jobs:
       - name: Build docker
         env:
           IMAGE: bad:v1
-          STORAGE_PATH: /prog/web_dad/storage/userimages
+          STORAGE_PATH: /prog/web_dad/storage/userimages 
         run: |
           docker build --cache-from $IMAGE -t $IMAGE .
           docker run -d -p 3001:3001 -v $STORAGE_PATH:/app/public/userimages $IMAGE
