@@ -21,6 +21,7 @@ jobs:
           echo "DATABASE_PORT=5432" >> .env
           echo "DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}" >> .env
           echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+          echo "DATABASE_NAME=BurdsAndDragons" >> .env
         shell: bash
       - name: Build docker
         env:
