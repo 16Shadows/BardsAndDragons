@@ -10,7 +10,7 @@ on:
   
 jobs:
   build:
-    runs-on: [self-hosted, local-debian]
+    runs-on: [local-debian]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
