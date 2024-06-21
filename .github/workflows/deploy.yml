@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-      - developer
       - feat-pipeline
   workflow_dispatch:
 
@@ -22,13 +21,13 @@ jobs:
           echo "${{ secrets.DATABASE_PORT }}" >> .env
           echo "${{ secrets.DATABASE_USERNAME }}" >> .env
           echo "${{ secrets.JWT_SECRET_KEY }}" >> .env
-          cat .env
         shell: bash
       - name: Build docker
         env:
           IMAGE: bad:v1
           STORAGE_PATH: /prog/web_dad/storage/userimages
           CONTAINER_NAME: bad-app
+          NETWORK_NAME: bad-network
         run: |
           docker build --cache-from $IMAGE -t $IMAGE .
-          docker run -d -p 3001:3001 --name $CONTAINER_NAME -v $STORAGE_PATH:/app/public/userimages $IMAGE
+          docker run -d -p 3000:3000 --name $CONTAINER_NAME --network $NETWORK_NAME -v $STORAGE_PATH:/app/public/userimages $IMAGE
