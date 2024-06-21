@@ -29,5 +29,6 @@ jobs:
           CONTAINER_NAME: bad-app
           NETWORK_NAME: bad-network
         run: |
+          docker stop $CONTAINER_NAME && docker rm $CONTAINER_NAME || true
           docker build --cache-from $IMAGE -t $IMAGE .
           docker run -d -p 3000:3000 --name $CONTAINER_NAME --network $NETWORK_NAME -v $STORAGE_PATH:/app/public/userimages $IMAGE
