@@ -24,7 +24,7 @@ jobs:
           npm ci
           npm run test
 
-  build:
+  deploy:
     runs-on: [self-hosted]
     environment: production
     if: github.ref == 'refs/heads/master'
