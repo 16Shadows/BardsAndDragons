@@ -4,6 +4,7 @@ on:
     branches:
       - master
       - developer
+      - feat-pipeline
   workflow_dispatch:
 
   
@@ -15,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Environment
         run: |
-          if [ ${{ github.ref }} == 'refs/heads/main' ]; then echo "BUILD_TARGET=prod" >> GITHUB_ENV
+          if [ ${{ github.ref }} == 'refs/heads/main' ]; then echo "BUILD_TARGET=prod" >> GITHUB_ENV; fi
         shell: bash
       - name: Build docker
         env:
