@@ -11,7 +11,6 @@ import MyFriendsPage from "../../pages/FriendsPage/FriendsPage";
 import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
 import PlayersPage from "../../pages/PlayersPage/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
-import TestPage from "../../pages/TestPage";
 import GamePage from "../../pages/GamePage";
 import OtherPlayerPage from "../../pages/OtherPlayerPage/OtherPlayerPage";
 import NotFoundPage from "../../pages/NotFoundPage/NotFoundPage";

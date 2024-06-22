@@ -38,10 +38,6 @@ export function getGamesPageRoute() {
     return "/games";
 }
 
-export function getGamePageRoute(gamename: string) {
-    return `/${gamename}`;
-}
-
 export function getNotFoundRoute() {
     return "*";
 }

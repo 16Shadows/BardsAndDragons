@@ -11,7 +11,7 @@ import { QueryArgument, QueryBag } from "../modules/core/routing/query";
 import { createQueryBuilder, DataSource, ILike, Like } from "typeorm"
 import { UsersGame } from "../model/usersGame";
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
-import { gameNotFound, subscriptionAlreadyExist, subscriptionNotExist } from "../../client/src/utils/errorMessages";
+import { gameNotFound, subscriptionAlreadyExist, subscriptionNotExist } from "../utils/errorMessages";
 
 @Controller('api/v1/game')
 export class GameController extends Object {

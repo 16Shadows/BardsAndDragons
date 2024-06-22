@@ -30,7 +30,7 @@ function GameItem(props: PropsWithChildren<GameItemProps>) {
     };
 
     return (
-        <div className={`game-item ${isExpanded ? 'expanded' : ''}`}>
+        <div className={`game-item ${isExpanded ? 'expanded' : ''}`} lang="ru">
             <div className="game-icon">
                 <img src={props.game.image ? props.game.image : NoImageAvailable} alt='Game Avatar' />
             </div>
@@ -60,7 +60,9 @@ function GameItem(props: PropsWithChildren<GameItemProps>) {
                 <div className="game-details">
                     <div>{props.game.playerCount} игроков, {props.game.ageRating}</div>
                     <div className="game-tags-container">
-                        {visibleTags.map(tag => <span key={tag} className="tag">#{tag}</span>)}
+                        {visibleTags.map(tag => (
+                            <span key={tag} className="tag" title={tag}>#{tag}</span>
+                        ))}
                         {hiddenTagsCount > 0 && !isExpanded && (
                             <span className="tag-indicator">Ещё {hiddenTagsCount}+</span>
                         )}
