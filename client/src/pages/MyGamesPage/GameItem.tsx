@@ -30,7 +30,7 @@ function GameItem(props: PropsWithChildren<GameItemProps>) {
     };
 
     return (
-        <div className={`game-item ${isExpanded ? 'expanded' : ''}`}>
+        <div className={`game-item ${isExpanded ? 'expanded' : ''}`} lang="ru">
             <div className="game-icon">
                 <img src={props.game.image ? props.game.image : NoImageAvailable} alt='Game Avatar' />
             </div>

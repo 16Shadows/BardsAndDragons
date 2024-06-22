@@ -63,7 +63,8 @@
     margin-top: 10px;
     height: 40px;
     overflow: hidden;
-    text-overflow: ellipsis;
+    /* text-overflow: ellipsis; */
+    word-break: break-word;
     white-space: nowrap;
 }
 
