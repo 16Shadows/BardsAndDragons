@@ -1,7 +1,6 @@
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
 import { ModelDataSource } from "../model/dataSource";
 import { Game } from "../model/game";
-import { User } from "../model/user";
 import { UsersGame } from "../model/usersGame";
 import { Controller } from "../modules/core/controllers/decorators";
 import { Middleware } from "../modules/core/middleware/middleware";
@@ -9,7 +8,7 @@ import { Accept, Return } from "../modules/core/mimeType/decorators";
 import { HTTPResponseConvertBody } from "../modules/core/routing/core";
 import { GET, POST } from "../modules/core/routing/decorators";
 import { QueryArgument } from "../modules/core/routing/query";
-import { badRequest, conflict, notFound } from "../modules/core/routing/response";
+import { badRequest, conflict } from "../modules/core/routing/response";
 
 type SortedListQuery = {
     start?: number;
@@ -19,6 +18,7 @@ type SortedListQuery = {
 };
 
 type GameData = {
+    id: number;
     gamename: string;
     description: string;
     playerCount: string;
@@ -29,7 +29,7 @@ type GameData = {
 };
 
 @Controller('api/v1/user')
-export class GamesController {
+export class MyGamesController {
     protected static readonly MAX_QUERY_COUNT: number = 100;
     protected static readonly SORT_OPTIONS: Set<string> = new Set(['name']);
     protected static readonly SORT_ORDER_OPTIONS: Set<string> = new Set(['ASC', 'DESC']);
@@ -64,11 +64,11 @@ export class GamesController {
     @Return('application/json')
     async getGamesList(bag: AuthMiddlewareBag, queryBag: SortedListQuery): Promise<HTTPResponseConvertBody | GameData[]> {
         const start = queryBag.start ?? 0;
-        const count = queryBag.count ?? GamesController.MAX_QUERY_COUNT;
-        const sortBy = queryBag.sortBy ?? GamesController.SORT_OPTIONS.keys().next().value;
-        const sortOrder = queryBag.sortOrder ?? GamesController.SORT_ORDER_OPTIONS.keys().next().value;
+        const count = queryBag.count ?? MyGamesController.MAX_QUERY_COUNT;
+        const sortBy = queryBag.sortBy ?? MyGamesController.SORT_OPTIONS.keys().next().value;
+        const sortOrder = queryBag.sortOrder ?? MyGamesController.SORT_ORDER_OPTIONS.keys().next().value;
 
-        if (count < 0 || count > GamesController.MAX_QUERY_COUNT || !GamesController.SORT_OPTIONS.has(sortBy) || !GamesController.SORT_ORDER_OPTIONS.has(sortOrder))
+        if (count < 0 || count > MyGamesController.MAX_QUERY_COUNT || !MyGamesController.SORT_OPTIONS.has(sortBy) || !MyGamesController.SORT_ORDER_OPTIONS.has(sortOrder))
             return badRequest();
 
         const repo = this._dbContext.getRepository(UsersGame);
@@ -91,6 +91,7 @@ export class GamesController {
         return await Promise.all(usersGames.map(async x => {
             let game = await x.game;
             return {
+                id: game.id,
                 gamename: game.name,
                 description: game.description,
                 playerCount: game.playerCount,
@@ -100,49 +101,6 @@ export class GamesController {
                 playsOnline: x.playsOnline
             };
         }));
-    }
-
-    @POST('{game:game}/addGame')
-    @Middleware(AuthMiddleware)
-    @Accept('application/json', 'text/plain')
-    async addGame(bag: AuthMiddlewareBag, userGame: Game) {
-        const repo = this._dbContext.getRepository(UsersGame);
-
-        if (await repo.existsBy({ user: bag.user, game: userGame }))
-            return conflict();
-
-        const gameLink = new UsersGame();
-        gameLink.user = Promise.resolve(bag.user);
-        gameLink.game = Promise.resolve(userGame);
-
-        try {
-            await repo.save(gameLink);
-        }
-        catch {
-            return conflict();
-        }
-    }
-
-    @POST('{game:game}/removeGame')
-    @Middleware(AuthMiddleware)
-    @Accept('application/json', 'text/plain')
-    async removeGame(bag: AuthMiddlewareBag, userGame: Game) {
-        const repo = this._dbContext.getRepository(UsersGame);
-
-        const gameLink = await repo.findOneBy({
-            user: bag.user,
-            game: userGame
-        });
-
-        if (!gameLink)
-            return badRequest();
-
-        try {
-            await repo.remove(gameLink);
-        }
-        catch {
-            return badRequest();
-        }
     }
 
     @POST('{game:game}/updateOnlineStatus')

@@ -1,4 +1,5 @@
 type GameData = {
+    id: number;
     gamename: string;
     description: string;
     playerCount: string;

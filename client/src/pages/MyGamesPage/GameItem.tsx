@@ -57,7 +57,9 @@ function GameItem(props: PropsWithChildren<GameItemProps>) {
                 <div className="game-details">
                     <div>{props.game.playerCount} игроков, {props.game.ageRating}</div>
                     <div className="game-tags-container">
-                        {visibleTags.map(tag => <span key={tag} className="tag">#{tag}</span>)}
+                        {visibleTags.map(tag => (
+                            <span key={tag} className="tag" title={tag}>#{tag}</span>
+                        ))}
                         {hiddenTagsCount > 0 && !isExpanded && (
                             <span className="tag-indicator">Ещё {hiddenTagsCount}+</span>
                         )}
@@ -69,3 +71,4 @@ function GameItem(props: PropsWithChildren<GameItemProps>) {
 }
 
 export default GameItem;
+
