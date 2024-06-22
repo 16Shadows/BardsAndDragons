@@ -4,7 +4,7 @@ import { Button, Col, Form, Row } from "react-bootstrap";
 import useApi from '../../http-common'
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
 import "./SearchGamesPage.css"
-import ModalWindowAlert from "../../components/ModalWindowAlert/ModalWindowAlert";
+import ModalWindowAlertError from "../../components/ModalWindowAlert/ModalWindowAlertError";
 
 const SearchGamesPage = () => {
     // ===Авторизация===
@@ -266,7 +266,7 @@ const SearchGamesPage = () => {
                 </div>
             </Col>
             {/* Отображение ошибок */}
-            <ModalWindowAlert show={modalIsShow} onHide={hideModal} message={modalMessage} />
+            <ModalWindowAlertError show={modalIsShow} onHide={hideModal} message={modalMessage} />
         </Row>
     );
 };

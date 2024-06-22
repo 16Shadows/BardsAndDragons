@@ -164,28 +164,6 @@ export class GameController extends Object {
         if (query.name && query.name != "") 
                 games = games.where("game.name ilike :name", { name: `%${query.name}%` })
 
-        // Если при дальнейшей разработке проблем выявлено не будет, то этот код будет вырезан.
-        {
-        // games = await games.leftJoinAndSelect('game.users', 'user', 'user.userId = :userId', { userId: userId })
-        //     .take(limit)
-        //     .skip(query.start ?? 0)
-        //     .orderBy(`game.${sort}`, 'ASC')
-        //     .getMany()
-        
-        // // Создание поля с информацией о подписке для каждой игры
-        // for (let i = 0; i < games.length; i++) {
-
-        //     if ((await games[i].users).length > 0)
-        //         games[i]['subscribed'] = true;
-        //     else
-        //         games[i]['subscribed'] = false;
-
-        //     console.log(games[i]['__users__'])
-
-        //     delete games[i]['__users__'];
-        // }
-        }
-
         let result = await games
             .leftJoinAndSelect('game.users', 'usersGame', 'usersGame.userId = :userId', {userId})
             .select([ 'game.id AS "id"', 'game.name AS "name"', 'game.description AS "description"', 
@@ -238,14 +216,14 @@ export class GameController extends Object {
         game.id = gameId;
 
         // Проверка на существование игры
-        if (!await this._dbContext.getRepository(Game).findOneBy({id: gameId})) {
+        if (!await this._dbContext.getRepository(Game).existsBy({id: gameId})) {
             return notFound({message: gameNotFound});
         }
 
         let repository = this._dbContext.getRepository(UsersGame);
 
         // Проверка на существование подписки
-        if (await repository.findOneBy({game: game, user: bag.user})) {
+        if (await repository.existsBy({game: game, user: bag.user})) {
             return badRequest({message: subscriptionAlreadyExist});
         }
 
@@ -269,7 +247,7 @@ export class GameController extends Object {
         game.id = gameId;
 
         // Проверка на существование игры
-        if (!await this._dbContext.getRepository(Game).findOneBy({id: gameId})) {
+        if (!await this._dbContext.getRepository(Game).existsBy({id: gameId})) {
             return notFound({message: gameNotFound});
         }
 

@@ -5,24 +5,18 @@ import { Modal } from "react-bootstrap";
 interface IProps {
     show?: boolean;
     onHide: () => void;
-    message?: string;
+    children?: React.ReactNode;
+    headerMeassage: string
+    headerColor?: string
 }
 
-const ModalWindowAlert = ({show = false, onHide, message = "Сообщение"}: IProps) => {
+const ModalWindowAlert = ({show = false, onHide, children = "Сообщение", headerMeassage, headerColor="black"}: IProps) => {
     return (
         <Modal show={show} onHide={onHide}>
         <Modal.Header closeButton>
-            <Modal.Title style={{ color: "red" }}>{"Произошла ошибка"}</Modal.Title>
+            <Modal.Title style={{ color: headerColor }}>{headerMeassage}</Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{fontSize: "20px"}}>
-            <p>{message}</p>
-            <hr/>
-            <p>
-                Приносим свои извинения!<br/>
-                Попробуйте перезагрузить сайт.<br/>
-                Если ошибка повторится, просьба написать в <a href="support">поддержку</a>.
-            </p>
-        </Modal.Body>
+        <Modal.Body style={{fontSize: "20px"}}>{children}</Modal.Body>
         </Modal>
     )
 }
