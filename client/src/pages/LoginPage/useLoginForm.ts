@@ -23,8 +23,8 @@ const useLoginForm = () => {
     const [loginType, setLoginType] = useState<LoginType | null>(null);
 
     // Handles input changes
-    const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target;
+    const handleChange = useCallback(({target}: ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = target;
         setFormData((prevState) => ({...prevState, [name]: value}));
 
         // If name is login, set login type
