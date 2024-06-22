@@ -9,3 +9,8 @@ export const emailAlreadyUseError = "emailAlreadyUse";
 export const logoutSuccessful = "LogoutSuccessful";
 export const invalidTokenError = "InvalidToken";
 export const tokenIsValid = "TokenIsValid";
+
+export const gameNotFound = "GameNotFound";
+export const sortTypeNotFound = "SortTypeNotFound";
+export const subscriptionAlreadyExist = "SubscriptionAlreadyExist";
+export const subscriptionNotExist = "SubscriptionNotExist";
