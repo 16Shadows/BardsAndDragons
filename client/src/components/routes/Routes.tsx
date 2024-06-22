@@ -12,6 +12,7 @@ import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
 import PlayersPage from "../../pages/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
 import TestPage from "../../pages/TestPage";
+import GamePage from "../../pages/GamePage/GamePage";
 
 const RoutesComponent = () => {
     return (
@@ -21,6 +22,7 @@ const RoutesComponent = () => {
             <Route path={"/login"} element={<Login/>}/>
             <Route path={"/register"} element={<Registration/>}/>
             <Route path={"/games"} element={<SearchGamesPage/>}/>
+            <Route path={"/game"} element={<GamePage/>}/>
 
             <Route path={"test-page"} element={<TestPage/>}/>
 

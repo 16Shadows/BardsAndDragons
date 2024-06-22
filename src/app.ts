@@ -8,6 +8,7 @@ import {getDefaultMimeTypes} from './modules/core/mimeType/default';
 import {ModelDataSource} from './model/dataSource';
 import {discoverMimeTypeConverters} from './modules/core/mimeType/mimeTypeConverter';
 import {TokenService} from "./services/TokenService";
+import { discoverConverters } from './modules/core/converters/discovery';
 
 (async () => {
     const app = new KoaCoreApp();
@@ -32,6 +33,7 @@ import {TokenService} from "./services/TokenService";
     app.useControllers(discoverControllers('./controllers', __dirname));
     app.useControllers(discoverControllers('./images', __dirname));
     app.useTypeConverters(getDefaultConverters());
+    app.useTypeConverters(discoverConverters('./converters', __dirname));
     app.useMimeTypes(discoverMimeTypeConverters('./images', __dirname));
     app.useMimeTypes(getDefaultMimeTypes());
 

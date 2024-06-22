@@ -10,4 +10,5 @@ export class Image
         default: ''
     })
     path: string;
+    blob: string;
 }
