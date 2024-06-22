@@ -244,7 +244,7 @@ const ProfilePage = () => {
             </div>
           )}
           <div className="row">
-            {true && (
+            {isEditing && (
               <div className="col">
                 <input
                   className="file-input"
