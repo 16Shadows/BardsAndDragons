@@ -4,6 +4,8 @@ import { IMimeTypesProvider } from "../mimeType/mimeTypeConverter";
 import { constructor } from "../types";
 import { DependencyContainer } from "tsyringe";
 import { ParsedUrlQuery } from 'querystring';
+import { IncomingMessage, ServerResponse } from 'http';
+import { Http2ServerResponse } from 'http2';
 
 module RoutingCore {
     export type RouteDefinitionPart = {
@@ -50,6 +52,7 @@ module RoutingCore {
         readonly method: HTTPMethod;
         readonly path: string;
         readonly query: ParsedUrlQuery;
+        readonly res: Http2ServerResponse | ServerResponse<IncomingMessage>;
     };
 
     export class HTTPResponse {

@@ -1,0 +1,33 @@
+.input {
+    display:block;
+    width: 100%;
+    border: none;
+    margin: 0;
+}
+.file-input {
+    width: inherit;
+}
+.profile_image {
+    width: 220px;
+    height: 220px;
+    outline: #6e6e6e solid 2px;
+}
+.content {
+    width: fit-content;
+}
+.label-col {
+    width: fit-content;
+}
+.pic-col{
+    width:min-content;
+}
+.text-red {
+    color: red;
+}
+/* Стили datePicker применяются к компоненту DatePicker через wrapperClassName */
+.datePicker {
+    width: inherit;
+}
+.datePicker input {
+    width: inherit;
+}

@@ -17,3 +17,5 @@ export const gameNotFound = "Игра не найдена";
 export const sortTypeNotFound = "Указанный тип сортировки не поддерживается";
 export const subscriptionAlreadyExist = "Вы уже подписаны на эту игру";
 export const subscriptionNotExist = "Вы не подписаны на эту игру";
+export const errorLoadingData = "Произошла ошибка при загрузке данных";
+

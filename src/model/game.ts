@@ -21,15 +21,11 @@ export class Game {
     ageRating: string;
 
     @ManyToMany(() => Image)
-    @JoinTable({
-        name: 'game_images'
-    })
+    @JoinTable({ name: 'game_images' })
     images: Promise<Image[]>;
 
     @ManyToMany(() => GameTag)
-    @JoinTable({
-        name: 'game_tags'
-    })
+    @JoinTable({ name: 'game_tags' })
     tags: Promise<GameTag[]>;
 
     @OneToMany(() => UsersGame, user => user.game, {
