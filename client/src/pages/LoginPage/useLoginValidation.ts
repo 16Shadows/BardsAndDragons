@@ -19,48 +19,33 @@ const useLoginValidation = () => {
     const [error, setError] = useState<string | null>(null);
 
     const setLoginFormErrors = useCallback((loginValidationResult: LoginValidationResult) => {
-        switch (loginValidationResult) {
-            case LoginValidationResult.LoginRequiredError:
-                setFormErrors((prevState) => ({...prevState, login: loginRequiredError}));
-                break;
-            case LoginValidationResult.InvalidLoginError:
-                setFormErrors((prevState) => ({...prevState, login: invalidLoginError}));
-                break;
-            case LoginValidationResult.Valid:
-                setFormErrors((prevState) => ({...prevState, login: ''}));
-                break;
-        }
+        const loginErrors: { [key in LoginValidationResult]: string } = {
+            [LoginValidationResult.LoginRequiredError]: loginRequiredError,
+            [LoginValidationResult.InvalidLoginError]: invalidLoginError,
+            [LoginValidationResult.Valid]: ""
+        };
+
+        setFormErrors((prevState) => ({...prevState, login: loginErrors[loginValidationResult]}));
     }, []);
 
     const setPasswordFormErrors = useCallback((passwordValidationResult: PasswordValidationResult) => {
-        switch (passwordValidationResult) {
-            case PasswordValidationResult.PasswordRequiredError:
-                setFormErrors((prevState) => ({...prevState, password: passwordRequiredError}));
-                break;
-            case PasswordValidationResult.InvalidPasswordError:
-                setFormErrors((prevState) => ({...prevState, password: invalidPasswordError}));
-                break;
-            case PasswordValidationResult.Valid:
-                setFormErrors((prevState) => ({...prevState, password: ''}));
-                break;
-        }
+        const passwordErrors: { [key in PasswordValidationResult]: string } = {
+            [PasswordValidationResult.PasswordRequiredError]: passwordRequiredError,
+            [PasswordValidationResult.InvalidPasswordError]: invalidPasswordError,
+            [PasswordValidationResult.Valid]: ""
+        };
+
+        setFormErrors((prevState) => ({...prevState, password: passwordErrors[passwordValidationResult]}));
     }, []);
 
     const setApiError = useCallback((message: string | null) => {
-        switch (message) {
-            case 'UserNotFound':
-                setError(userNotFoundError);
-                break;
-            case 'WrongPassword':
-                setError(wrongPasswordError);
-                break;
-            case 'NotFilled':
-                setError(notFilledError);
-                break;
-            default:
-                setError(message);
-                break;
-        }
+        const apiErrors: { [key: string]: string } = {
+            'UserNotFound': userNotFoundError,
+            'WrongPassword': wrongPasswordError,
+            'NotFilled': notFilledError
+        };
+
+        setError(message && apiErrors[message] || message);
     }, []);
 
     return {formErrors, error, setLoginFormErrors, setPasswordFormErrors, setApiError};

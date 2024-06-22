@@ -43,17 +43,12 @@ const useLoginForm = () => {
         setPasswordFormErrors(isValidPassword);
 
         if (isValidLogin === LoginValidationResult.Valid && isValidPassword === PasswordValidationResult.Valid) {
-            if (loginType === LoginType.Email) {
-                const error = await loginByEmail(formData);
-                if (error) {
-                    setApiError(error);
-                }
-            } else if (loginType === LoginType.Nickname) {
-                const error = await loginByNickname(formData);
-                if (error) {
-                    setApiError(error);
-                }
-            }
+            // Call login API depending on login type
+            const error = loginType === LoginType.Email
+                ? await loginByEmail(formData)
+                : await loginByNickname(formData);
+
+            if (error) setApiError(error);
         }
     }, [formData, setLoginFormErrors, setPasswordFormErrors, setApiError, loginType, loginByEmail, loginByNickname]);
 
