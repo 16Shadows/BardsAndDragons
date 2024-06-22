@@ -81,7 +81,8 @@ export class ImagesController {
                 if (images.length == 0) {
                     await fsPromise.mkdir(path.join('public', ImagesController.localizePath(imagePath)), {recursive: true});
                     imagePath += '0.' + extension;
-                    await fsPromise.rename(tempFile, path.join('public', ImagesController.localizePath(imagePath)));
+                    await fsPromise.copyFile(tempFile, path.join('public', ImagesController.localizePath(imagePath)));
+                    await fsPromise.rm(tempFile);
                     img = new Image();
                     img.blob = imagePath;
                     await imageRepo.save(img);

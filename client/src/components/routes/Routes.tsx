@@ -6,13 +6,14 @@ import Home from "../../pages/Home";
 import Login from "../../pages/login/LoginForm";
 import Registration from "../../pages/registration/RegistrationForm";
 import ProfilePage from "../../pages/ProfilePage";
-import MyGamesPage from "../../pages/MyGamesPage";
+import MyGamesPage from "../../pages/MyGamesPage/MyGamesPage";
 import MyFriendsPage from "../../pages/FriendsPage/FriendsPage";
 import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
 import PlayersPage from "../../pages/PlayersPage/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
-import OtherPlayerPage from "../../pages/OtherPlayerPage/OtherPlayerPage";
+import TestPage from "../../pages/TestPage";
 import GamePage from "../../pages/GamePage";
+import OtherPlayerPage from "../../pages/OtherPlayerPage/OtherPlayerPage";
 import NotFoundPage from "../../pages/NotFoundPage/NotFoundPage";
 
 import {
