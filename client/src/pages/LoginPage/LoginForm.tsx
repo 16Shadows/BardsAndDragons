@@ -1,13 +1,14 @@
 import React, {useEffect, useState} from "react";
 import {Form, Button, Alert} from "react-bootstrap";
 import useLoginForm from './useLoginForm';
-import {Navigate, useNavigate} from "react-router-dom";
+import {Navigate, useLocation, useNavigate} from "react-router-dom";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import CenteredCardWithItem from "../../components/CenteredCardWithItem";
 import {getHomeRoute, getRegistrationPageRoute} from "../../components/routes/Navigation";
 import {LoginType} from "../../utils/accountValidation";
 
 const LoginForm = () => {
+    const location = useLocation();
     const isAuthenticated = useIsAuthenticated();
     const navigate = useNavigate();
     const {formData, formErrors, error, loginType, handleChange, handleSubmit} = useLoginForm();
@@ -30,7 +31,7 @@ const LoginForm = () => {
 
     if (isAuthenticated) {
         // If user is already logged in, redirect to home
-        return <Navigate to={getHomeRoute()} replace={true}/>;
+        return <Navigate to={getHomeRoute()} replace/>;
     }
 
     return (
@@ -73,7 +74,12 @@ const LoginForm = () => {
             }
             itemAfterCard={
                 <div className="text-end">
-                    <Button variant="link" onClick={() => navigate(getRegistrationPageRoute())}>
+                    <Button variant="link"
+                            onClick={() => navigate(getRegistrationPageRoute(),
+                                {
+                                    state:
+                                        {from: location?.state?.from || getHomeRoute()}
+                                })}>
                         Зарегистрироваться
                     </Button>
                 </div>

@@ -25,19 +25,20 @@ const useRegistrationValidation = (formData: RegistrationFormState) => {
         setFormErrors((prevState) => ({...prevState, [field]: isValid ? "" : errorMessage}));
     }, []);
 
-    const setPasswordError = useCallback((value: PasswordValidationResult) => {
+    const setConfirmPasswordError = useCallback((password: string, confirmPassword: string) => {
+        const errorMessage = password !== confirmPassword ? passwordsNotMatchError : "";
+        setFormErrors((prevState) => ({...prevState, confirmPassword: errorMessage}));
+    }, []);
+
+    const setPasswordError = useCallback((password: string, passwordValidationResult: PasswordValidationResult) => {
         const errors = {
             [PasswordValidationResult.Valid]: "",
             [PasswordValidationResult.PasswordRequiredError]: passwordRequiredError,
             [PasswordValidationResult.InvalidPasswordError]: passwordMustContainError,
         };
-        setFormErrors((prevState) => ({...prevState, password: errors[value]}));
-    }, []);
-
-    const setConfirmPasswordError = useCallback(() => {
-        const errorMessage = formData.password !== formData.confirmPassword ? passwordsNotMatchError : "";
-        setFormErrors((prevState) => ({...prevState, confirmPassword: errorMessage}));
-    }, [formData.password, formData.confirmPassword]);
+        setFormErrors((prevState) => ({...prevState, password: errors[passwordValidationResult]}));
+        setConfirmPasswordError(password, formData.confirmPassword);
+    }, [setConfirmPasswordError, formData.confirmPassword]);
 
     const setApiError = useCallback((message: string | null) => {
         const errors: { [key: string]: string } = {
@@ -45,7 +46,7 @@ const useRegistrationValidation = (formData: RegistrationFormState) => {
             'nicknameAlreadyUse': nicknameAlreadyUseError,
             'emailAlreadyUse': emailAlreadyUseError,
         };
-        setError(message && errors[message] || message);
+        setError((message && errors[message]) || message);
     }, []);
 
     const validateInputField = useCallback((name: string, value: string): boolean => {
@@ -59,17 +60,16 @@ const useRegistrationValidation = (formData: RegistrationFormState) => {
                 setFieldError(name, isNicknameValid, invalidNicknameError);
                 return isNicknameValid;
             case "password":
-                const passwordType = validatePassword(value);
-                setPasswordError(passwordType);
-                setConfirmPasswordError();
-                return passwordType === PasswordValidationResult.Valid;
+                const passwordValidationResult = validatePassword(value);
+                setPasswordError(value, passwordValidationResult);
+                return passwordValidationResult === PasswordValidationResult.Valid;
             case "confirmPassword":
-                setConfirmPasswordError();
+                setConfirmPasswordError(formData.password, value);
                 return value === formData.password;
             default:
                 return false;
         }
-    }, []);
+    }, [setFieldError, setPasswordError, setConfirmPasswordError, formData.password]);
 
     return {formErrors, error, validateInputField, setApiError};
 };

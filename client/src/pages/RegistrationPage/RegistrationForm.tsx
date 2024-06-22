@@ -11,7 +11,7 @@ const RegistrationForm = () => {
     const {formData, formErrors, error, handleChange, handleSubmit} = useRegistrationForm();
 
     if (isAuthenticated) {
-        return <Navigate to={getHomeRoute()} replace={true}/>;
+        return <Navigate to={getHomeRoute()} replace/>;
     }
 
     return (

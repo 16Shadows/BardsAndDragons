@@ -27,7 +27,7 @@ const useRegistrationForm = () => {
         setFormData((prevState) => ({...prevState, [name]: value}));
         validateInputField(name, value);
         setApiError(null);
-    }, [validateInputField]);
+    }, [validateInputField, setApiError]);
 
     // Handles form submission
     const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
@@ -39,7 +39,7 @@ const useRegistrationForm = () => {
 
         if (isValidForm) {
             const error = await registerUser(formData);
-            if (error) setApiError(error);
+            setApiError(error);
         }
     }, [formData, registerUser, validateInputField, setApiError]);
 

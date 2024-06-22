@@ -35,6 +35,7 @@ const useLoginForm = () => {
     const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        let errorApi: string | null = null;
         const isValidLogin = validateLogin(formData.login);
         const isValidPassword = validatePassword(formData.password);
 
@@ -44,12 +45,13 @@ const useLoginForm = () => {
 
         if (isValidLogin === LoginValidationResult.Valid && isValidPassword === PasswordValidationResult.Valid) {
             // Call login API depending on login type
-            const error = loginType === LoginType.Email
+            errorApi = loginType === LoginType.Email
                 ? await loginByEmail(formData)
                 : await loginByNickname(formData);
-
-            if (error) setApiError(error);
         }
+
+        // Set API error
+        setApiError(errorApi);
     }, [formData, setLoginFormErrors, setPasswordFormErrors, setApiError, loginType, loginByEmail, loginByNickname]);
 
     return {formData, formErrors, error, loginType, handleChange, handleSubmit};

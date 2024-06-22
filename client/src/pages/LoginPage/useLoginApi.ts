@@ -22,7 +22,7 @@ const useLoginApi = () => {
         } catch (error: any) {
             return error.response?.data?.message || signInError;
         }
-    }, [api, signIn, location]);
+    }, [api, signIn]);
 
     const loginByEmail = useCallback(async (formData: LoginFormState): Promise<string | null> => {
         return await loginUser("user/login-by-email", {email: formData.login, password: formData.password});

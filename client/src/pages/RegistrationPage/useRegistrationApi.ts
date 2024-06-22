@@ -15,7 +15,7 @@ const useLoginApi = () => {
                 email: formData.email,
                 password: formData.password,
             });
-            return signIn(response.data.token, response.data.userState) ? null : signInError;
+            return signIn(response?.data?.token, response?.data?.userState) ? null : signInError;
         } catch (error: any) {
             return error.response?.data?.message || registerError;
         }

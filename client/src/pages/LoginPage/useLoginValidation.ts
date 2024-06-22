@@ -45,7 +45,7 @@ const useLoginValidation = () => {
             'NotFilled': notFilledError
         };
 
-        setError(message && apiErrors[message] || message);
+        setError((message && apiErrors[message]) || message);
     }, []);
 
     return {formErrors, error, setLoginFormErrors, setPasswordFormErrors, setApiError};
