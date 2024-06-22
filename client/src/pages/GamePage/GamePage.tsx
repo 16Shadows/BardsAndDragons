@@ -11,6 +11,7 @@ import { IoMdPeople } from "react-icons/io";
 import gameImage from "../../resources/Uno flip.jpg"
 import { FaArrowLeft } from "react-icons/fa";
 import { FaArrowRight } from "react-icons/fa";
+import { useParams } from "react-router-dom";
 
 const GamePage = () => {
     // ===Авторизация===
@@ -25,6 +26,8 @@ const GamePage = () => {
     const [image, setImage] = useState<string | undefined>(undefined)
 
     const [subscribed, setSubscribed] = useState<boolean>(false)
+
+    const { id: gameId }  = useParams<{ id: string }>();
 
     // Axios API для запросов к беку
     const api = useApi();
@@ -41,8 +44,7 @@ const GamePage = () => {
     }
     
     useEffect(() => {
-        console.log("get game");
-        api.get(`games/${1}`).then(function (response) {
+        api.get(`games/${gameId}`).then(function (response) {
             setGame(response.data);
             console.log("set game");
         }).catch(() => {
@@ -85,7 +87,7 @@ const GamePage = () => {
                             <div style={{ fontSize: "20px", fontWeight: "bold" }}>
                                 {
                                     game?.tags ?
-                                        game.tags.map(tag => <span>#{tag} </span>)
+                                        game.tags.map(tag => <span key={tag}>#{tag} </span>)
                                         :
                                         "У этой игры пока нет тегов"
                                 }

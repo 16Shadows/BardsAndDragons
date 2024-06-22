@@ -9,13 +9,17 @@ export class GameConverter implements ITypeConverter {
     constructor(dbContext: ModelDataSource) {
         this._dbContext = dbContext;
     }
-    
+
     async convertFromString(str: string): Promise<Game | undefined> {
-        var repo = this._dbContext.getRepository(Game);
-        var game = await repo.findOneBy({
-            name: str
+        var id = +str;
+        if (!Number.isInteger(id))
+            return undefined;
+
+        var gameRepo = this._dbContext.getRepository(Game);
+        var game = await gameRepo.findOneBy({
+            id: id
         });
 
-        return game == null ? undefined : game;
+        return game != null ? game : undefined;
     }
 }
