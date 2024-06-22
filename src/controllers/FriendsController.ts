@@ -1,3 +1,4 @@
+import { ApplyValueTransformers } from "typeorm/util/ApplyValueTransformers.js";
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
 import { ModelDataSource } from "../model/dataSource";
 import { NotificationBase } from "../model/notifications/notificationBase";
@@ -9,7 +10,7 @@ import { Accept, Return } from "../modules/core/mimeType/decorators";
 import { HTTPResponseConvertBody } from "../modules/core/routing/core";
 import { GET, POST } from "../modules/core/routing/decorators";
 import { QueryArgument } from "../modules/core/routing/query";
-import { badRequest, conflict, notFound } from "../modules/core/routing/response";
+import { badRequest, conflict} from "../modules/core/routing/response";
 import { UserNotificationService } from "../services/UserNotificationService";
 
 type SortedListQuery = {
@@ -228,7 +229,8 @@ export class FriendsController {
                 type: 'friendRequestAccepted',
                 friendRequestAcceptedBy: {
                     username: bag.user.username,
-                    displayName: bag.user.displayName ?? bag.user.username
+                    displayName: bag.user.displayName ?? bag.user.username,
+                    avatar: (await bag.user.avatar).blob
                 },
                 seen: false
             }
@@ -237,7 +239,8 @@ export class FriendsController {
                 type: 'friendRequest',
                 friendRequestSentBy: {
                     username: bag.user.username,
-                    displayName: bag.user.displayName ?? bag.user.username
+                    displayName: bag.user.displayName ?? bag.user.username,
+                    avatar: (await bag.user.avatar).blob
                 },
                 seen: false
             }
@@ -273,4 +276,6 @@ export class FriendsController {
                             .getMany()
         );
     }
+
+    
 }

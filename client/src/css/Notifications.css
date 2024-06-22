@@ -5,3 +5,6 @@
     max-height: 300px;
     overflow-y: scroll;
 }
+.text-wrap {
+    word-break: break-all;
+}

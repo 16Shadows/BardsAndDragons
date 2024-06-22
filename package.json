@@ -34,6 +34,10 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   },
+  "engines": {
+    "node": "~20.12.2",
+    "npm": "~10.5.0"
+  },
   "name": "bardsanddragons",
   "version": "1.0.0",
   "description": "-",
@@ -41,10 +45,12 @@
     "dev": "nodemon -r dotenv/config src/app.ts",
     "build": "npm run clear && npx tsc && npx copyfiles -u 1 ./src/**/*.js dist/ && del-cli --force ./src/**/*.js",
     "build-react": "cd client && npm run build",
+    "build-docker": "npx tsc && cp -ra ./src dist/ && del-cli --force ./dist/**/*.ts",
     "prod": "npm run build && npm run build-react && node dist/app.js --env-file=.env",
     "clear": "del-cli --force dist",
     "test": "npx jest",
-    "dev:full": "concurrently \"npm run dev\" \"cd client && npm start\""
+    "dev:full": "concurrently \"npm run dev\" \"cd client && npm start\"",
+    "bootstrap": "npm i && cd client && npm i && cd .. && npm run dev:full"
   },
   "repository": {
     "type": "git",

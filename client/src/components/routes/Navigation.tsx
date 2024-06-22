@@ -26,6 +26,10 @@ export function getUserProfileRoute(username: string) {
     return `/${username}`;
 }
 
+export function getGamePageRoute(gameid: string) {
+    return `/game/${gameid}`;
+}
+
 export function getPlayersPageRoute() {
     return "/players";
 }

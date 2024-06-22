@@ -3,32 +3,31 @@
     width: 100%;
     border: none;
     margin: 0;
-} 
-.age_input_group {
+}
+.file-input {
     width: inherit;
 }
-.text_column {
-    width: 80%;
+.profile_image {
+    width: 220px;
+    height: 220px;
+    outline: #6e6e6e solid 2px;
+}
+.content {
+    width: fit-content;
 }
 .label-col {
-    width: fit-content !important;
+    width: fit-content;
 }
 .pic-col{
-    width:min-content !important;
-    display: grid;
-    justify-items: center;
-}
-.profile-row{
-    display: flex;
-    align-items: center !important;
+    width:min-content;
 }
 .text-red {
     color: red;
 }
 /* Стили datePicker применяются к компоненту DatePicker через wrapperClassName */
 .datePicker {
-    width: inherit !important;
+    width: inherit;
 }
 .datePicker input {
-    width: inherit !important;
+    width: inherit;
 }

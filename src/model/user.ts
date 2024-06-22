@@ -1,17 +1,18 @@
-import {Column, Entity, DeleteDateColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {Image} from './image';
 import {City} from './city';
 import {UsersGame} from './usersGame';
 import {NotificationBase} from './notifications/notificationBase';
 import {Token} from "./token";
-import { UsersFriend } from './usersFriend';
+import {UsersFriend} from './usersFriend';
+import {RejectedMatch} from "./rejectedMatch";
 
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    //Basic account info (required)
+    // Basic account info (required)
 
     @Column({
         unique: true
@@ -29,7 +30,8 @@ export class User {
     @DeleteDateColumn()
     deletedAt: Date;
 
-    //Extended account info (optional)
+    // Extended account info (optional)
+
     @Column({
         nullable: true
     })
@@ -60,14 +62,14 @@ export class User {
     })
     city?: Promise<City>;
 
-    //Settings
+    // Settings
 
     @Column({
         default: false
     })
     canDisplayAge: boolean;
 
-    //Relations
+    // Relations
 
     @OneToMany(() => UsersGame, game => game.user, {
         cascade: true
@@ -79,7 +81,13 @@ export class User {
     })
     friends: Promise<UsersFriend[]>;
 
-    @OneToMany(() => NotificationBase, notif => notif.receiver)
+    // List of rejected matches initiated by this user
+    @OneToMany(() => RejectedMatch, rejectedMatch => rejectedMatch.initiator, {
+        cascade: true
+    })
+    rejectedMatchesInitiator: Promise<RejectedMatch[]>;
+
+    @OneToMany(() => NotificationBase, notify => notify.receiver)
     notifications: Promise<NotificationBase[]>;
 
     // List of valid tokens for this user
