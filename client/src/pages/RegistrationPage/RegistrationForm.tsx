@@ -5,6 +5,7 @@ import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import useRegistrationForm from "./useRegistrationForm";
 import CenteredCardWithItem from "../../components/CenteredCardWithItem";
 import {getHomeRoute} from "../../components/routes/Navigation";
+import {RegistrationFormFields} from "./registrationFormTypes";
 
 const RegistrationForm = () => {
     const isAuthenticated = useIsAuthenticated();
@@ -19,11 +20,11 @@ const RegistrationForm = () => {
             title="Регистрация"
             cardBody={
                 <Form onSubmit={handleSubmit} noValidate>
-                    <Form.Group className="mb-3" controlId="nickname">
+                    <Form.Group className="mb-3" controlId={RegistrationFormFields.nickname}>
                         <Form.Label>Ник</Form.Label>
                         <Form.Control
                             type="text"
-                            name="nickname"
+                            name={RegistrationFormFields.nickname}
                             value={formData.nickname}
                             onChange={handleChange}
                             isInvalid={!!formErrors.nickname}
@@ -33,11 +34,11 @@ const RegistrationForm = () => {
                             {formErrors.nickname}
                         </Form.Control.Feedback>
                     </Form.Group>
-                    <Form.Group className="mb-3" controlId="email">
+                    <Form.Group className="mb-3" controlId={RegistrationFormFields.email}>
                         <Form.Label>Email</Form.Label>
                         <Form.Control
                             type="email"
-                            name="email"
+                            name={RegistrationFormFields.email}
                             value={formData.email}
                             onChange={handleChange}
                             isInvalid={!!formErrors.email}
@@ -47,11 +48,11 @@ const RegistrationForm = () => {
                             {formErrors.email}
                         </Form.Control.Feedback>
                     </Form.Group>
-                    <Form.Group className="mb-4" controlId="password">
+                    <Form.Group className="mb-4" controlId={RegistrationFormFields.password}>
                         <Form.Label>Пароль</Form.Label>
                         <Form.Control
                             type="password"
-                            name="password"
+                            name={RegistrationFormFields.password}
                             value={formData.password}
                             onChange={handleChange}
                             isInvalid={!!formErrors.password}
@@ -61,11 +62,11 @@ const RegistrationForm = () => {
                             {formErrors.password}
                         </Form.Control.Feedback>
                     </Form.Group>
-                    <Form.Group className="mb-4" controlId="confirmPassword">
+                    <Form.Group className="mb-4" controlId={RegistrationFormFields.confirmPassword}>
                         <Form.Label>Подтвердите пароль</Form.Label>
                         <Form.Control
                             type="password"
-                            name="confirmPassword"
+                            name={RegistrationFormFields.confirmPassword}
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             isInvalid={!!formErrors.confirmPassword}

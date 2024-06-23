@@ -1,15 +1,7 @@
 import {ChangeEvent, FormEvent, useCallback, useState} from "react";
 import useRegistrationApi from "./useRegistrationApi";
 import useRegistrationValidation from "./useRegistrationValidation";
-
-export interface RegistrationFormState {
-    [key: string]: string;
-
-    nickname: string
-    email: string
-    password: string
-    confirmPassword: string
-}
+import {RegistrationFormFields, RegistrationFormState} from "./registrationFormTypes";
 
 const useRegistrationForm = () => {
     const [formData, setFormData] = useState<RegistrationFormState>({
@@ -22,8 +14,8 @@ const useRegistrationForm = () => {
     const {registerUser} = useRegistrationApi();
 
     // Handles input changes
-    const handleChange = useCallback(({target}: ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = target;
+    const handleChange = useCallback(({currentTarget}: ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = currentTarget;
         setFormData((prevState) => ({...prevState, [name]: value}));
         validateInputField(name, value);
         setApiError(null);
@@ -33,7 +25,7 @@ const useRegistrationForm = () => {
     const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const isValidForm = ["nickname", "email", "password", "confirmPassword"].every(field =>
+        const isValidForm = (Object.keys(RegistrationFormFields) as RegistrationFormFields[]).every(field =>
             validateInputField(field, formData[field])
         );
 

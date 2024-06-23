@@ -15,7 +15,7 @@ import {
     passwordRequiredError,
     passwordsNotMatchError
 } from "../../utils/errorMessages";
-import {RegistrationFormState} from "./useRegistrationForm";
+import {RegistrationFormFields, RegistrationFormState} from "./registrationFormTypes";
 
 const useRegistrationValidation = (formData: RegistrationFormState) => {
     const [error, setError] = useState<string | null>(null);
@@ -42,28 +42,28 @@ const useRegistrationValidation = (formData: RegistrationFormState) => {
 
     const setApiError = useCallback((message: string | null) => {
         const errors: { [key: string]: string } = {
-            'NotFilled': notFilledError,
-            'nicknameAlreadyUse': nicknameAlreadyUseError,
-            'emailAlreadyUse': emailAlreadyUseError,
+            "NotFilled": notFilledError,
+            "nicknameAlreadyUse": nicknameAlreadyUseError,
+            "emailAlreadyUse": emailAlreadyUseError,
         };
         setError((message && errors[message]) || message);
     }, []);
 
     const validateInputField = useCallback((name: string, value: string): boolean => {
         switch (name) {
-            case "email":
+            case RegistrationFormFields.email:
                 const isEmailValid = validateEmail(value);
                 setFieldError(name, isEmailValid, invalidEmailError);
                 return isEmailValid;
-            case "nickname":
+            case RegistrationFormFields.nickname:
                 const isNicknameValid = validateNickname(value);
                 setFieldError(name, isNicknameValid, invalidNicknameError);
                 return isNicknameValid;
-            case "password":
+            case RegistrationFormFields.password:
                 const passwordValidationResult = validatePassword(value);
                 setPasswordError(value, passwordValidationResult);
                 return passwordValidationResult === PasswordValidationResult.Valid;
-            case "confirmPassword":
+            case RegistrationFormFields.confirmPassword:
                 setConfirmPasswordError(formData.password, value);
                 return value === formData.password;
             default:
