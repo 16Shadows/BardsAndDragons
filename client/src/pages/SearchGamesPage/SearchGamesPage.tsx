@@ -183,14 +183,14 @@ const SearchGamesPage = () => {
     }
 
     // Открыть модальное окно с сообщением
-    function showModal(message: string, timeout = 5000) {
+    const showModal = useCallback((message: string, timeout = 5000) => {
         setModalMessage(message);
         setModalIsShow(true);
         modalTimeoutHandler.current = setTimeout(hideModal, timeout);
-    }
+    }, [])
 
     // Закрыть модальное окно
-    function hideModal() {
+    const hideModal = useCallback(() => {
         setModalIsShow(state => {
             // Действия, если окно ещё не закрыто
             if (state) {
@@ -201,7 +201,7 @@ const SearchGamesPage = () => {
             else
                 return false;
         });
-    }
+    }, [modalIsShow])
 
     // Выполняется при изменении обработчика
     useEffect(() => {
