@@ -6,6 +6,7 @@ import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 import "./SearchGamesPage.css"
 import { UserData } from "../../models/UserData";
+import "../../css/Main.css";
 
 // interface IUser {
 //     id: number;
@@ -76,18 +77,17 @@ const SearchGamesPage = () => {
     }
 
     // Обработчик для кнопки поиска игр
-    function searchGames(e: FormEvent<HTMLFormElement>) 
-    {
+    function searchGames(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setSearchQueryEvent(searchQuery);
     }
 
     // Если изменится сортировка или строка запроса - делаем запрос игр из БД
     useEffect(getTotalNumber, [searchQueryEvent, selectedSort])
-    
+
     // Запрашиваем общее число игр из БД, а затем сами игры
     function getTotalNumber() {
-        api.get('game/games-number', { params: {name: searchQueryEvent} }).then(function (response) {
+        api.get('game/games-number', { params: { name: searchQueryEvent } }).then(function (response) {
             totalGamesNumberRef.current = response.data;
             console.log(totalGamesNumberRef.current);
 
@@ -108,7 +108,7 @@ const SearchGamesPage = () => {
 
     // Подписка на игру
     function subscribe(game: IGameProps) {
-        api.post('user-games/subscribe', { userId: userId,  game: game}).then(function (response) {
+        api.post('user-games/subscribe', { userId: userId, game: game }).then(function (response) {
             console.log("Subscribed");
             //console.log(response.data);
         })
@@ -116,7 +116,7 @@ const SearchGamesPage = () => {
 
     // Отписка от игры
     function unsubscribe(game: IGameProps) {
-        api.post('user-games/unsubscribe', { userId: userId,  game: game}).then(function (response) {
+        api.post('user-games/unsubscribe', { userId: userId, game: game }).then(function (response) {
             console.log("Unsubscribed");
             //console.log(response.data);
         })
@@ -133,7 +133,7 @@ const SearchGamesPage = () => {
 
         // Если вход выполнен, то получаем id пользователя по его имени
         if (isAuthenticated) {
-            api.get('user/user-by-username', { params: {username: username} }).then(function (response) {
+            api.get('user/user-by-username', { params: { username: username } }).then(function (response) {
                 setUserId(response.data.id)
             })
         }
@@ -141,7 +141,7 @@ const SearchGamesPage = () => {
         // Запрашиваем игры из БД
         setFetching(true);
 
-        return function() {
+        return function () {
             document.removeEventListener("scroll", scrollHandler);
         }
     }, [])
@@ -152,7 +152,7 @@ const SearchGamesPage = () => {
             //console.log("fetching games");
             //console.log(`Current: ${currentGameNumberRef.current}`);
             // Запрашиваем игры, передаём лимит, стартовую позицию, искомое имя, id пользователя и тип сортировки
-            api.get('game/games', { params: {limit: requestSize, start: currentGameNumberRef.current, name: searchQueryEvent, userid: userId, sort: sortTypes.get(selectedSort)} }).then(function (response) {
+            api.get('game/games', { params: { limit: requestSize, start: currentGameNumberRef.current, name: searchQueryEvent, userid: userId, sort: sortTypes.get(selectedSort) } }).then(function (response) {
                 if (!games) {
                     //setGames((response.data as IGameProps[]).sort((a, b) => a["id"] - b["id"]));
                     setGames(response.data);
@@ -160,7 +160,7 @@ const SearchGamesPage = () => {
                 else {
                     setGames([...games, ...response.data]);
                 }
-                
+
                 // Увеличиваем текущую позицию
                 currentGameNumberRef.current += requestSize ?? 0;
             }).finally(() => setFetching(false))
@@ -169,60 +169,62 @@ const SearchGamesPage = () => {
 
     // Основной компонент
     return (
-        <Row className="gx-5">
-            {/* Поиск и сортировка */}
-            <Col md="6">
-                <div id="search-box" className="static-item">
-                    <Form onSubmit={searchGames}>
-                        {/* Поиск по названию */}
-                        <div style={{fontSize: "24px"}}><b>Название</b></div>
-                        <input style={{width: "100%"}} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+        <Container className="page-container">
+            <Row className="gx-5">
+                {/* Поиск и сортировка */}
+                <Col md="6">
+                    <div id="search-box" className="static-item">
+                        <Form onSubmit={searchGames}>
+                            {/* Поиск по названию */}
+                            <div style={{ fontSize: "24px" }}><b>Название</b></div>
+                            <input style={{ width: "100%" }} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
 
-                        <div style={{marginTop: "15px", textAlign: "center"}}>
-                            {/* Сортировка */}
-                            <span style={{width: "48%", display: "inline-block"}}>
-                                <span style={{fontWeight: "bolder", fontSize: "20px"}}>Сортировка:</span>
-                                <select id="select-list" value={selectedSort} onChange={event => setSelectedSort(event.target.value)}>
-                                    <option disabled value={""}>Сортировка</option>
-                                    {Array.from(sortTypes.keys()).map((option) =>
-                                        <option key={option}>{option}</option>
-                                    )}
-                                </select>      
-                            </span>
-                            
-                            {/* Кнопка поиска */}
-                            <span id="search-button-block">                   
-                                <Button type="submit" id="search-button">Поиск</Button>
-                            </span>  
-                        </div>
-                    </Form>
-                </div>
-            </Col>
-            {/* Список игр */}
-            <Col md="6">
-                <h2 id="game-header">Игры</h2>
-                <div id="game-box">
-                    {
-                        // Если games = undefined, то "Игры загружаются..."
-                        games
-                            ?
-                            // Если не undefined, но список пуст, то "Игр не найдено"
-                            games.length > 0
+                            <div style={{ marginTop: "15px", textAlign: "center" }}>
+                                {/* Сортировка */}
+                                <span style={{ width: "48%", display: "inline-block" }}>
+                                    <span style={{ fontWeight: "bolder", fontSize: "20px" }}>Сортировка:</span>
+                                    <select id="select-list" value={selectedSort} onChange={event => setSelectedSort(event.target.value)}>
+                                        <option disabled value={""}>Сортировка</option>
+                                        {Array.from(sortTypes.keys()).map((option) =>
+                                            <option key={option}>{option}</option>
+                                        )}
+                                    </select>
+                                </span>
+
+                                {/* Кнопка поиска */}
+                                <span id="search-button-block">
+                                    <Button type="submit" id="search-button">Поиск</Button>
+                                </span>
+                            </div>
+                        </Form>
+                    </div>
+                </Col>
+                {/* Список игр */}
+                <Col md="6">
+                    <h2 id="game-header">Игры</h2>
+                    <div id="game-box">
+                        {
+                            // Если games = undefined, то "Игры загружаются..."
+                            games
                                 ?
-                                <div>
-                                    {games.map((game) => 
-                                        <GameItem game={game} subscribe={subscribe} unsubscribe={unsubscribe} logined={isAuthenticated} key={game.id}></GameItem>
-                                    )}
-                                </div>
-                                :
-                                <div>
-                                    <h2> Игр не найдено </h2>
-                                </div>
-                            : <h2> Игры загружаются... </h2>
-                    }
-                </div>
-            </Col>
-        </Row>
+                                // Если не undefined, но список пуст, то "Игр не найдено"
+                                games.length > 0
+                                    ?
+                                    <div>
+                                        {games.map((game) =>
+                                            <GameItem game={game} subscribe={subscribe} unsubscribe={unsubscribe} logined={isAuthenticated} key={game.id}></GameItem>
+                                        )}
+                                    </div>
+                                    :
+                                    <div>
+                                        <h2> Игр не найдено </h2>
+                                    </div>
+                                : <h2> Игры загружаются... </h2>
+                        }
+                    </div>
+                </Col>
+            </Row>
+        </Container>
     );
 };
 

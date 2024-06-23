@@ -1,11 +1,12 @@
-import { Button, Tab, Tabs } from "react-bootstrap";
+import { Button, Container, Tab, Tabs } from "react-bootstrap";
 import FriendsList from "./FriendsList";
 import FriendItem from "./FriendItem";
 import { useCallback, useState } from "react";
 import useApi from "../../http-common";
 import FriendData from "./FriendData";
+import "../../css/Main.css";
 
-function FriendButtons({friend}: {friend: FriendData}) {
+function FriendButtons({ friend }: { friend: FriendData }) {
     const api = useApi();
     const [justDeleted, setJustDeleted] = useState(false);
     const [disabled, setDisabled] = useState(false);
@@ -17,7 +18,7 @@ function FriendButtons({friend}: {friend: FriendData}) {
             setJustDeleted(false);
             setDisabled(false);
         }
-        catch {}
+        catch { }
     }, [api, friend]);
 
     const deleteFriend = useCallback(async () => {
@@ -27,7 +28,7 @@ function FriendButtons({friend}: {friend: FriendData}) {
             setJustDeleted(true);
             setDisabled(false);
         }
-        catch {}
+        catch { }
     }, [api, friend]);
 
     if (justDeleted)
@@ -44,7 +45,7 @@ function FriendButtons({friend}: {friend: FriendData}) {
         );
 }
 
-function IncomingRequestButtons({friend}: {friend: FriendData}) {
+function IncomingRequestButtons({ friend }: { friend: FriendData }) {
     const api = useApi();
     const [justDeleted, setJustDeleted] = useState(true);
 
@@ -57,7 +58,7 @@ function IncomingRequestButtons({friend}: {friend: FriendData}) {
             setJustDeleted(false);
             setDisabled(false);
         }
-        catch {}
+        catch { }
     }, [api, friend]);
 
     const deleteFriend = useCallback(async () => {
@@ -67,7 +68,7 @@ function IncomingRequestButtons({friend}: {friend: FriendData}) {
             setJustDeleted(true);
             setDisabled(false);
         }
-        catch {}
+        catch { }
     }, [api, friend]);
 
     if (justDeleted)
@@ -84,7 +85,7 @@ function IncomingRequestButtons({friend}: {friend: FriendData}) {
         );
 }
 
-function OutgoingRequestButtons({friend}: {friend: FriendData}) {
+function OutgoingRequestButtons({ friend }: { friend: FriendData }) {
     const api = useApi();
     const [justDeleted, setJustDeleted] = useState(false);
     const [disabled, setDisabled] = useState(false);
@@ -96,7 +97,7 @@ function OutgoingRequestButtons({friend}: {friend: FriendData}) {
             setJustDeleted(false);
             setDisabled(false);
         }
-        catch {}
+        catch { }
     }, [api, friend]);
 
     const deleteFriend = useCallback(async () => {
@@ -106,7 +107,7 @@ function OutgoingRequestButtons({friend}: {friend: FriendData}) {
             setJustDeleted(true);
             setDisabled(false);
         }
-        catch {}
+        catch { }
     }, [api, friend]);
 
     if (justDeleted)
@@ -125,44 +126,46 @@ function OutgoingRequestButtons({friend}: {friend: FriendData}) {
 
 function MyFriendsPage() {
     return (
-        <Tabs>
-            <Tab title='Мои друзья' eventKey='friends-list' className="p-2">
-                <FriendsList 
-                    friendItemTemplate={(x) => {
-                        return (
-                            <FriendItem friend={x} key={x.username}>
-                                <FriendButtons friend={x} />
-                            </FriendItem>
-                        )
-                    }}
-                    friendListUrlBuilder={(len, sortBy, sortOrder) => `user/@current/friends/current?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
-                />
-            </Tab>
-            <Tab title='Входящие заявки' eventKey='incoming-list' className="p-2">
-                <FriendsList 
-                    friendItemTemplate={(x) => {
-                        return (
-                            <FriendItem friend={x} key={x.username}>
-                                <IncomingRequestButtons friend={x} />
-                            </FriendItem>
-                        )
-                    }}
-                    friendListUrlBuilder={(len, sortBy, sortOrder) => `user/@current/friends/incoming?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
-                />
-            </Tab>
-            <Tab title='Исходящие заявки' eventKey='outgoing-list' className="p-2">
-                <FriendsList 
-                    friendItemTemplate={(x) => {
-                        return (
-                            <FriendItem friend={x} key={x.username}>
-                                <OutgoingRequestButtons friend={x} />
-                            </FriendItem>
-                        )
-                    }}
-                    friendListUrlBuilder={(len, sortBy, sortOrder) => `user/@current/friends/outgoing?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
-                />
-            </Tab>
-        </Tabs>
+        <Container className="page-container">
+            <Tabs>
+                <Tab title='Мои друзья' eventKey='friends-list' className="p-2">
+                    <FriendsList
+                        friendItemTemplate={(x) => {
+                            return (
+                                <FriendItem friend={x} key={x.username}>
+                                    <FriendButtons friend={x} />
+                                </FriendItem>
+                            )
+                        }}
+                        friendListUrlBuilder={(len, sortBy, sortOrder) => `user/@current/friends/current?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
+                    />
+                </Tab>
+                <Tab title='Входящие заявки' eventKey='incoming-list' className="p-2">
+                    <FriendsList
+                        friendItemTemplate={(x) => {
+                            return (
+                                <FriendItem friend={x} key={x.username}>
+                                    <IncomingRequestButtons friend={x} />
+                                </FriendItem>
+                            )
+                        }}
+                        friendListUrlBuilder={(len, sortBy, sortOrder) => `user/@current/friends/incoming?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
+                    />
+                </Tab>
+                <Tab title='Исходящие заявки' eventKey='outgoing-list' className="p-2">
+                    <FriendsList
+                        friendItemTemplate={(x) => {
+                            return (
+                                <FriendItem friend={x} key={x.username}>
+                                    <OutgoingRequestButtons friend={x} />
+                                </FriendItem>
+                            )
+                        }}
+                        friendListUrlBuilder={(len, sortBy, sortOrder) => `user/@current/friends/outgoing?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
+                    />
+                </Tab>
+            </Tabs>
+        </Container>
     );
 };
 
