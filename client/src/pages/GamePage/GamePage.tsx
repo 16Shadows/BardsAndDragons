@@ -151,9 +151,9 @@ const GamePage = () => {
                     && <h1>Загружаем игру...</h1>
                 }
                 <div id="game-game-image">
-                    <button className="game-image-arrow-button" onClick={predImage} style={{ marginRight: "10px" }}><FaArrowLeft className="game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
+                    <button disabled={!game?.images.length || game?.images.length < 2} className="game-image-arrow-button" onClick={predImage} style={{ marginRight: "10px" }}><FaArrowLeft className="game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
                     <img style={{ aspectRatio: "1/1" }} height={"100%"} alt="Куда же подевалась картинка..?" src={'/'+game?.images[imageId]} ></img>
-                    <button className="game-image-arrow-button" onClick={nextImage} style={{ marginLeft: "10px" }}><FaArrowRight className="game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
+                    <button disabled={!game?.images.length || game?.images.length < 2} className="game-image-arrow-button" onClick={nextImage} style={{ marginLeft: "10px" }}><FaArrowRight className="game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
                 </div>
                 {
                     isAuthenticated ?
