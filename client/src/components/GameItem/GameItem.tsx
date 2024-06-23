@@ -60,33 +60,33 @@ const Game = ({game, logined=false, subscribe, unsubscribe}: IProps) => {
 
     //console.log("Game")
     return (
-        <div className="game-item">
+        <div className="game-game-item">
             {/* Картинка игры */}
-            <div className="game-icon">
+            <div className="game-game-icon">
                 <img width={"100%"} height={"100%"} src={gameImage} ></img>
             </div>
 
             {/* Описание игры */}
-            <div className="game-describe">
+            <div className="game-game-describe">
                 <div>
                     {/* Переход к игре */}
-                    <span className="game-button-block">
-                        <button className="game-button" onClick={() => navigate(getGamePageRoute(String(game.id)))}>{game.name}</button>
+                    <span className="game-game-button-block">
+                        <button className="game-game-button" onClick={() => navigate(getGamePageRoute(String(game.id)))}>{game.name}</button>
                     </span>
                     {
                         // Панель для подписки/отписки
                         logined &&
-                        <span className="game-subscribing-panel">
+                        <span className="game-game-subscribing-panel">
                             {
                                 subscribeState
                                     ?
                                     //<Button style={{ width: "100%", padding: "0px 2px 1px 2px", border: "none", background: "rgb(232, 65, 65)" }}>Отписаться</Button>
-                                    <button onClick={unsubscribed} className="game-unsubscribe-button">
+                                    <button onClick={unsubscribed} className="game-game-unsubscribe-button">
                                         <CiSquareMinus id="icon-image" size={30} color="red" />
                                     </button>
 
                                     :
-                                    <Button onClick={subscribed} className="game-subscribe-button">Подписаться</Button>
+                                    <Button onClick={subscribed} className="game-game-subscribe-button">Подписаться</Button>
                             }
                         </span>
                     }
