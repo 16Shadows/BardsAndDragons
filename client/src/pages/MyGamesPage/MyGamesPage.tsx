@@ -15,14 +15,14 @@ function GameButtons({ game }: { game: GameData }) {
     const handleCheckboxChange = useCallback(async () => {
         const newStatus = !playsOnline;
         try {
-            await api.post(`user/${game.gamename}/updateOnlineStatus`, {
+            await api.post(`user/${game.id}/updateOnlineStatus`, {
                 playsOnline: newStatus
             });
             setPlaysOnline(newStatus);
         } catch (error) {
             console.error('Error:', error);
         }
-    }, [api, playsOnline, game.gamename]);
+    }, [api, game.id, playsOnline]);
 
     const addGame = useCallback(async () => {
         try {

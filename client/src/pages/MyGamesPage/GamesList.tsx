@@ -78,13 +78,11 @@ const GamesList = ({ gameItemTemplate, gameListUrlBuilder }: GamesListProps) => 
                 </select>
             </div>
             <div className="bg-secondary-subtle p-2">
-                <div className="games-list-container">
                     {gamesList ? (
                         gamesList.map(gameItemTemplate)
                     ) : (
                         <span>Загрузка...</span>
                     )}
-                </div>
             </div>
         </div>
     );
