@@ -8,7 +8,8 @@ import { Accept, Return } from "../modules/core/mimeType/decorators";
 import { HTTPResponseConvertBody } from "../modules/core/routing/core";
 import { GET, POST } from "../modules/core/routing/decorators";
 import { QueryArgument } from "../modules/core/routing/query";
-import { badRequest, conflict } from "../modules/core/routing/response";
+import { badRequest, conflict, notFound } from "../modules/core/routing/response";
+import { gameNotFound } from "../utils/errorMessages";
 
 type SortedListQuery = {
     start?: number;
@@ -103,10 +104,18 @@ export class MyGamesController {
         }));
     }
 
-    @POST('{game:game}/updateOnlineStatus')
+    @POST('{gameId:int}/updateOnlineStatus')
     @Middleware(AuthMiddleware)
     @Accept('application/json', 'text/plain')
-    async updateOnlineStatus(bag: AuthMiddlewareBag, game: Game, status: { playsOnline: boolean }) {
+    async updateOnlineStatus(bag: AuthMiddlewareBag, gameId:number, status: { playsOnline: boolean }) {
+        const game = new Game();
+        game.id = gameId;
+
+        // Проверка на существование игры
+        if (!await this._dbContext.getRepository(Game).findOneBy({id: gameId})) {
+            return notFound({message: gameNotFound});
+        }
+        
         const repo = this._dbContext.getRepository(UsersGame);
 
         const gameLink = await repo.findOneBy({

@@ -37,7 +37,7 @@ function GameItem(props: PropsWithChildren<GameItemProps>) {
 
             <div className="game-describe">
                 <div className="game-header">
-                    <Link to={getGamePageRoute(props.game.gamename)} className='game-title h-auto text-wrap'>
+                    <Link to={getGamePageRoute(String(props.game.id))} className='game-title h-auto text-wrap'>
                         {props.game.gamename}
                     </Link>
 
