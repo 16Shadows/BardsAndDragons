@@ -230,7 +230,7 @@ export class FriendsController {
                 friendRequestAcceptedBy: {
                     username: bag.user.username,
                     displayName: bag.user.displayName ?? bag.user.username,
-                    avatar: (await bag.user.avatar).blob
+                    avatar: (await bag.user.avatar)?.blob
                 },
                 seen: false
             }
@@ -240,7 +240,7 @@ export class FriendsController {
                 friendRequestSentBy: {
                     username: bag.user.username,
                     displayName: bag.user.displayName ?? bag.user.username,
-                    avatar: (await bag.user.avatar).blob
+                    avatar: (await bag.user.avatar)?.blob
                 },
                 seen: false
             }
