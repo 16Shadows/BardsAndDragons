@@ -6,6 +6,7 @@ import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import CenteredCardWithItem from "../../components/CenteredCardWithItem";
 import {getHomeRoute, getRegistrationPageRoute} from "../../components/routes/Navigation";
 import {LoginType} from "../../utils/accountValidation";
+import {LoginFormFields} from "./loginFormTypes";
 
 const LoginForm = () => {
     const location = useLocation();
@@ -39,11 +40,11 @@ const LoginForm = () => {
             title="Вход в аккаунт"
             cardBody={
                 <Form onSubmit={handleSubmit} noValidate>
-                    <Form.Group className="mb-3" controlId="login">
+                    <Form.Group className="mb-3" controlId={LoginFormFields.login}>
                         <Form.Label>{loginLabel}</Form.Label>
                         <Form.Control
                             type="text"
-                            name="login"
+                            name={LoginFormFields.login}
                             value={formData.login}
                             onChange={handleChange}
                             isInvalid={!!formErrors.login}
@@ -52,11 +53,11 @@ const LoginForm = () => {
                         <Form.Control.Feedback type="invalid">{formErrors.login}</Form.Control.Feedback>
                     </Form.Group>
 
-                    <Form.Group className="mb-4" controlId="password">
+                    <Form.Group className="mb-4" controlId={LoginFormFields.password}>
                         <Form.Label>Пароль</Form.Label>
                         <Form.Control
                             type="password"
-                            name="password"
+                            name={LoginFormFields.password}
                             value={formData.password}
                             onChange={handleChange}
                             isInvalid={!!formErrors.password}

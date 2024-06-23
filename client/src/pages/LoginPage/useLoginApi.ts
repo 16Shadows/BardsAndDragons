@@ -1,8 +1,8 @@
 import {useCallback} from "react";
 import {signInError} from "../../utils/errorMessages";
 import useApi from "../../http-common";
-import {LoginFormState} from "./useLoginForm";
 import useSignIn from "../../utils/useSignIn";
+import {LoginFormState} from "./loginFormTypes";
 
 const useLoginApi = () => {
     const api = useApi();

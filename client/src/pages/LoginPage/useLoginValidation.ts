@@ -12,7 +12,7 @@ import {
     userNotFoundError,
     wrongPasswordError
 } from "../../utils/errorMessages";
-import {LoginFormState} from "./useLoginForm";
+import {LoginFormState} from "./loginFormTypes";
 
 const useLoginValidation = () => {
     const [formErrors, setFormErrors] = useState<LoginFormState>({login: "", password: ""});
@@ -40,9 +40,9 @@ const useLoginValidation = () => {
 
     const setApiError = useCallback((message: string | null) => {
         const apiErrors: { [key: string]: string } = {
-            'UserNotFound': userNotFoundError,
-            'WrongPassword': wrongPasswordError,
-            'NotFilled': notFilledError
+            "UserNotFound": userNotFoundError,
+            "WrongPassword": wrongPasswordError,
+            "NotFilled": notFilledError
         };
 
         setError((message && apiErrors[message]) || message);

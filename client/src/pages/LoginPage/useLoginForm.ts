@@ -9,11 +9,7 @@ import {
 } from "../../utils/accountValidation";
 import useLoginValidation from "./useLoginValidation";
 import useLoginApi from "./useLoginApi";
-
-export interface LoginFormState {
-    login: string;
-    password: string;
-}
+import {LoginFormFields, LoginFormState} from "./loginFormTypes";
 
 const useLoginForm = () => {
     const {loginByEmail, loginByNickname} = useLoginApi();
@@ -23,12 +19,12 @@ const useLoginForm = () => {
     const [loginType, setLoginType] = useState<LoginType | null>(null);
 
     // Handles input changes
-    const handleChange = useCallback(({target}: ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = target;
+    const handleChange = useCallback(({currentTarget}: ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = currentTarget;
         setFormData((prevState) => ({...prevState, [name]: value}));
 
         // If name is login, set login type
-        if (name === "login") setLoginType(getLoginType(value));
+        if (name === LoginFormFields.login) setLoginType(getLoginType(value));
     }, []);
 
     // Handles form submission
