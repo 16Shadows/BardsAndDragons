@@ -201,7 +201,7 @@ const SearchGamesPage = () => {
             else
                 return false;
         });
-    }, [modalIsShow])
+    }, [])
 
     // Выполняется при изменении обработчика
     useEffect(() => {

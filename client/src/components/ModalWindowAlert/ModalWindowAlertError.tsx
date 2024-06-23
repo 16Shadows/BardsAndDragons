@@ -1,5 +1,4 @@
 import React from "react";
-import { Modal } from "react-bootstrap";
 import ModalWindowAlert from "./ModalWindowAlert";
 
 // Принимаемые параметры
