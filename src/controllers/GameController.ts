@@ -322,6 +322,7 @@ export class GameController extends Object {
     async subscribe(bag: AuthMiddlewareBag, gameId:number) {
         const game = new Game();
         game.id = gameId;
+        console.log(`id: ${gameId}`)
 
         // Проверка на существование игры
         if (!await this._dbContext.getRepository(Game).findOneBy({id: gameId})) {
@@ -353,9 +354,10 @@ export class GameController extends Object {
     async unsubscribe(bag: AuthMiddlewareBag, gameId:number) {
         const game = new Game();
         game.id = gameId;
+        console.log(`id: ${gameId}`)
 
         // Проверка на существование игры
-        if (!await this._dbContext.getRepository(Game).findOneBy({id: gameId})) {
+        if (!await this._dbContext.getRepository(Game).existsBy({id: gameId})) {
             return notFound({message: gameNotFound});
         }
 
@@ -369,4 +371,24 @@ export class GameController extends Object {
 
         await repository.remove(obj);
     }
+
+        // Проверка подписки на игру
+        @GET('{gameId:int}/subscription')
+        @Accept('application/json', 'text/plain')
+        @Return('application/json')
+        @Middleware(AuthMiddleware)
+        async check_subscribe(bag: AuthMiddlewareBag, gameId:number) {
+            const game = new Game();
+            game.id = gameId;
+    
+            // Проверка на существование игры
+            if (!await this._dbContext.getRepository(Game).existsBy({id: gameId})) {
+                return notFound({message: gameNotFound});
+            }
+    
+            let repository = this._dbContext.getRepository(UsersGame);
+    
+            // Проверка на существование подписки
+            return await repository.existsBy({game: game, user: bag.user})
+        }
 }

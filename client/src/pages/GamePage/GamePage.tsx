@@ -1,33 +1,40 @@
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import GameItem, { IGameProps } from "../../components/GameItem/GameItem";
-import { Button, Col, Form, Row } from "react-bootstrap";
+import { useEffect, useRef, useState } from "react";
+import { Button, Col, Row } from "react-bootstrap";
 import useApi from '../../http-common'
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
 import "./GamePage.css"
 import ModalWindowAlert from "../../components/ModalWindowAlert/ModalWindowAlert";
-import { json } from "stream/consumers";
-import { join } from "path";
 import { IoMdPeople } from "react-icons/io";
-import gameImage from "../../resources/Uno flip.jpg"
 import { FaArrowLeft } from "react-icons/fa";
 import { FaArrowRight } from "react-icons/fa";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { getNotFoundRoute } from "../../components/routes/Navigation";
 
 const GamePage = () => {
     // ===Авторизация===
     // Проверка, авторизован ли пользователь
     const isAuthenticated = useIsAuthenticated()
 
-    // Определение запроса в зависимости от статуса авторизации
-    const gameRequestName = isAuthenticated ? 'game/games-with-subscription' : 'game/games'
+    // ===Модальное окно===
+    // Таймер закрытия окна
+    const modalTimeoutHandler = useRef<NodeJS.Timeout>()
+
+    // Сообщение об ошибке
+    const [modalMessage, setModalMessage ] = useState("Сообщение")
+
+    // Состояние модального окна скрыто/открыто
+    const [modalIsShow, setModalIsShow] = useState(false)
 
     const [game, setGame] = useState<Game | undefined>(undefined)
 
-    const [image, setImage] = useState<string | undefined>(undefined)
+    const [imageId, setImageId] = useState<number>(0)
 
-    const [subscribed, setSubscribed] = useState<boolean>(false)
+    const [subscribeState, setSubscribeState] = useState<boolean | undefined>(undefined)
 
     const { id: gameId }  = useParams<{ id: string }>();
+
+    // Для перехода к странице ошибки
+    const navigate = useNavigate()
 
     // Axios API для запросов к беку
     const api = useApi();
@@ -46,33 +53,116 @@ const GamePage = () => {
     useEffect(() => {
         api.get(`games/${gameId}`).then(function (response) {
             setGame(response.data);
-            console.log("set game");
         }).catch(() => {
-
-        }).finally(() => {
-
+            navigate(getNotFoundRoute());
         })
+
+        if (isAuthenticated)
+            api.get(`games/${gameId}/subscription`).then(function (response) {
+                setSubscribeState(response.data);
+            }).catch((error) => {
+                showModal("Не удалось получить информацию о подписке на игру");
+            })
     }, [])
+
+    function nextImage() {
+        if (game?.images.length) {
+            if (imageId < game?.images.length - 1)
+                setImageId(im => im + 1)
+            else
+                setImageId(0)
+        }
+    }
+
+    function predImage() {
+        if (game?.images.length) {
+            if (imageId > 0)
+                setImageId(im => im - 1)
+            else
+                setImageId(game?.images.length - 1)
+        }
+    }
+
+    // Функции подписки и отписки
+    async function subscribed() {
+        if (game)
+            if (await subscribe(game?.id)) 
+                setSubscribeState(true);
+    }
+
+    async function unsubscribed() {
+        if (game)
+            if (await unsubscribe(game?.id))
+                setSubscribeState(false);
+    }
+
+    // Подписка на игру
+    async function subscribe(currentGameId: number): Promise<boolean | undefined> {
+        let result;
+        await api.post(`games/${currentGameId}/subscribe`).then(function (response) {
+            result = true;
+        }).catch((error) => {
+            showModal(error.response?.data?.message || "Не удалось подписаться на игру");
+            result = false;
+        });
+        return result;
+    }
+
+    // Отписка от игры
+    async function unsubscribe(currentGameId: number): Promise<boolean | undefined> {
+        let result;
+        await api.post(`games/${currentGameId}/unsubscribe`).then(function (response) {
+            result = true;
+        }).catch((error) => {
+            showModal(error.response?.data?.message || "Игра не найдена");
+            result = false;
+        })
+        return result;
+    }
+
+    // Открыть модальное окно с сообщением
+    function showModal(message: string, timeout = 5000) {
+        setModalMessage(message);
+        setModalIsShow(true);
+        modalTimeoutHandler.current = setTimeout(hideModal, timeout);
+    }
+
+    // Закрыть модальное окно
+    function hideModal() {
+        setModalIsShow(state => {
+            // Действия, если окно ещё не закрыто
+            if (state) {
+                clearTimeout(modalTimeoutHandler.current);
+                return false;
+            }
+            // Если закрыто, то состояние не сменится
+            else
+                return false;
+        });
+    }
+    
 
     // Основной компонент
     return (
         <Row className="gx-5 d-flex justify-content-center">
             {/* Игра */}
             <Col md="8">
+                {!game
+                    && <h1>Загружаем игру...</h1>
+                }
                 <div id="game-game-image">
-                    <button className="game-image-arrow-button" style={{ marginRight: "10px" }}><FaArrowLeft className="game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
-                    {/* <img width={"100%"} height={"100%"} src={game?.images[0]} ></img> */}
-                    <img style={{ aspectRatio: "1/1" }} height={"100%"} src={game?.images[0]} ></img>
-                    <button className="game-image-arrow-button" style={{ marginLeft: "10px" }}><FaArrowRight className="game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
+                    <button className="game-image-arrow-button" onClick={predImage} style={{ marginRight: "10px" }}><FaArrowLeft className="game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
+                    <img style={{ aspectRatio: "1/1" }} height={"100%"} alt="Куда же подевалась картинка..?" src={'/'+game?.images[imageId]} ></img>
+                    <button className="game-image-arrow-button" onClick={nextImage} style={{ marginLeft: "10px" }}><FaArrowRight className="game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
                 </div>
                 {
                     isAuthenticated ?
                         <div style={{ marginTop: "10px", width: "100%", textAlign: "right"}}>
                             {
-                                subscribed ?
-                                    <Button style={{fontSize: "20px", background: "rgb(232, 65, 65)", borderColor: "rgb(232, 65, 65)"}}>Отписаться</Button>
+                                subscribeState ?
+                                    <Button onClick={unsubscribed} style={{fontSize: "20px", background: "rgb(232, 65, 65)", borderColor: "rgb(232, 65, 65)"}}>Отписаться</Button>
                                     :
-                                    <Button style={{fontSize: "20px"}}>Подписаться</Button>
+                                    <Button onClick={subscribed} style={{fontSize: "20px"}}>Подписаться</Button>
                             }
                         </div>
                         :
@@ -99,6 +189,8 @@ const GamePage = () => {
                     </div>
                     <div id="game-game-description">{game?.description}</div>
                 </div>
+                {/* Отображение ошибок */}
+                <ModalWindowAlert show={modalIsShow} onHide={hideModal} message={modalMessage} />
             </Col>
         </Row>
     );

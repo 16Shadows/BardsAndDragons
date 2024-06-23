@@ -12,7 +12,7 @@ const SearchGamesPage = () => {
     const isAuthenticated = useIsAuthenticated()
 
     // Определение запроса в зависимости от статуса авторизации
-    const gameRequestName = isAuthenticated ? 'game/games-with-subscription' : 'game/games'
+    const gameRequestName = isAuthenticated ? 'games/games-with-subscription' : 'games/games'
 
     // ===Пагинация===
     // Количество запрашиваемых за раз игр
@@ -114,7 +114,7 @@ const SearchGamesPage = () => {
     // Если изменятся сортировка или строка запроса - делаем запрос игр из БД
     useEffect(() => {
         // Запрашиваем общее число игр из БД
-        api.get('game/games-number', { params: {name: searchQueryEvent} }).then(function (response) {
+        api.get('games/games-number', { params: {name: searchQueryEvent} }).then(function (response) {
             totalGamesNumber.current = response.data;
 
             // Очищаем список и обнуляем счётчик
@@ -141,7 +141,7 @@ const SearchGamesPage = () => {
     // Подписка на игру
     async function subscribe(gameId: number): Promise<boolean | undefined> {
         let result;
-        await api.post(`game/${gameId}/subscribe`).then(function (response) {
+        await api.post(`games/${gameId}/subscribe`).then(function (response) {
             // console.log("Subscribed");
             result = true;
         }).catch((error) => {
@@ -154,7 +154,7 @@ const SearchGamesPage = () => {
     // Отписка от игры
     async function unsubscribe(gameId: number): Promise<boolean | undefined> {
         let result;
-        await api.post(`game/${gameId}/unsubscribe`).then(function (response) {
+        await api.post(`games/${gameId}/unsubscribe`).then(function (response) {
             // console.log("Unsubscribed");
             result = true;
         }).catch((error) => {
