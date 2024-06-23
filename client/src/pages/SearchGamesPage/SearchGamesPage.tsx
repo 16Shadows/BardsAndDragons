@@ -34,9 +34,6 @@ const SearchGamesPage = () => {
     // Индикатор, что выполяется запрос игр из БД
     const fetching = useRef(false)
 
-    // Отключение формы при запросе данных
-    const [formIsDisabled, setFormIsDisabled] = useState<boolean | undefined>(undefined);
-
     // Строка запроса для поиска
     const [searchQuery, setSearchQuery] = useState('')
 
@@ -232,30 +229,27 @@ const SearchGamesPage = () => {
             <Col md="6">
                 <div id="search-box" className="static-item">
                     <Form onSubmit={searchGames}>
-                        <fieldset disabled={formIsDisabled}>
-                            {/* Поиск по названию */}
-                            <div style={{ fontSize: "24px" }}><b>Название</b></div>
-                            <input style={{ width: "100%" }} value={searchQuery} onChange={e => setSearchQuery(e.currentTarget.value)} />
+                        {/* Поиск по названию */}
+                        <div style={{ fontSize: "24px" }}><b>Название</b></div>
+                        <input style={{ width: "100%" }} value={searchQuery} onChange={e => setSearchQuery(e.currentTarget.value)} />
 
-                            <div style={{ marginTop: "15px", textAlign: "center" }}>
-                                {/* Сортировка */}
-                                <span style={{ width: "48%", display: "inline-block", verticalAlign: "middle" }}>
-                                    <span style={{ fontWeight: "bolder", fontSize: "20px" }}>Сортировка:</span>
-                                    <select id="select-list" value={selectedSort} onChange={event => {setSelectedSort(event.target.value)}}>
-                                        <option disabled value={""}>Сортировка</option>
-                                        {Array.from(sortTypes.keys()).map((option) =>
-                                            <option key={option}>{option}</option>
-                                        )}
-                                    </select>
-                                </span>
+                        <div style={{ marginTop: "15px", textAlign: "center" }}>
+                            {/* Сортировка */}
+                            <span style={{ width: "48%", display: "inline-block", verticalAlign: "middle" }}>
+                                <span style={{ fontWeight: "bolder", fontSize: "20px" }}>Сортировка:</span>
+                                <select id="select-list" value={selectedSort} onChange={event => {setSelectedSort(event.target.value)}}>
+                                    <option disabled value={""}>Сортировка</option>
+                                    {Array.from(sortTypes.keys()).map((option) =>
+                                        <option key={option}>{option}</option>
+                                    )}
+                                </select>
+                            </span>
 
-                                {/* Кнопка поиска */}
-                                <span id="search-button-block">
-                                    <Button type="submit" id="search-button">Поиск</Button>
-                                </span>
-                            </div>
-                        </fieldset>
-                        
+                            {/* Кнопка поиска */}
+                            <span id="search-button-block">
+                                <Button type="submit" id="search-button">Поиск</Button>
+                            </span>
+                        </div>
                     </Form>
                 </div>
             </Col>
