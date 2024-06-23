@@ -4,7 +4,7 @@
 }
 
 /* Заголовок списка игр */
-#game-header {
+#search-game-header {
     background-color: white;
     padding-top: 115px;
     margin-bottom: 0px; 
@@ -15,7 +15,7 @@
 }
 
 /* Список игр */
-#game-box {
+#search-game-box {
     background-color: var(--box-back-color);
     padding: 20px 20px 5px 20px;
     border-radius: 10px;
@@ -24,14 +24,14 @@
 }
 
 /* Форма фильтрации */
-#search-box {
+#search-search-box {
     background-color: var(--box-back-color); 
     padding: 15px 20px 20px 20px;
     border-radius: 10px;
 }
 
 /* Кнопка поиска */
-#search-button {
+#search-search-button {
     width: 100%;
     font-size: 20px;
     padding: 3px 5px 3px 5px;
@@ -40,16 +40,24 @@
 }
 
 /* Блок с кнопкой поиска */
-#search-button-block {
+#search-search-button-block {
     width: 48%;
     margin-left: 4%;
     display: inline-block;
 }
 
 /* Список опций сортировки */
-#select-list {
+#search-select-list {
     width: 57%;
     margin-left: 3%;
     font-size: 18px;
     padding: 3px 3px 3px 3px;
+}
+
+
+/* Компонент сортировки */
+#search-sort-component {
+    width: 48%;
+    display: inline-block;
+    vertical-align: middle;
 }

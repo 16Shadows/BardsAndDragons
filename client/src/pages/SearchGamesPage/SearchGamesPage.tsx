@@ -196,7 +196,7 @@ const SearchGamesPage = () => {
         // Обработчик прокрутки страницы
         function scrollHandler(event: Event) {
             if (!fetching.current) {
-                // Условие: до конца полосы прокрутки меньше 100 единиц И номер текущей игры меньше их общего количества
+                // Условие: до конца полосы прокрутки меньше 100 единиц
                 if (document.documentElement.scrollHeight - document.documentElement.scrollTop - window.innerHeight < 100) {
                     // Запрашиваем игры из БД
                     getGames();
@@ -218,7 +218,7 @@ const SearchGamesPage = () => {
         <Row className="gx-5">
             {/* Поиск и сортировка */}
             <Col md="6">
-                <div id="search-box" className="static-item">
+                <div id="search-search-box" className="static-item">
                     <Form onSubmit={searchGames}>
                         {/* Поиск по названию */}
                         <div style={{ fontSize: "24px" }}><b>Название</b></div>
@@ -226,9 +226,9 @@ const SearchGamesPage = () => {
 
                         <div style={{ marginTop: "15px", textAlign: "center" }}>
                             {/* Сортировка */}
-                            <span style={{ width: "48%", display: "inline-block", verticalAlign: "middle" }}>
+                            <span id="search-sort-component">
                                 <span style={{ fontWeight: "bolder", fontSize: "20px" }}>Сортировка:</span>
-                                <select id="select-list" value={selectedSort} onChange={event => {setSelectedSort(event.currentTarget.value)}}>
+                                <select id="search-select-list" value={selectedSort} onChange={event => {setSelectedSort(event.currentTarget.value)}}>
                                     <option disabled value={""}>Сортировка</option>
                                     {Array.from(sortTypes.keys()).map((option) =>
                                         <option key={option}>{option}</option>
@@ -237,8 +237,8 @@ const SearchGamesPage = () => {
                             </span>
 
                             {/* Кнопка поиска */}
-                            <span id="search-button-block">
-                                <Button type="submit" id="search-button">Поиск</Button>
+                            <span id="search-search-button-block">
+                                <Button type="submit" id="search-search-button">Поиск</Button>
                             </span>
                         </div>
                     </Form>
@@ -246,8 +246,8 @@ const SearchGamesPage = () => {
             </Col>
             {/* Список игр */}
             <Col md="6">
-                <h2 id="game-header">Игры</h2>
-                <div id="game-box">
+                <h2 id="search-game-header">Игры</h2>
+                <div id="search-game-box">
                     {
                         // Если games = undefined, то "Игры загружаются..."
                         games
