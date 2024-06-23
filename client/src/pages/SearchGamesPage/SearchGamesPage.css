@@ -6,7 +6,7 @@
 /* Заголовок списка игр */
 #search-game-header {
     background-color: white;
-    padding-top: 115px;
+    padding-top: var(--top-indent);
     margin-bottom: 0px; 
     padding-bottom: 10px; 
     top: 0px;
@@ -48,7 +48,7 @@
 
 /* Список опций сортировки */
 #search-select-list {
-    width: 57%;
+    width: 53%;
     margin-left: 3%;
     font-size: 18px;
     padding: 3px 3px 3px 3px;
