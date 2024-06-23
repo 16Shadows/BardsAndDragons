@@ -289,8 +289,6 @@ export class UserController extends Object {
 
         await this._dbContext.getRepository(User).save(user);
     }
-<<<<<<< HEAD
-=======
 
     @POST('@current/delete')
     @Middleware(AuthMiddleware)
@@ -353,5 +351,4 @@ export class UserController extends Object {
 
         return publicUserInfo;
     }
->>>>>>> developer
 }
