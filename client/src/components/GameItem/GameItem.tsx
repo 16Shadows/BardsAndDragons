@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./GameItem.css"
 import { CiSquareMinus } from "react-icons/ci";
-import { IconContext } from "react-icons";
+// import { IconContext } from "react-icons";
 import { Button } from "react-bootstrap";
 import gameImage from "../../resources/Uno flip.jpg"
 
@@ -70,7 +70,7 @@ const Game = ({game, logined=false, subscribe, unsubscribe}: IProps) => {
                 <div>
                     {/* Переход к игре */}
                     <span className="game-button-block">
-                        <button className="game-button" onClick={() => navigate('/home')}>{game.name}</button>
+                        <button className="game-button" onClick={() => navigate(`/game/${game.id}`)}>{game.name}</button>
                     </span>
                     {
                         // Панель для подписки/отписки

@@ -54,7 +54,7 @@ const SearchGamesPage = () => {
     const [modalMessage, setModalMessage ] = useState("Сообщение")
 
     // Состояние модального окна скрыто/открыто
-    const [modalIsShow, setModalIsShow] = useState(false)
+    const modalIsShow = useRef<boolean>(false)
 
     // ===Сортировка===
     // Список опций
@@ -65,11 +65,10 @@ const SearchGamesPage = () => {
 
     // ===Функции===
     // Обработчик для кнопки поиска игр
-    function searchGames(e: FormEvent<HTMLFormElement>) 
-    {
+    const searchGames = useCallback((e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setSearchQueryEvent(searchQuery);
-    }
+    }, [searchQuery])
 
     // Получение игр из БД
     const getGames = useCallback(() => {
@@ -117,7 +116,7 @@ const SearchGamesPage = () => {
             // Увеличиваем текущую позицию
             currentGameNumber.current += requestSize;
         }).catch(() => {
-            if (!modalIsShow)
+            if (!modalIsShow.current)
                 showModal("Не удалось получить список игр");
             setGames([]);
         }).finally(() => {
@@ -147,58 +146,50 @@ const SearchGamesPage = () => {
             // Делаем запрос игр
             getGames();
         }).catch(() => {
-            if (!modalIsShow)
+            if (!modalIsShow.current)
                 showModal("Не удалось получить список игр");
             setGames([]);
         })
     }, [requestSize, searchQueryEvent, selectedSort, api])
 
     // Подписка на игру
-    async function subscribe(gameId: number): Promise<boolean | undefined> {
+    const subscribe = useCallback(async (gameId: number): Promise<boolean | undefined> => {
         let result;
         await api.post(`game/${gameId}/subscribe`).then(function (response) {
-            // console.log("Subscribed");
             result = true;
         }).catch((error) => {
             showModal(error.response?.data?.message || "Не удалось подписаться на игру");
             result = false;
         });
         return result;
-    }
+    }, [])
 
     // Отписка от игры
-    async function unsubscribe(gameId: number): Promise<boolean | undefined> {
+    const unsubscribe = useCallback(async (gameId: number): Promise<boolean | undefined> => {
         let result;
         await api.post(`game/${gameId}/unsubscribe`).then(function (response) {
-            // console.log("Unsubscribed");
             result = true;
         }).catch((error) => {
             showModal(error.response?.data?.message || "Игра не найдена");
             result = false;
         })
         return result;
-    }
-
-    // Открыть модальное окно с сообщением
-    const showModal = useCallback((message: string, timeout = 5000) => {
-        setModalMessage(message);
-        setModalIsShow(true);
-        modalTimeoutHandler.current = setTimeout(hideModal, timeout);
     }, [])
 
     // Закрыть модальное окно
     const hideModal = useCallback(() => {
-        setModalIsShow(state => {
-            // Действия, если окно ещё не закрыто
-            if (state) {
-                clearTimeout(modalTimeoutHandler.current);
-                return false;
-            }
-            // Если закрыто, то состояние не сменится
-            else
-                return false;
-        });
+        if (modalIsShow.current) {
+            clearTimeout(modalTimeoutHandler.current);
+            modalIsShow.current = false;
+        }
     }, [])
+
+    // Открыть модальное окно с сообщением
+    const showModal = useCallback((message: string, timeout = 5000) => {
+        setModalMessage(message);
+        modalIsShow.current = true;
+        modalTimeoutHandler.current = setTimeout(hideModal, timeout);
+    }, [hideModal])
 
     // Выполняется при изменении обработчика
     useEffect(() => {
@@ -237,7 +228,7 @@ const SearchGamesPage = () => {
                             {/* Сортировка */}
                             <span style={{ width: "48%", display: "inline-block", verticalAlign: "middle" }}>
                                 <span style={{ fontWeight: "bolder", fontSize: "20px" }}>Сортировка:</span>
-                                <select id="select-list" value={selectedSort} onChange={event => {setSelectedSort(event.target.value)}}>
+                                <select id="select-list" value={selectedSort} onChange={event => {setSelectedSort(event.currentTarget.value)}}>
                                     <option disabled value={""}>Сортировка</option>
                                     {Array.from(sortTypes.keys()).map((option) =>
                                         <option key={option}>{option}</option>
@@ -278,7 +269,7 @@ const SearchGamesPage = () => {
                 </div>
             </Col>
             {/* Отображение ошибок */}
-            <ModalWindowAlertError show={modalIsShow} onHide={hideModal} message={modalMessage} />
+            <ModalWindowAlertError show={modalIsShow.current} onHide={hideModal} message={modalMessage} />
         </Row>
     );
 };
