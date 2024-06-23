@@ -7,7 +7,7 @@ const ProtectedRoutes = ({fallbackPath}: { fallbackPath: string }) => {
     return isAuthenticated ? (
         <Outlet/>
     ) : (
-        <Navigate to={fallbackPath} replace state={{from: location}}/>
+        <Navigate to={fallbackPath} state={{from: location}}/>
     );
 };
 
