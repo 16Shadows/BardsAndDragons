@@ -3,9 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./GameItem.css"
 import { CiSquareMinus } from "react-icons/ci";
-// import { IconContext } from "react-icons";
 import { Button } from "react-bootstrap";
-import gameImage from "../../resources/Uno flip.jpg"
 import { getGamePageRoute } from "../routes/Navigation";
 
 // Игра
@@ -16,6 +14,8 @@ export interface IGameProps {
     playerCount: string;
     ageRating: string; 
     subscribed?: boolean;
+    image: string;
+    tags: string[];
 }
 
 // Функция подписки/отписки
@@ -30,15 +30,6 @@ interface IProps {
     subscribe: ISubscribe;
     unsubscribe: ISubscribe;
 }
-
-// Иконка для кнопки отписки
-// function RemoveButton() {
-//     return (
-//       <IconContext.Provider value={{ color: 'red', size: '30px' }}>
-//           <CiSquareMinus />
-//       </IconContext.Provider>
-//     );
-// }
 
 const Game = ({game, logined=false, subscribe, unsubscribe}: IProps) => {
     // Для перехода к странице игры
@@ -63,7 +54,7 @@ const Game = ({game, logined=false, subscribe, unsubscribe}: IProps) => {
         <div className="game-game-item">
             {/* Картинка игры */}
             <div className="game-game-icon">
-                <img width={"100%"} height={"100%"} src={gameImage} ></img>
+                <img width={"100%"} height={"100%"} alt="Картинка?" src={'/'+game.image} ></img>
             </div>
 
             {/* Описание игры */}
@@ -92,7 +83,10 @@ const Game = ({game, logined=false, subscribe, unsubscribe}: IProps) => {
                     }
                 </div>
                 <div>{game.description}</div>
-                <div style={{ fontWeight: "bolder" }}>{game.playerCount} игроков, {game.ageRating}</div>
+                <div>
+                    <span style={{ fontWeight: "bolder" }}>{game.playerCount} игроков, {game.ageRating}</span>, 
+                    {game.tags.map(tag => ' #'+tag)}
+                </div>
             </div>
         </div>
     )
