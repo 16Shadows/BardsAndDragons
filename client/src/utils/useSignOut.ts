@@ -1,21 +1,21 @@
 import useSignOutReact from "react-auth-kit/hooks/useSignOut";
-import useApi from "../http-common";
 import {useNavigate} from "react-router-dom";
+import {useCallback} from "react";
+import {getHomeRoute} from "../components/routes/Navigation";
 
 /**
- * Sign out the user. Call the API to invalidate the token. Call the react-auth-kit hook to delete all the auth state
+ * Sign out the user. First, call signOutStrategy, then call the react-auth-kit hook to delete all the auth state.
  */
-const useSignOut = () => {
-    const api = useApi();
+const useSignOut = (signOutStrategy: () => Promise<boolean>) => {
     const signOutReact = useSignOutReact();
     const navigate = useNavigate();
-    const signOut = () => {
-        api.post("user/logout", {})
-            .catch(() => {})
-            .finally(() => signOutReact())
-            .finally(() => navigate("/"));
-    }
-    return {signOut};
+
+    return useCallback(async () => {
+        if (await signOutStrategy()) {
+            signOutReact();
+            navigate(getHomeRoute());
+        }
+    }, [signOutReact, navigate, signOutStrategy]);
 };
 
 export default useSignOut;

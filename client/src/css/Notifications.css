@@ -1,4 +1,10 @@
-.notifications_panel {
-    /* Не работает пока, как и алайнмент по правой границе родителя */
-    width: 500px !important;
+.notifications-menu {
+    min-width: 500px; 
+    max-width: 900px;
+    width: auto;
+    max-height: 300px;
+    overflow-y: scroll;
+}
+.text-wrap {
+    word-break: break-word;
 }

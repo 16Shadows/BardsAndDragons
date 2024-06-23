@@ -1,37 +1,28 @@
-import React from 'react'
-import {useNavigate} from 'react-router-dom'
-import useApi from "../http-common";
+import { useNavigate } from "react-router-dom";
+import "../css/Home.css";
+import Button from "../components/Button";
+import { getPlayersPageRoute } from "../components/routes/Navigation";
 
 const Home = () => {
-    const navigate = useNavigate()
-    const api = useApi()
+  const navigate = useNavigate();
 
-    const testQuery = () => {
-        // POST запрос к серверу
-        api.post('user/test-query-with-auth', {})
-            .then(
-                (response) => {
-                    // Показать текст сообшения
-                    alert(response.data.message)
-                }
-            )
-            .catch((error) => {
-                console.error(error)
-                // Вывести текст ошибки
-                alert(error.message)
-            });
-    }
-
-    return (
+  return (
+    <div className="home-container">
+      <div className="left home-text d-grid align-items-center ms-5">
         <div>
-            <h1>Home</h1>
-            <button onClick={testQuery}>Check Auth</button>
-            <button onClick={() => navigate('/login')}>Go to Login</button>
-            <button onClick={() => navigate('/register')}>Go to Register</button>
-            <button onClick={() => navigate('/secure')}>Go to Secure Dashboard</button>
-            <button onClick={() => navigate('/test-page')}>Go to Test Page</button>
+          <h1 className="home-text">Лучшее приложение для поиска игроков в настолочки</h1>
+          <Button
+            onClick={() => {
+              navigate(getPlayersPageRoute());
+            }}
+            color="primary"
+            children={"Начать поиск игроков!"}
+          />
         </div>
-    )
-}
+      </div>
+      <div className="right"></div>
+    </div>
+  );
+};
 
-export default Home
+export default Home;

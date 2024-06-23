@@ -3,14 +3,15 @@ import {ModelDataSource} from "../model/dataSource";
 import { GET, POST } from "../modules/core/routing/decorators";
 import {Middleware, MiddlewareBag} from "../modules/core/middleware/middleware";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
+import bcrypt from "bcryptjs";
+import {badRequest, json, notFound} from "../modules/core/routing/response";
 import { Game } from "../model/game";
 import { QueryArgument, QueryBag } from "../modules/core/routing/query";
 import { ILike } from "typeorm"
 import { UsersGame } from "../model/usersGame";
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
-import { badRequest, notFound } from "../modules/core/routing/response";
 import { SelectQueryBuilder } from "typeorm/browser";
-import { gameNotFound, sortTypeNotFound, subscriptionAlreadyExist, subscriptionNotExist } from "../../client/src/utils/errorMessages";
+import { gameNotFound, sortTypeNotFound, subscriptionAlreadyExist, subscriptionNotExist } from "../utils/errorMessages";
 
 // Список опций сортировки
 const sortTypes = new Set(["id", "name"])

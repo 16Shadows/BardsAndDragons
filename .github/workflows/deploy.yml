@@ -1,0 +1,54 @@
+name: deploy
+on:
+  push:
+    branches:
+      - master
+      - developer
+      - release*
+  pull_request:
+
+jobs:
+  test:
+    runs-on: [self-hosted]
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.2.0
+          cache: 'npm'
+      - name: Run jest test
+        run: |
+          npm ci
+          npm run test
+
+  deploy:
+    runs-on: [self-hosted]
+    environment: production
+    # github.event_name == 'push' сейчас лишнее, но при обновлении GitHub поведение может измениться
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    needs: [test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Environment
+        run: |
+          echo "DATABASE_HOSTNAME=${{ secrets.DATABASE_HOSTNAME }}" > .env
+          echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
+          echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env
+          echo "DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}" >> .env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
+        shell: bash
+      - name: Build and run docker
+        env:
+          IMAGE: bad:v1
+          STORAGE_PATH: /prog/web_dad/storage/userimages
+          CONTAINER_NAME: bad-app
+          NETWORK_NAME: bad-network
+        run: |
+          docker stop $CONTAINER_NAME && docker rm $CONTAINER_NAME || true
+          docker build --cache-from $IMAGE -t $IMAGE .
+          docker run -d -p 3000:3000 --name $CONTAINER_NAME --network $NETWORK_NAME -v $STORAGE_PATH:/app/public/userimages $IMAGE

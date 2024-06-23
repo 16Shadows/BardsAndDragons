@@ -3,39 +3,61 @@ import {Route, Routes} from "react-router-dom";
 
 // Pages
 import Home from "../../pages/Home";
-import Login from "../../pages/login/LoginForm";
-import Registration from "../../pages/registration/RegistrationForm";
+import Login from "../../pages/LoginPage/LoginForm";
+import Registration from "../../pages/RegistrationPage/RegistrationForm";
 import ProfilePage from "../../pages/ProfilePage";
-import MyGamesPage from "../../pages/MyGamesPage";
-import MyFriendsPage from "../../pages/MyFriendsPage";
+import MyGamesPage from "../../pages/MyGamesPage/MyGamesPage";
+import MyFriendsPage from "../../pages/FriendsPage/FriendsPage";
 import SearchGamesPage from "../../pages/SearchGamesPage/SearchGamesPage";
-import PlayersPage from "../../pages/PlayersPage";
+import PlayersPage from "../../pages/PlayersPage/PlayersPage";
 import ProtectedRoutes from "./ProtectedRoutes";
-import TestPage from "../../pages/TestPage";
+import GamePage from "../../pages/GamePage";
+import OtherPlayerPage from "../../pages/OtherPlayerPage/OtherPlayerPage";
+import NotFoundPage from "../../pages/NotFoundPage/NotFoundPage";
+
+import {
+    getFriendsPageRoute,
+    getGamesPageRoute,
+    getHomeRoute,
+    getLoginPageRoute,
+    getMyGamesPageRoute,
+    getMyProfilePageRoute,
+    getNotFoundRoute,
+    getPlayersPageRoute,
+    getRegistrationPageRoute,
+    getUserProfileRoute,
+    getGamePageRoute,
+} from "./Navigation";
 
 const RoutesComponent = () => {
     return (
         <Routes>
             {/* Public routes */}
-            <Route path={"/"} element={<Home/>}/>
-            <Route path={"/login"} element={<Login/>}/>
-            <Route path={"/register"} element={<Registration/>}/>
-            <Route path={"/games"} element={<SearchGamesPage/>}/>
+            <Route path={getHomeRoute()} element={<Home/>}/>
+            <Route path={getLoginPageRoute()} element={<Login/>}/>
+            <Route path={getRegistrationPageRoute()} element={<Registration/>}/>
+            <Route path={getGamesPageRoute()} element={<SearchGamesPage/>}/>
 
-            <Route path={"test-page"} element={<TestPage/>}/>
+            {/* Dynamic Game Page route */}
+            <Route path={getGamePageRoute(":id")} element={<GamePage/>}/>
 
             {/* Protected routes */}
-            <Route element={<ProtectedRoutes fallbackPath='/login'/>}>
-                <Route path={"/my-profile"} element={<ProfilePage/>}/>
-                <Route path={"/my-games"} element={<MyGamesPage/>}/>
-                <Route path={"/my-friends"} element={<MyFriendsPage/>}/>
+            <Route element={<ProtectedRoutes fallbackPath={getLoginPageRoute()}/>}>
+                <Route path={getMyProfilePageRoute()} element={<ProfilePage/>}/>
+                <Route path={getMyGamesPageRoute()} element={<MyGamesPage/>}/>
+                <Route path={getFriendsPageRoute()} element={<MyFriendsPage/>}/>
+                <Route path={getPlayersPageRoute()} element={<PlayersPage/>}/>
 
-                <Route path={"/players"} element={<PlayersPage/>}/>
+                {/* Dynamic User Profile route */}
+                <Route path={getUserProfileRoute(":username")} element={<OtherPlayerPage/>}/>
+
             </Route>
 
-            {/* TODO: 404 page */}
-            <Route path={"*"} element={<div>404 Not found </div>}/>
-        </Routes>)
-}
+            {/* 404 page */}
+            <Route path={getNotFoundRoute()} element={<NotFoundPage/>}/>
 
-export default RoutesComponent
+        </Routes>
+    );
+};
+
+export default RoutesComponent;
