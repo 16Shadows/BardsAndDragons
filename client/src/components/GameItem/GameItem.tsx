@@ -6,6 +6,7 @@ import { CiSquareMinus } from "react-icons/ci";
 // import { IconContext } from "react-icons";
 import { Button } from "react-bootstrap";
 import gameImage from "../../resources/Uno flip.jpg"
+import { getGamePageRoute } from "../routes/Navigation";
 
 // Игра
 export interface IGameProps {
@@ -70,7 +71,7 @@ const Game = ({game, logined=false, subscribe, unsubscribe}: IProps) => {
                 <div>
                     {/* Переход к игре */}
                     <span className="game-button-block">
-                        <button className="game-button" onClick={() => navigate(`/game/${game.id}`)}>{game.name}</button>
+                        <button className="game-button" onClick={() => navigate(getGamePageRoute(String(game.id)))}>{game.name}</button>
                     </span>
                     {
                         // Панель для подписки/отписки
