@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Spinner, Tab, Tabs } from "react-bootstrap";
+import { Button, Container, Spinner, Tab, Tabs } from "react-bootstrap";
 import "../../css/App.css";
 import "./OtherPlayerPage.css";
+import "../../css/Main.css";
 
 import GamesList from "./GameList";
 import GameItem from "./GameItem";
@@ -279,84 +280,86 @@ const OtherPlayerPage = () => {
     }
 
     return (
-        <div className="d-flex flex-column content">
-            <div className="bg-white row profile-row">
-                <div className="pic-col">
+        <Container className="page-container">
+            <div className="d-flex flex-column content">
+                <div className="bg-white row profile-row">
+                    <div className="pic-col">
 
-                    <img
-                        id="profile_pic"
-                        className="profile_image mb-2"
-                        alt="Ошибка загрузки аватара"
-                        src={avatar ?? defaultAvatarPic}
-                    />
+                        <img
+                            id="profile_pic"
+                            className="profile_image mb-2"
+                            alt="Ошибка загрузки аватара"
+                            src={avatar ?? defaultAvatarPic}
+                        />
 
-                    <div className="row mb-2">
-                        {renderFriendButton()}
+                        <div className="row mb-2">
+                            {renderFriendButton()}
+                        </div>
+
                     </div>
 
-                </div>
+                    <div className="label-col text_column col">
 
-                <div className="label-col text_column col">
+                        <div className="mb-2">
+                            <span className="d-block font-weight-bold">{displayName ?? playerUsername}</span>
+                            <span className="d-block text-weight-bold">{city === "" ? ("Город: не указан") : ("Город: " + city)}</span>
+                            <span>{getAgeString(age)}</span>
+                        </div>
 
-                    <div className="mb-2">
-                        <span className="d-block font-weight-bold">{displayName ?? playerUsername}</span>
-                        <span className="d-block text-weight-bold">{city === "" ? ("Город: не указан") : ("Город: " + city)}</span>
-                        <span>{getAgeString(age)}</span>
-                    </div>
-
-                    <div className="mb-2">
-                        <label htmlFor="ProfileDescription" className="d-block">Описание профиля:</label>
-                        <textarea
-                            rows={4}
-                            maxLength={300}
-                            className="form-control"
-                            id="ProfileDescription"
-                            disabled={true}
-                            value={description ?? ""}
-                        ></textarea>
-                    </div>
-
-                    <div>
-                        <label htmlFor="ProfileContacts" className="d-block">Контакты:</label>
-                        {(friendshipStatus === "friends" || friendshipStatus === "youprofile") ? (
+                        <div className="mb-2">
+                            <label htmlFor="ProfileDescription" className="d-block">Описание профиля:</label>
                             <textarea
                                 rows={4}
                                 maxLength={300}
                                 className="form-control"
-                                id="ProfileContacts"
+                                id="ProfileDescription"
                                 disabled={true}
-                                value={contactInfo ?? "Нет доступных контактов"}
+                                value={description ?? ""}
                             ></textarea>
-                        ) : (
-                            <textarea
-                                rows={4}
-                                maxLength={300}
-                                className="form-control"
-                                id="ProfileContacts"
-                                disabled={true}
-                                value={"Для просмотра контактов необходимо быть в друзьях у пользователя"}
-                            ></textarea>
-                        )}
+                        </div>
+
+                        <div>
+                            <label htmlFor="ProfileContacts" className="d-block">Контакты:</label>
+                            {(friendshipStatus === "friends" || friendshipStatus === "youprofile") ? (
+                                <textarea
+                                    rows={4}
+                                    maxLength={300}
+                                    className="form-control"
+                                    id="ProfileContacts"
+                                    disabled={true}
+                                    value={contactInfo ?? "Нет доступных контактов"}
+                                ></textarea>
+                            ) : (
+                                <textarea
+                                    rows={4}
+                                    maxLength={300}
+                                    className="form-control"
+                                    id="ProfileContacts"
+                                    disabled={true}
+                                    value={"Для просмотра контактов необходимо быть в друзьях у пользователя"}
+                                ></textarea>
+                            )}
+                        </div>
+
                     </div>
-
                 </div>
-            </div>
 
-            <hr style={{ marginTop: 15 }} />
+                <hr style={{ marginTop: 15 }} />
 
-            <Tabs>
-                <Tab title='Игры' eventKey='game-list' className="p-2">
-                    <GamesList
-                        gameItemTemplate={(x) => {
-                            return (
-                                <GameItem game={x} key={x.gamename}></GameItem>
-                            )
-                        }}
-                        gameListUrlBuilder={(len, sortBy, sortOrder) => `user/${playerUsername}/games?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
-                    />
-                </Tab>
-            </Tabs >
-        </div >
+                <Tabs>
+                    <Tab title='Игры' eventKey='game-list' className="p-2">
+                        <GamesList
+                            gameItemTemplate={(x) => {
+                                return (
+                                    <GameItem game={x} key={x.gamename}></GameItem>
+                                )
+                            }}
+                            gameListUrlBuilder={(len, sortBy, sortOrder) => `user/${playerUsername}/games?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
+                        />
+                    </Tab>
+                </Tabs >
+            </div >
+        </Container>
     );
 };
 export default OtherPlayerPage;

@@ -14,21 +14,6 @@ const store = createStore({
     authType: "localstorage",
 });
 
-function Main() {
-    const location = useLocation();
-    
-    // Check if the current route is the homepage
-    const isHomepage = location.pathname === "/";
-  
-    return (
-      <main className={`${isHomepage ? "main-homepage-background" : "main"}`}>
-        <Container> 
-          <RoutesComponent />
-        </Container>
-      </main>
-    );
-  }
-
 function App() {
     return (
         <AuthProvider store={store}>
@@ -40,7 +25,8 @@ function App() {
                         <Navbar />
                     </header>
 
-                    <Main />
+                    {/* <Main /> */}
+                    <RoutesComponent />
 
                     <Footer />
                    

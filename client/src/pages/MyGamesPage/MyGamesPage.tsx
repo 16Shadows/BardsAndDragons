@@ -1,10 +1,11 @@
-import { Button, Tab, Tabs } from "react-bootstrap";
+import { Button, Container, Tab, Tabs } from "react-bootstrap";
 import GamesList from "./GamesList";
 import GameItem from "./GameItem";
 import { useCallback, useState } from "react";
 import useApi from "../../http-common";
 import GameData from "./GameData";
 import './GameItem.css';
+import "../../css/Main.css";
 
 function GameButtons({ game }: { game: GameData }) {
     const api = useApi();
@@ -55,7 +56,7 @@ function GameButtons({ game }: { game: GameData }) {
     }
     else
         return (
-    
+
             <div className="game-header">
                 <div className="online-status">
                     <span>Играю онлайн</span>
@@ -75,20 +76,22 @@ function GameButtons({ game }: { game: GameData }) {
 
 function MyGamesPage() {
     return (
-        <Tabs>
-            <Tab title='Мои игры' eventKey='game-list' className="p-2">
-                <GamesList
-                    gameItemTemplate={(x) => {
-                        return (
-                            <GameItem game={x} key={x.gamename}>
-                                <GameButtons game={x} />
-                            </GameItem>
-                        )
-                    }}
-                    gameListUrlBuilder={(len, sortBy, sortOrder) => `user/@current/games/current?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
-                />
-            </Tab>
-        </Tabs>
+        <Container className="page-container">
+            <Tabs>
+                <Tab title='Мои игры' eventKey='game-list' className="p-2">
+                    <GamesList
+                        gameItemTemplate={(x) => {
+                            return (
+                                <GameItem game={x} key={x.gamename}>
+                                    <GameButtons game={x} />
+                                </GameItem>
+                            )
+                        }}
+                        gameListUrlBuilder={(len, sortBy, sortOrder) => `user/@current/games/current?start=${len}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
+                    />
+                </Tab>
+            </Tabs>
+        </Container>
     );
 };
 

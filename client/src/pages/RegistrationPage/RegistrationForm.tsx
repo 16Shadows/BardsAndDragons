@@ -1,11 +1,12 @@
 import React from "react";
 import {Navigate} from "react-router-dom";
-import {Alert, Button, Form} from "react-bootstrap";
+import {Alert, Button, Container, Form} from "react-bootstrap";
 import useIsAuthenticated from "react-auth-kit/hooks/useIsAuthenticated";
 import useRegistrationForm from "./useRegistrationForm";
 import CenteredCardWithItem from "../../components/CenteredCardWithItem";
 import {getHomeRoute} from "../../components/routes/Navigation";
 import {RegistrationFormFields} from "./registrationFormTypes";
+import "../../css/Main.css";
 
 const RegistrationForm = () => {
     const isAuthenticated = useIsAuthenticated();
@@ -16,6 +17,7 @@ const RegistrationForm = () => {
     }
 
     return (
+        <Container className="page-container">
         <CenteredCardWithItem
             title="Регистрация"
             cardBody={
@@ -85,6 +87,7 @@ const RegistrationForm = () => {
                 </Form>
             }
         />
+        </Container>
     );
 };
 

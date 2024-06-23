@@ -15,6 +15,8 @@ import useApi from "../http-common";
 
 import { registerLocale } from "react-datepicker";
 import { ru } from "date-fns/locale/ru";
+import "../css/Main.css";
+import { Container } from "react-bootstrap";
 registerLocale("ru", ru);
 
 interface TownForSelect {
@@ -226,320 +228,322 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="d-flex flex-column bg-white content">
-      <div className="d-flex flex-row flex-wrap justify-content-center">
-        {/* pic column */}
-        <div className="d-flex flex-column pic-col m-2 justify-content-center">
-          <img
-            id="profile_pic"
-            className="profile_image mb-2"
-            alt="Ошибка загрузки аватара"
-            src={avatarPic ?? defaultAvatarPic}
-          />
-          {!avatarPic && (
-            <div>
-              <small className="form-text text-red">
-                Необходимо добавить изображение
-              </small>
-            </div>
-          )}
-          <div className="row">
-            {isEditing && (
-              <div className="col">
-                <input
-                  className="file-input"
-                  type="file"
-                  accept=".jpeg,.png"
-                  onChange={onAvatarUpload}
-                ></input>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* label + value column */}
-        <div className="d-flex">
-          <div className="label-col me-2">
-            <div className="col ">
-              <div className="row">
-                <label className="col-form-label">Никнейм:</label>
-              </div>
-
-              <div className="row">
-                <label
-                  className={name ? "col-form-label" : "col-form-label text-red"}
-                >
-                  Отображаемое имя:
-                </label>
-              </div>
-
-              <div className="row">
-                <label className="col-form-label">Почта:</label>
-              </div>
-
-              <div className="row">
-                <label
-                  className={
-                    town.value !== ""
-                      ? "col-form-label"
-                      : "col-form-label text-red"
-                  }
-                >
-                  Город:
-                </label>
-              </div>
-
-              <div className="row">
-                <label
-                  className={
-                    birthDate ? "col-form-label" : "col-form-label text-red"
-                  }
-                >
-                  Дата рождения:
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div className="col value-column">
-            <div className="row">
-              <div className="col col-form-label">
-                <label className="">{username}</label>
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col col-form-label">
-                <input
-                  className=" form-conrol"
-                  required={true}
-                  disabled={!isEditing}
-                  name="name"
-                  maxLength={32}
-                  type="text"
-                  placeholder={username}
-                  value={name ?? ""}
-                  onChange={handleNameChange}
-                  style={{ width: "inherit" }}
-                ></input>
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col col-form-label">
-                <label className="">{email}</label>
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col">
-                <Select
-                  options={townList}
-                  onChange={handleTownChange}
-                  isDisabled={!isEditing}
-                  placeholder={"Не выбран"}
-                  value={town}
-                />
-                <div className="row">
-                  <div className="col DatePicker">
-                    <DatePicker
-                      wrapperClassName="datePicker"
-                      disabled={!isEditing}
-                      minDate={new Date(1900, 0)}
-                      maxDate={new Date()}
-                      locale="ru"
-                      showIcon
-                      dateFormat="dd/MM/yyyy"
-                      selected={birthDate}
-                      onChange={handleBirthDateChange}
-                      // При некорректном, неполном или пустом вводе дата = null
-                      onChangeRaw={() => {
-                        handleBirthDateChange(null);
-                      }}
-                    />
-                  </div>
-                </div>{" "}
-              </div>
-            </div>
-            {(!birthDate || !name || town.value === "") && (
+    <Container className="page-container">
+      <div className="d-flex flex-column bg-white content">
+        <div className="d-flex flex-row flex-wrap justify-content-center">
+          {/* pic column */}
+          <div className="d-flex flex-column pic-col m-2 justify-content-center">
+            <img
+              id="profile_pic"
+              className="profile_image mb-2"
+              alt="Ошибка загрузки аватара"
+              src={avatarPic ?? defaultAvatarPic}
+            />
+            {!avatarPic && (
               <div>
                 <small className="form-text text-red">
-                  Необходимо заполнить все поля профиля
+                  Необходимо добавить изображение
                 </small>
               </div>
             )}
-          </div>
-        </div>
-      </div>
-
-      <hr style={{ marginTop: 15 }} />
-
-      {/* checkbox col */}
-      <div className="d-flex flex-column">
-
-
-        <div className="form-check col">
-          <input
-            disabled={!isEditing}
-            type="checkbox"
-            className="form-check-input"
-            id="isShowingAgeCheckbox"
-            checked={isShowingAge}
-            onChange={hangleIsShowingAgeChange}
-          />
-          <label className="form-check-label">Показывать мой возраст</label>
-          <TooltipComponent
-            mainText={"(?)"}
-            delayHide={450}
-            delayShow={300}
-            placement="top"
-          >
-            Если выбрано "Не показывать" - ваш возраст не будет виден другим
-            пользователям, но продолжит использоваться в алгоритме подбора
-            игроков
-          </TooltipComponent>
-        </div>
-      </div>
-
-      <hr style={{ marginTop: 15 }} />
-
-      {/* description col */}
-      <div className="d-flex flex-column">
-        <label htmlFor="ProfileDescription">Описание профиля</label>
-        <textarea
-          rows={4}
-          maxLength={300}
-          className="form-control"
-          id="ProfileDescription"
-          disabled={!isEditing}
-          value={profileDescription ?? ""}
-          onChange={handleDescriptionChange}
-          placeholder="Опишите ваши интересы, предпочтения в играх и т.п."
-        ></textarea>
-        <small id="DescriptionHelpText" className="form-text">
-          Описание профиля видно всем пользователям
-        </small>
-        {!profileDescription && (
-          <div>
-            <small className="form-text text-red">
-              Необходимо заполнить описание профиля
-            </small>
-          </div>
-        )}
-      </div>
-
-      <hr style={{ marginTop: 15 }} />
-
-      {/* contacts col */}
-      <div className="d-flex flex-column">
-        <label htmlFor="ProfileContacts">Контакты</label>
-        <textarea
-          rows={4}
-          maxLength={300}
-          className="form-control"
-          id="ProfileContacts"
-          disabled={!isEditing}
-          value={profileContacts ?? ""}
-          onChange={handleContactsChange}
-          placeholder="Например, ссылка на аккаунт в Телеграме, ВКонтакте, адрес электронной почты..."
-        ></textarea>
-        <small className="form-text">
-          Контакты видны только вашим друзьям <br />
-        </small>
-        <small className="form-text text-red">
-          Пожалуйста, оставьте{" "}
-          <strong className="text-red">актуальные</strong> контакты, по
-          которым другие игроки смогут с вами связаться и позвать поиграть!
-        </small>
-        {!profileContacts && (
-          <div>
-            <small className="form-text text-red">
-              Необходимо заполнить контакты
-            </small>
-          </div>
-        )}
-      </div>
-
-      <hr style={{ marginTop: 15 }} />
-
-      <div className="d-flex flex-column mb-2">
-        {isEditing ? (
-          avatarPic !== null &&
-            name !== null &&
-            town.value !== "" &&
-            birthDate !== null &&
-            profileDescription !== null &&
-            profileContacts !== null ? (
-            <Button
-              key={"doneRedactingButton"}
-              color="primary"
-              children="Сохранить изменения"
-              onClick={() => {
-                // Такие же действия у кнопки в SaveProfileButtons, при изменении учитывать
-                setIsEditing(false);
-                SaveChangesToDB();
-              }}
-            ></Button>
-          ) : (
-            <Popup
-              popupButtonText="Сохранить изменения"
-              popupButtonVariant="primary"
-              show={false}
-              title="Сохранение изменений профиля"
-              message={
-                <div>
-                  Внимание, вы не заполнили поля:
-                  <ul>
-                    {[
-                      avatarPic ? null : "Изображение профиля",
-                      name ? null : "Отображаемое имя",
-                      town.value !== "" ? null : "Город",
-                      birthDate ? null : "Дата рождения",
-                      profileDescription ? null : "Описание профиля",
-                      profileContacts ? null : "Контакты",
-                    ]
-                      .filter(function (e) {
-                        return e;
-                      })
-                      .map((obj) => (
-                        <li>{obj}</li>
-                      ))}
-                  </ul>
-                  Вы <strong>не сможете</strong> участвовать в поиске друзей и
-                  другие не смогут вас найти через него.
-                  <br />
-                  Вы уверены, что хотите сохранить изменения профиля?
+            <div className="row">
+              {isEditing && (
+                <div className="col">
+                  <input
+                    className="file-input"
+                    type="file"
+                    accept=".jpeg,.png"
+                    onChange={onAvatarUpload}
+                  ></input>
                 </div>
-              }
-              buttons={SaveProfileButtons}
-            />
-          )
-        ) : (
-          <Button
-            key={"startRedactingButton"}
-            color="primary"
-            outline={true}
-            children="Редактировать профиль"
-            onClick={() => setIsEditing(true)}
-          ></Button>
-        )}
-      </div>
-      <Popup
-        popupButtonText="Удалить профиль"
-        popupButtonVariant="danger"
-        show={false}
-        title="Удаление профиля"
-        message={
-          <div>
-            {" "}
-            Вы уверены, что хотите удалить профиль{" "}
-            <strong>{username}</strong>?
-            <br /> Отменить это действие будет невозможно!
+              )}
+            </div>
           </div>
-        }
-        buttons={DeleteProfileButtons}
-      />
-    </div>
+
+          {/* label + value column */}
+          <div className="d-flex">
+            <div className="label-col me-2">
+              <div className="col ">
+                <div className="row">
+                  <label className="col-form-label">Никнейм:</label>
+                </div>
+
+                <div className="row">
+                  <label
+                    className={name ? "col-form-label" : "col-form-label text-red"}
+                  >
+                    Отображаемое имя:
+                  </label>
+                </div>
+
+                <div className="row">
+                  <label className="col-form-label">Почта:</label>
+                </div>
+
+                <div className="row">
+                  <label
+                    className={
+                      town.value !== ""
+                        ? "col-form-label"
+                        : "col-form-label text-red"
+                    }
+                  >
+                    Город:
+                  </label>
+                </div>
+
+                <div className="row">
+                  <label
+                    className={
+                      birthDate ? "col-form-label" : "col-form-label text-red"
+                    }
+                  >
+                    Дата рождения:
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="col value-column">
+              <div className="row">
+                <div className="col col-form-label">
+                  <label className="">{username}</label>
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col col-form-label">
+                  <input
+                    className=" form-conrol"
+                    required={true}
+                    disabled={!isEditing}
+                    name="name"
+                    maxLength={32}
+                    type="text"
+                    placeholder={username}
+                    value={name ?? ""}
+                    onChange={handleNameChange}
+                    style={{ width: "inherit" }}
+                  ></input>
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col col-form-label">
+                  <label className="">{email}</label>
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col">
+                  <Select
+                    options={townList}
+                    onChange={handleTownChange}
+                    isDisabled={!isEditing}
+                    placeholder={"Не выбран"}
+                    value={town}
+                  />
+                  <div className="row">
+                    <div className="col DatePicker">
+                      <DatePicker
+                        wrapperClassName="datePicker"
+                        disabled={!isEditing}
+                        minDate={new Date(1900, 0)}
+                        maxDate={new Date()}
+                        locale="ru"
+                        showIcon
+                        dateFormat="dd/MM/yyyy"
+                        selected={birthDate}
+                        onChange={handleBirthDateChange}
+                        // При некорректном, неполном или пустом вводе дата = null
+                        onChangeRaw={() => {
+                          handleBirthDateChange(null);
+                        }}
+                      />
+                    </div>
+                  </div>{" "}
+                </div>
+              </div>
+              {(!birthDate || !name || town.value === "") && (
+                <div>
+                  <small className="form-text text-red">
+                    Необходимо заполнить все поля профиля
+                  </small>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <hr style={{ marginTop: 15 }} />
+
+        {/* checkbox col */}
+        <div className="d-flex flex-column">
+
+
+          <div className="form-check col">
+            <input
+              disabled={!isEditing}
+              type="checkbox"
+              className="form-check-input"
+              id="isShowingAgeCheckbox"
+              checked={isShowingAge}
+              onChange={hangleIsShowingAgeChange}
+            />
+            <label className="form-check-label">Показывать мой возраст</label>
+            <TooltipComponent
+              mainText={"(?)"}
+              delayHide={450}
+              delayShow={300}
+              placement="top"
+            >
+              Если выбрано "Не показывать" - ваш возраст не будет виден другим
+              пользователям, но продолжит использоваться в алгоритме подбора
+              игроков
+            </TooltipComponent>
+          </div>
+        </div>
+
+        <hr style={{ marginTop: 15 }} />
+
+        {/* description col */}
+        <div className="d-flex flex-column">
+          <label htmlFor="ProfileDescription">Описание профиля</label>
+          <textarea
+            rows={4}
+            maxLength={300}
+            className="form-control"
+            id="ProfileDescription"
+            disabled={!isEditing}
+            value={profileDescription ?? ""}
+            onChange={handleDescriptionChange}
+            placeholder="Опишите ваши интересы, предпочтения в играх и т.п."
+          ></textarea>
+          <small id="DescriptionHelpText" className="form-text">
+            Описание профиля видно всем пользователям
+          </small>
+          {!profileDescription && (
+            <div>
+              <small className="form-text text-red">
+                Необходимо заполнить описание профиля
+              </small>
+            </div>
+          )}
+        </div>
+
+        <hr style={{ marginTop: 15 }} />
+
+        {/* contacts col */}
+        <div className="d-flex flex-column">
+          <label htmlFor="ProfileContacts">Контакты</label>
+          <textarea
+            rows={4}
+            maxLength={300}
+            className="form-control"
+            id="ProfileContacts"
+            disabled={!isEditing}
+            value={profileContacts ?? ""}
+            onChange={handleContactsChange}
+            placeholder="Например, ссылка на аккаунт в Телеграме, ВКонтакте, адрес электронной почты..."
+          ></textarea>
+          <small className="form-text">
+            Контакты видны только вашим друзьям <br />
+          </small>
+          <small className="form-text text-red">
+            Пожалуйста, оставьте{" "}
+            <strong className="text-red">актуальные</strong> контакты, по
+            которым другие игроки смогут с вами связаться и позвать поиграть!
+          </small>
+          {!profileContacts && (
+            <div>
+              <small className="form-text text-red">
+                Необходимо заполнить контакты
+              </small>
+            </div>
+          )}
+        </div>
+
+        <hr style={{ marginTop: 15 }} />
+
+        <div className="d-flex flex-column mb-2">
+          {isEditing ? (
+            avatarPic !== null &&
+              name !== null &&
+              town.value !== "" &&
+              birthDate !== null &&
+              profileDescription !== null &&
+              profileContacts !== null ? (
+              <Button
+                key={"doneRedactingButton"}
+                color="primary"
+                children="Сохранить изменения"
+                onClick={() => {
+                  // Такие же действия у кнопки в SaveProfileButtons, при изменении учитывать
+                  setIsEditing(false);
+                  SaveChangesToDB();
+                }}
+              ></Button>
+            ) : (
+              <Popup
+                popupButtonText="Сохранить изменения"
+                popupButtonVariant="primary"
+                show={false}
+                title="Сохранение изменений профиля"
+                message={
+                  <div>
+                    Внимание, вы не заполнили поля:
+                    <ul>
+                      {[
+                        avatarPic ? null : "Изображение профиля",
+                        name ? null : "Отображаемое имя",
+                        town.value !== "" ? null : "Город",
+                        birthDate ? null : "Дата рождения",
+                        profileDescription ? null : "Описание профиля",
+                        profileContacts ? null : "Контакты",
+                      ]
+                        .filter(function (e) {
+                          return e;
+                        })
+                        .map((obj) => (
+                          <li>{obj}</li>
+                        ))}
+                    </ul>
+                    Вы <strong>не сможете</strong> участвовать в поиске друзей и
+                    другие не смогут вас найти через него.
+                    <br />
+                    Вы уверены, что хотите сохранить изменения профиля?
+                  </div>
+                }
+                buttons={SaveProfileButtons}
+              />
+            )
+          ) : (
+            <Button
+              key={"startRedactingButton"}
+              color="primary"
+              outline={true}
+              children="Редактировать профиль"
+              onClick={() => setIsEditing(true)}
+            ></Button>
+          )}
+        </div>
+        <Popup
+          popupButtonText="Удалить профиль"
+          popupButtonVariant="danger"
+          show={false}
+          title="Удаление профиля"
+          message={
+            <div>
+              {" "}
+              Вы уверены, что хотите удалить профиль{" "}
+              <strong>{username}</strong>?
+              <br /> Отменить это действие будет невозможно!
+            </div>
+          }
+          buttons={DeleteProfileButtons}
+        />
+      </div>
+    </Container>
   );
 };
 
