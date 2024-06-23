@@ -81,7 +81,7 @@ export class GameController extends Object {
             ageRating: game.ageRating,
             description: game.description,
             tags: (await game.tags).map(x => x.text),
-            images: (await game.images).map(x => x.path)
+            images: (await game.images).map(x => x.blob)
         };
     }
 
@@ -114,7 +114,7 @@ export class GameController extends Object {
                 ageRating: game.ageRating,
                 description: game.description,
                 tags: (await game.tags).map(x => x.text),
-                images: (await game.images).map(x => x.path)
+                images: (await game.images).map(x => x.blob)
             };
         }));
     }
@@ -271,28 +271,6 @@ export class GameController extends Object {
         //  Поиск по имени с проверкой подписки на игры
         if (query.name && query.name != "") 
                 games = games.where("game.name ilike :name", { name: `%${query.name}%` })
-
-        // Если при дальнейшей разработке проблем выявлено не будет, то этот код будет вырезан.
-        {
-        // games = await games.leftJoinAndSelect('game.users', 'user', 'user.userId = :userId', { userId: userId })
-        //     .take(limit)
-        //     .skip(query.start ?? 0)
-        //     .orderBy(`game.${sort}`, 'ASC')
-        //     .getMany()
-        
-        // // Создание поля с информацией о подписке для каждой игры
-        // for (let i = 0; i < games.length; i++) {
-
-        //     if ((await games[i].users).length > 0)
-        //         games[i]['subscribed'] = true;
-        //     else
-        //         games[i]['subscribed'] = false;
-
-        //     console.log(games[i]['__users__'])
-
-        //     delete games[i]['__users__'];
-        // }
-        }
 
         let result = await games
             .leftJoinAndSelect('game.users', 'usersGame', 'usersGame.userId = :userId', {userId})

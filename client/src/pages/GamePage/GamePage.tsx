@@ -54,8 +54,6 @@ const GamePage = () => {
         })
     }, [])
 
-    // дописать префиксы к путям css на обоих страницах
-
     // Основной компонент
     return (
         <Row className="gx-5 d-flex justify-content-center">
@@ -64,7 +62,7 @@ const GamePage = () => {
                 <div id="game-game-image">
                     <button className="game-image-arrow-button" style={{ marginRight: "10px" }}><FaArrowLeft className="game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
                     {/* <img width={"100%"} height={"100%"} src={game?.images[0]} ></img> */}
-                    <img style={{ aspectRatio: "1/1" }} height={"100%"} src={gameImage} ></img>
+                    <img style={{ aspectRatio: "1/1" }} height={"100%"} src={game?.images[0]} ></img>
                     <button className="game-image-arrow-button" style={{ marginLeft: "10px" }}><FaArrowRight className="game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
                 </div>
                 {

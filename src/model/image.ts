@@ -6,9 +6,6 @@ export class Image
     @PrimaryGeneratedColumn()
     id: number;
     
-    @Column({
-        default: ''
-    })
-    path: string;
+    @Column()
     blob: string;
 }
