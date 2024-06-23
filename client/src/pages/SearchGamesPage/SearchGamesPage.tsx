@@ -27,6 +27,9 @@ const SearchGamesPage = () => {
     // Номер текущего запроса, с которого начнётся выборка из БД
     const currentRequestVersion = useRef<number>(0)
 
+    // Номер текущего запроса, с которого начнётся запрос количества игр
+    const currentRequestNumberVersion = useRef<number>(0)
+
     // ===Запрос данных из БД===
     // Индикатор, что выполяется запрос игр из БД
     const fetching = useRef(false)
@@ -74,7 +77,7 @@ const SearchGamesPage = () => {
     // Получение игр из БД
     const getGames = useCallback(() => {
         // Проверяем окончание данных в БД
-        if (currentGameNumber.current >= totalGamesNumber.current)
+        if (currentGameNumber.current >= totalGamesNumber.current && totalGamesNumber.current != 0)
             return;
 
         // Указываем, что выполняем новый запрос
@@ -83,6 +86,21 @@ const SearchGamesPage = () => {
         
         if (!fetching.current)
             fetching.current = true;
+
+        if (totalGamesNumber.current == 0) {
+            // Для анимации
+            setTimeout(() => {
+                // Проверяем, что этот запрос ещё актуален
+                if (currentVersion != currentRequestVersion.current)
+                    return;
+
+                setGames([]);
+                
+                if (fetching.current)
+                    fetching.current = false;
+            }, 750);
+            return;
+        }
 
         // Запрашиваем игры, передаём лимит, стартовую позицию, искомое имя, id пользователя и тип сортировки
         api.get(gameRequestName, { params: { limit: requestSize, start: currentGameNumber.current, name: searchQueryEvent, sort: sortTypes.get(selectedSort) } }).then(function (response) {
@@ -113,24 +131,24 @@ const SearchGamesPage = () => {
 
     // Если изменятся сортировка или строка запроса - делаем запрос игр из БД
     useEffect(() => {
+        // Указываем, что выполняем новый запрос
+        currentRequestNumberVersion.current += 1;
+        let currentVersion = currentRequestNumberVersion.current;
+
         // Запрашиваем общее число игр из БД
         api.get('game/games-number', { params: {name: searchQueryEvent} }).then(function (response) {
+            // Проверяем, что этот запрос ещё актуален
+            if (currentVersion != currentRequestNumberVersion.current)
+                return;
+
             totalGamesNumber.current = response.data;
 
             // Очищаем список и обнуляем счётчик
             setGames(undefined);
             currentGameNumber.current = 0;
 
-            // Если игры нашлись, то делаем запрос
-            if (response.data > 0) {
-                getGames();
-            }
-            else {
-                // Для анимации
-                setTimeout(() => {
-                    setGames([]);
-                }, 750);
-            }
+            // Делаем запрос игр
+            getGames();
         }).catch(() => {
             if (!modalIsShow)
                 showModal("Не удалось получить список игр");
@@ -217,7 +235,7 @@ const SearchGamesPage = () => {
                         <fieldset disabled={formIsDisabled}>
                             {/* Поиск по названию */}
                             <div style={{ fontSize: "24px" }}><b>Название</b></div>
-                            <input style={{ width: "100%" }} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                            <input style={{ width: "100%" }} value={searchQuery} onChange={e => setSearchQuery(e.currentTarget.value)} />
 
                             <div style={{ marginTop: "15px", textAlign: "center" }}>
                                 {/* Сортировка */}
