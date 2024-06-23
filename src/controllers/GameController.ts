@@ -5,11 +5,13 @@ import {Middleware, MiddlewareBag} from "../modules/core/middleware/middleware";
 import {User} from "../model/user";
 import {Accept, Return} from "../modules/core/mimeType/decorators";
 import bcrypt from "bcryptjs";
-import {badRequest, json} from "../modules/core/routing/response";
+import {badRequest, json, notFound} from "../modules/core/routing/response";
 import { Game } from "../model/game";
 import { QueryArgument, QueryBag } from "../modules/core/routing/query";
 import { createQueryBuilder, DataSource, ILike, Like } from "typeorm"
 import { UsersGame } from "../model/usersGame";
+import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
+import { gameNotFound, subscriptionAlreadyExist, subscriptionNotExist } from "../utils/errorMessages";
 
 @Controller('api/v1/game')
 export class GameController extends Object {
@@ -174,5 +176,61 @@ export class GameController extends Object {
 
         return games;
     }
+
+     // Подписка на игру
+     @POST('{gameId:int}/subscribe')
+     @Accept('application/json', 'text/plain')
+     @Return('application/json')
+     @Middleware(AuthMiddleware)
+     async subscribe(bag: AuthMiddlewareBag, gameId:number) {
+         const game = new Game();
+         game.id = gameId;
+ 
+         // Проверка на существование игры
+         if (!await this._dbContext.getRepository(Game).findOneBy({id: gameId})) {
+             return notFound({message: gameNotFound});
+         }
+ 
+         let repository = this._dbContext.getRepository(UsersGame);
+ 
+         // Проверка на существование подписки
+         if (await repository.findOneBy({game: game, user: bag.user})) {
+             return badRequest({message: subscriptionAlreadyExist});
+         }
+ 
+         // Создание объекта для БД с получением данных
+         const newPair = new UsersGame();
+ 
+         newPair.user = Promise.resolve(bag.user);
+         newPair.game = Promise.resolve(game)
+         newPair.playsOnline = false;
+ 
+         await repository.save(newPair);
+     }
+ 
+     // Отписка от игры
+     @POST('{gameId:int}/unsubscribe')
+     @Accept('application/json', 'text/plain')
+     @Return('application/json')
+     @Middleware(AuthMiddleware)
+     async unsubscribe(bag: AuthMiddlewareBag, gameId:number) {
+         const game = new Game();
+         game.id = gameId;
+ 
+         // Проверка на существование игры
+         if (!await this._dbContext.getRepository(Game).findOneBy({id: gameId})) {
+             return notFound({message: gameNotFound});
+         }
+ 
+         let repository = this._dbContext.getRepository(UsersGame);
+ 
+         // Удаление объекта из БД на основе id игры и пользователя
+         let obj = await repository.findOneBy({game: game, user: bag.user});
+ 
+         if (!obj)
+             return badRequest({message: subscriptionNotExist});
+ 
+         await repository.remove(obj);
+     }
 
 }

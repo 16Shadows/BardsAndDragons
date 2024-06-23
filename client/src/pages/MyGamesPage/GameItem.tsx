@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import NoImageAvailable from '../../resources/Uno flip.jpg';
 import GameData from './GameData';
 import { getGamePageRoute } from '../../components/routes/Navigation';
-import { PropsWithChildren, useEffect, useState } from 'react';
+import { PropsWithChildren, useState, useEffect } from 'react';
 
 export type GameItemProps = {
     game: GameData;
@@ -41,22 +41,19 @@ function GameItem(props: PropsWithChildren<GameItemProps>) {
                         {props.game.gamename}
                     </Link>
 
-                    <div className="online-status">
-                        <span>Играю онлайн</span>
-                        <input type="checkbox" checked={props.game.playsOnline} disabled className="styled-checkbox" />
+                    <div className="game-buttons">
+                        {props.children}
                     </div>
 
                     <button className="expand-button" onClick={handleExpandClick}>
                         {isExpanded ? '▲' : '▼'}
                     </button>
-
                 </div>
                 <div className="game-description-container">
                     <div className="game-description">
                         {props.game.description}
                     </div>
                 </div>
-
                 <div className="game-details">
                     <div>{props.game.playerCount} игроков, {props.game.ageRating}</div>
                     <div className="game-tags-container">
@@ -74,3 +71,4 @@ function GameItem(props: PropsWithChildren<GameItemProps>) {
 }
 
 export default GameItem;
+

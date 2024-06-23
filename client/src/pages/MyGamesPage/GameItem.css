@@ -1,7 +1,7 @@
 .game-item {
     display: flex;
     flex-direction: row;
-    width: 100%;
+    width: 99%;
     background-color: white;
     border-radius: 7px;
     overflow: hidden;
@@ -63,6 +63,7 @@
     margin-top: 10px;
     height: 40px;
     overflow: hidden;
+    /* text-overflow: ellipsis; */
     word-break: break-word;
     white-space: nowrap;
 }

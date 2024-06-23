@@ -14,3 +14,4 @@ export const nicknameAlreadyUseError = "Этот никнейм уже исп�
 export const emailAlreadyUseError = "Этот email уже используется";
 export const passwordsNotMatchError = "Пароли не совпадают";
 export const errorLoadingData = "Произошла ошибка при загрузке данных";
+
