@@ -153,14 +153,14 @@ const GamePage = () => {
                 {
                     !game?.images.length || game?.images.length < 2
                         ?
-                        <div id="game-game-image" style={{justifyContent: "center"}}>
+                        <div id="item-game-game-image" style={{justifyContent: "center"}}>
                             <img style={{ aspectRatio: "1/1" }} height={"100%"} alt="Куда же подевалась картинка..?" src={'/' + game?.images[imageId]} ></img>
                         </div>
                         :
-                        <div id="game-game-image">
-                            <button className="game-image-arrow-button" onClick={predImage} style={{ marginRight: "10px" }}><FaArrowLeft className="game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
+                        <div id="item-game-game-image">
+                            <button className="item-game-image-arrow-button" onClick={predImage} style={{ marginRight: "10px" }}><FaArrowLeft className="item-game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
                             <img style={{ aspectRatio: "1/1" }} height={"100%"} alt="Куда же подевалась картинка..?" src={'/' + game?.images[imageId]} ></img>
-                            <button className="game-image-arrow-button" onClick={nextImage} style={{ marginLeft: "10px" }}><FaArrowRight className="game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
+                            <button className="item-game-image-arrow-button" onClick={nextImage} style={{ marginLeft: "10px" }}><FaArrowRight className="item-game-image-arrow" size={"50px"} color="rgb(106, 180, 241)" /></button>
                         </div>
                 }
                 {
@@ -176,10 +176,10 @@ const GamePage = () => {
                         :
                         <div style={{marginTop: "25px"}} />
                 }
-                <div id="game-info-box">
+                <div id="item-game-info-box">
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                         <div>
-                            <div id="game-game-header">{game?.name}</div>
+                            <div id="item-game-game-header">{game?.name}</div>
                             <div style={{ fontSize: "20px", fontWeight: "bold" }}>
                                 {
                                     game?.tags ?
@@ -191,11 +191,11 @@ const GamePage = () => {
                         </div>
                         <div style={{ fontSize: "20px", marginTop: "10px" }}>
                             <IoMdPeople size={"40px"} style={{ marginTop: "-2px" }} />
-                            <span className="game-add-info-box" style={{ marginLeft: "8px", whiteSpace: "nowrap" }}>{game?.playerCount} игроков</span>
-                            <span className="game-add-info-box" style={{ marginLeft: "15px" }}>{game?.ageRating}</span>
+                            <span className="item-game-add-info-box" style={{ marginLeft: "8px", whiteSpace: "nowrap" }}>{game?.playerCount} игроков</span>
+                            <span className="item-game-add-info-box" style={{ marginLeft: "15px" }}>{game?.ageRating}</span>
                         </div>
                     </div>
-                    <div id="game-game-description">{game?.description}</div>
+                    <div id="item-game-game-description">{game?.description}</div>
                 </div>
                 {/* Отображение ошибок */}
                 <ModalWindowAlert show={modalIsShow} onHide={hideModal} message={modalMessage} />
