@@ -63,7 +63,7 @@ const NotificationsPanel = () => {
     abortSignal.current = new AbortController();
     // Подписка на уведомления от сервера, новые уведомления пользователю
     if (authHeader) {
-      fetchEventSource("api/v1/notifications/subscribe", {
+      fetchEventSource("/api/v1/notifications/subscribe", {
         onmessage(event) {
           setGotNotifications(true);
           let notif = JSON.parse(event.data);
