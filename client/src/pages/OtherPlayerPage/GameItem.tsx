@@ -1,4 +1,4 @@
-import './GameItem.css';
+import '../MyGamesPage/GameItem.css';
 import { Link } from 'react-router-dom';
 import NoImageAvailable from '../../resources/Uno flip.jpg';
 import GameData from './GameData';
