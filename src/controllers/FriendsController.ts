@@ -221,7 +221,9 @@ export class FriendsController {
         catch {
             return conflict();
         }
+        
 
+        //если этот код закомментить, то все работает, возможно тут вылезает 500
         await this._NotificationService.sendNotification(friendUser.username,
             await repo.existsBy({user:friendUser,friend: bag.user})
             ?
@@ -230,7 +232,7 @@ export class FriendsController {
                 friendRequestAcceptedBy: {
                     username: bag.user.username,
                     displayName: bag.user.displayName ?? bag.user.username,
-                    avatar: (await bag.user.avatar).blob
+                    avatar: (await bag.user.avatar)?.blob
                 },
                 seen: false
             }
@@ -240,11 +242,12 @@ export class FriendsController {
                 friendRequestSentBy: {
                     username: bag.user.username,
                     displayName: bag.user.displayName ?? bag.user.username,
-                    avatar: (await bag.user.avatar).blob
+                    avatar: (await bag.user.avatar)?.blob
                 },
                 seen: false
             }
         )
+        //
     }
 
     @POST('{friend:user}/removeFriend')

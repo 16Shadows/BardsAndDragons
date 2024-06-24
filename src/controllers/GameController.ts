@@ -1,18 +1,21 @@
-import { ModelDataSource } from "../model/dataSource";
+import {Controller} from "../modules/core/controllers/decorators";
+import {ModelDataSource} from "../model/dataSource";
+import { GET, POST } from "../modules/core/routing/decorators";
+import {Middleware, MiddlewareBag} from "../modules/core/middleware/middleware";
+import {Accept, Return} from "../modules/core/mimeType/decorators";
+import bcrypt from "bcryptjs";
+import {badRequest, json, notFound} from "../modules/core/routing/response";
 import { Game } from "../model/game";
 import { User } from "../model/user";
 import { UsersGame } from "../model/usersGame";
-import { Controller } from "../modules/core/controllers/decorators";
-import { MiddlewareBag, Middleware } from "../modules/core/middleware/middleware";
-import { Accept, Return } from "../modules/core/mimeType/decorators";
-import { GET, POST } from "../modules/core/routing/decorators";
 import { QueryArgument, QueryBag } from "../modules/core/routing/query";
-import { badRequest, notFound } from "../modules/core/routing/response";
-import bcrypt from "bcryptjs";
-import { createQueryBuilder, DataSource, ILike, Like } from "typeorm"
+import { createQueryBuilder, DataSource } from "typeorm"
+import { ILike, Table } from "typeorm"
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
 import { SelectQueryBuilder } from "typeorm/browser";
-import { gameNotFound, sortTypeNotFound, subscriptionAlreadyExist, subscriptionNotExist } from "../../client/src/utils/errorMessages";
+import { gameNotFound, sortTypeNotFound, subscriptionAlreadyExist, subscriptionNotExist } from "../utils/errorMessages";
+import { GameTag } from "../model/gameTag";
+import { Image } from "../model/image";
 
 // Список опций сортировки
 const sortTypes = new Set(["id", "name"])
@@ -29,6 +32,8 @@ interface GameData
     playerCount: string;
     ageRating: string;
     subscribed?: boolean; 
+    tags: string[];
+    image: string;
 }
 
 // Поиск данных в базе
@@ -37,6 +42,17 @@ type FindInList = {
     start?: number;
     name?: string;
     sort?: string;
+}
+
+// Информация об игре
+interface GameData 
+{ 
+    id: number; 
+    name: string; 
+    description: string; 
+    playerCount: string;
+    ageRating: string;
+    subscribed?: boolean; 
 }
 
 type GameInfo = {
@@ -181,7 +197,7 @@ export class GameController extends Object {
     @Return('application/json')
     async getGames(bag: MiddlewareBag, query: FindInList) {
         let repository = this._dbContext.getRepository(Game);
-        let games;
+        let games: Game[];
 
         // Базовый лимит - maxRequestLimit
         let limit = maxRequestLimit;
@@ -218,10 +234,25 @@ export class GameController extends Object {
             });
         }
 
+        let gamesImages: GameData[];
+        gamesImages = [];
+
+        for (let i = 0; i < games.length; i++) {
+            gamesImages.push({
+                id: games[i].id,
+                name: games[i].name,
+                description: games[i].description,
+                playerCount: games[i].playerCount,
+                ageRating: games[i].ageRating,
+                tags: (await games[i].tags).map(tag => tag.text),
+                image: (await games[i].images).map(tag => tag.blob)[0]
+            })
+        }
+
         // Задержка для тестирования
         // await new Promise((resolve) => setTimeout(resolve, 3000));
 
-        return games;
+        return gamesImages;
     }
 
     // Получение списка игр из БД
@@ -252,7 +283,8 @@ export class GameController extends Object {
     @Return('application/json')
     async getGamesSubscribe(bag: AuthMiddlewareBag, query: FindInList) {
         let repository = this._dbContext.getRepository(Game);
-        let games: SelectQueryBuilder<Game>;
+        // let games: SelectQueryBuilder<Game>;
+        let games;
         let userId = bag.user.id;
 
         // Базовый лимит - maxRequestLimit
@@ -271,17 +303,45 @@ export class GameController extends Object {
         //  Поиск по имени с проверкой подписки на игры
         if (query.name && query.name != "") 
                 games = games.where("game.name ilike :name", { name: `%${query.name}%` })
+        {
+        // let result = await games
+        //     .leftJoinAndSelect('game.users', 'usersGame', 'usersGame.userId = :userId', {userId})
+        //     .select([ 'game.id AS "id"', 'game.name AS "name"', 'game.description AS "description"', 
+        //     'game.playerCount AS "playerCount"', 'game.ageRating AS "ageRating"', 'CASE WHEN usersGame.id IS NOT NULL THEN true ELSE false END AS "subscribed"' ])
+        //     .offset(query.start) .limit(query.limit)
+        //     .orderBy(`game.${sort}`, 'ASC')
+        //     .getRawMany<GameData>();
 
-        let result = await games
-            .leftJoinAndSelect('game.users', 'usersGame', 'usersGame.userId = :userId', {userId})
-            .select([ 'game.id AS "id"', 'game.name AS "name"', 'game.description AS "description"', 
-            'game.playerCount AS "playerCount"', 'game.ageRating AS "ageRating"', 'CASE WHEN usersGame.id IS NOT NULL THEN true ELSE false END AS "subscribed"' ])
-            .offset(query.start) .limit(query.limit)
+        // for (let i = 0; i < result.length; i++) {
+        //     let game = await repository.findOneBy({id: result[i]['id']});
+        //     result[i]['tags'] = ((await game.tags).map(tag => tag.text));
+        //     result[i]['tags'] = ((await game.tags).map(tag => tag.text));
+        // }
+        }
+
+        games = await games.leftJoinAndSelect('game.users', 'user', 'user.userId = :userId', { userId: userId })
+            .take(limit)
+            .skip(query.start ?? 0)
             .orderBy(`game.${sort}`, 'ASC')
-            .getRawMany<GameData>();
+            .getMany()
+        
+        let gamesImages: GameData[];
+        gamesImages = [];
 
-        return result;
+        for (let i = 0; i < games.length; i++) {
+            gamesImages.push({
+                id: games[i].id,
+                name: games[i].name,
+                description: games[i].description,
+                playerCount: games[i].playerCount,
+                ageRating: games[i].ageRating,
+                tags: (await games[i].tags).map(tag => tag.text),
+                image: (await games[i].images).map(tag => tag.blob)[0],
+                subscribed: (await games[i].users).length > 0
+            })
+        }
 
+        return gamesImages;
         // Задержка для тестирования
         // await new Promise((resolve) => setTimeout(resolve, 3000));
     }
@@ -322,17 +382,16 @@ export class GameController extends Object {
     async subscribe(bag: AuthMiddlewareBag, gameId:number) {
         const game = new Game();
         game.id = gameId;
-        console.log(`id: ${gameId}`)
 
         // Проверка на существование игры
-        if (!await this._dbContext.getRepository(Game).findOneBy({id: gameId})) {
+        if (!await this._dbContext.getRepository(Game).existsBy({id: gameId})) {
             return notFound({message: gameNotFound});
         }
 
         let repository = this._dbContext.getRepository(UsersGame);
 
         // Проверка на существование подписки
-        if (await repository.findOneBy({game: game, user: bag.user})) {
+        if (await repository.existsBy({game: game, user: bag.user})) {
             return badRequest({message: subscriptionAlreadyExist});
         }
 
@@ -354,7 +413,6 @@ export class GameController extends Object {
     async unsubscribe(bag: AuthMiddlewareBag, gameId:number) {
         const game = new Game();
         game.id = gameId;
-        console.log(`id: ${gameId}`)
 
         // Проверка на существование игры
         if (!await this._dbContext.getRepository(Game).existsBy({id: gameId})) {
@@ -372,23 +430,23 @@ export class GameController extends Object {
         await repository.remove(obj);
     }
 
-        // Проверка подписки на игру
-        @GET('{gameId:int}/subscription')
-        @Accept('application/json', 'text/plain')
-        @Return('application/json')
-        @Middleware(AuthMiddleware)
-        async check_subscribe(bag: AuthMiddlewareBag, gameId:number) {
-            const game = new Game();
-            game.id = gameId;
-    
-            // Проверка на существование игры
-            if (!await this._dbContext.getRepository(Game).existsBy({id: gameId})) {
-                return notFound({message: gameNotFound});
-            }
-    
-            let repository = this._dbContext.getRepository(UsersGame);
-    
-            // Проверка на существование подписки
-            return await repository.existsBy({game: game, user: bag.user})
-        }
+      // Проверка подписки на игру
+      @GET('{gameId:int}/subscription')
+      @Accept('application/json', 'text/plain')
+      @Return('application/json')
+      @Middleware(AuthMiddleware)
+      async check_subscribe(bag: AuthMiddlewareBag, gameId:number) {
+          const game = new Game();
+          game.id = gameId;
+
+          // Проверка на существование игры
+          if (!await this._dbContext.getRepository(Game).existsBy({id: gameId})) {
+              return notFound({message: gameNotFound});
+          }
+
+          let repository = this._dbContext.getRepository(UsersGame);
+
+          // Проверка на существование подписки
+          return await repository.existsBy({game: game, user: bag.user})
+      }
 }

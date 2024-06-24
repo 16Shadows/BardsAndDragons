@@ -1,0 +1,20 @@
+name: test
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: [self-hosted]
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.2.0
+          cache: 'npm'
+      - name: Run jest test
+        run: |
+          npm ci
+          npm run test
