@@ -71,10 +71,8 @@ const GamesList = ({gameItemTemplate, gameListUrlBuilder }: GamesListProps) => {
                     {SORT_OPTIONS.map(x => <option key={x.name} value={x.name}>{x.name}</option>)}
                 </select>
             </div>
-            <div className="bg-secondary-subtle p-2">
-                <div className="games-list-container">
+            <div className="bg-secondary-subtle p-2">      
                 {gamesList ? gamesList.map(gameItemTemplate) : <span>Загрузка...</span>}
-                </div>
             </div>
         </div>
     );

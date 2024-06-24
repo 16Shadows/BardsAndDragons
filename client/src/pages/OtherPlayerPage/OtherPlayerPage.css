@@ -1,0 +1,28 @@
+.input {
+    display:block;
+    width: 100%;
+    border: none;
+    margin: 0;
+}
+.file-input {
+    width: inherit;
+}
+.profile_image {
+    width: 220px;
+    height: 220px;
+    outline: #6e6e6e solid 2px;
+}
+.content {
+    width: 100%; /* Изменено с fit-content на 100% */
+}
+
+.label-col {
+    width: auto; /* Изменено с fit-content на auto */
+}
+
+.pic-col {
+    width: auto; /* Изменено с min-content на auto */
+}
+.text-red {
+    color: red;
+}

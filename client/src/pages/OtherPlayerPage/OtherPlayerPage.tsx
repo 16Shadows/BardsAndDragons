@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button, Spinner, Tab, Tabs } from "react-bootstrap";
 import "../../css/App.css";
-import "../../css/ProfilePage.css";
+import "./OtherPlayerPage.css";
 
 import GamesList from "./GameList";
 import GameItem from "./GameItem";
 import defaultAvatarPic from "../../resources/EmptyProfileAvatar_200px.png";
 import useApi from "../../http-common";
+import { AxiosError } from "axios";
+import { getNotFoundRoute } from "../../components/routes/Navigation";
 
 function FriendButtons({ playerUsername }: { playerUsername: string }) {
     const api = useApi();
@@ -132,6 +134,47 @@ function OutgoingRequestButtons({ playerUsername }: { playerUsername: string }) 
         );
 }
 
+function NewRequestButtons({ playerUsername }: { playerUsername: string }) {
+    const api = useApi();
+    const [justDeleted, setJustDeleted] = useState(false);
+    const [disabled, setDisabled] = useState(false);
+
+    const addFriend = useCallback(async () => {
+        try {
+            setDisabled(true);
+            await api.post(`user/${playerUsername}/addFriend`);
+            setJustDeleted(true);
+            setDisabled(false);
+        } catch {
+            setDisabled(false);
+        }
+    }, [api, playerUsername]);
+
+    const deleteFriend = useCallback(async () => {
+        try {
+            setDisabled(true);
+            await api.post(`user/${playerUsername}/removeFriend`);
+            setJustDeleted(false);
+            setDisabled(false);
+        } catch {
+            setDisabled(false);
+        }
+    }, [api, playerUsername]);
+
+    if (!justDeleted)
+        return (
+            <Button disabled={disabled} onClick={addFriend} variant='outline-success'>
+                Добавить в друзья
+            </Button>
+        );
+    else
+        return (
+            <Button disabled={disabled} onClick={deleteFriend} variant='outline-danger'>
+                Отозвать заявку
+            </Button>
+        );
+}
+
 function getAgeString(age: number | null): string {
     if (age === null || age === undefined) {
         return "Возраст скрыт";
@@ -175,6 +218,8 @@ const OtherPlayerPage = () => {
     const [avatar, setAvatar] = useState<string | null>(null);
     const [age, setAge] = useState<number | null>(null);
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         const fetchPlayerProfile = async () => {
             setLoading(true);
@@ -195,14 +240,18 @@ const OtherPlayerPage = () => {
                     setContactInfo(data.contactInfo);
                 }
             } catch (e) {
-                alert("Не удалось загрузить данные профиля.\n" + e);
+                if (e instanceof AxiosError && e.response && e.response.status === 404) {
+                    navigate(getNotFoundRoute())
+                } else {
+                    alert("Не удалось загрузить данные профиля.\n" + e);
+                }
             } finally {
                 setLoading(false);
             }
         };
 
         fetchPlayerProfile();
-    }, [api, playerUsername]);
+    }, [api, navigate, playerUsername]);
 
     const renderFriendButton = useCallback(() => {
         if (!playerUsername) return null;
@@ -214,13 +263,10 @@ const OtherPlayerPage = () => {
             case "outgoingRequest":
                 return <OutgoingRequestButtons playerUsername={playerUsername} />;
             case "none":
-                return (
-                    <Button onClick={() => api.post(`user/${playerUsername}/addFriend`)} variant='outline-success'>
-                        Добавить в друзья
-                    </Button>
-                );
+                return <NewRequestButtons playerUsername={playerUsername} />;
+
         }
-    }, [playerUsername, friendshipStatus, api]);
+    }, [playerUsername, friendshipStatus]);
 
     if (loading) {
         return (
@@ -272,7 +318,7 @@ const OtherPlayerPage = () => {
 
                     <div>
                         <label htmlFor="ProfileContacts" className="d-block">Контакты:</label>
-                        {(friendshipStatus === "friends" || friendshipStatus === "youprofile")? (
+                        {(friendshipStatus === "friends" || friendshipStatus === "youprofile") ? (
                             <textarea
                                 rows={4}
                                 maxLength={300}

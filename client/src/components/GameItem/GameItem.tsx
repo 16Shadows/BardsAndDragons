@@ -3,9 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./GameItem.css"
 import { CiSquareMinus } from "react-icons/ci";
-import { IconContext } from "react-icons";
 import { Button } from "react-bootstrap";
-import gameImage from "../../resources/Uno flip.jpg"
+import { getGamePageRoute } from "../routes/Navigation";
 
 // Игра
 export interface IGameProps {
@@ -15,11 +14,13 @@ export interface IGameProps {
     playerCount: string;
     ageRating: string; 
     subscribed?: boolean;
+    image: string;
+    tags: string[];
 }
 
 // Функция подписки/отписки
 interface ISubscribe {
-    (game: IGameProps): void
+    (gameId: number): Promise<boolean | undefined>
 }
 
 // Принимаемые параметры
@@ -30,15 +31,6 @@ interface IProps {
     unsubscribe: ISubscribe;
 }
 
-// Иконка для кнопки отписки
-// function RemoveButton() {
-//     return (
-//       <IconContext.Provider value={{ color: 'red', size: '30px' }}>
-//           <CiSquareMinus />
-//       </IconContext.Provider>
-//     );
-// }
-
 const Game = ({game, logined=false, subscribe, unsubscribe}: IProps) => {
     // Для перехода к странице игры
     const navigate = useNavigate()
@@ -47,51 +39,54 @@ const Game = ({game, logined=false, subscribe, unsubscribe}: IProps) => {
     const [subscribeState, setSubscribeState] = useState(game.subscribed ?? false)
 
     // Функции подписки и отписки
-    function subscribed() {
-        setSubscribeState(true);
-        subscribe(game);
+    async function subscribed() {
+        if (await subscribe(game.id)) 
+            setSubscribeState(true);
     }
 
-    function unsubscribed() {
-        setSubscribeState(false);
-        unsubscribe(game);
+    async function unsubscribed() {
+        if (await unsubscribe(game.id))
+            setSubscribeState(false);
     }
 
     //console.log("Game")
     return (
-        <div className="game-item">
+        <div className="game-game-item">
             {/* Картинка игры */}
-            <div className="game-icon">
-                <img width={"100%"} height={"100%"} src={gameImage} ></img>
+            <div className="game-game-icon">
+                <img width={"100%"} height={"100%"} alt="Картинка?" src={'/'+game.image} ></img>
             </div>
 
             {/* Описание игры */}
-            <div className="game-describe">
+            <div className="game-game-describe">
                 <div>
                     {/* Переход к игре */}
-                    <span className="game-button-block">
-                        <button className="game-button" onClick={() => navigate('/home')}>{game.name}</button>
+                    <span className="game-game-button-block">
+                        <button className="game-game-button" onClick={() => navigate(getGamePageRoute(String(game.id)))}>{game.name}</button>
                     </span>
                     {
                         // Панель для подписки/отписки
                         logined &&
-                        <span className="game-subscribing-panel">
+                        <span className="game-game-subscribing-panel">
                             {
                                 subscribeState
                                     ?
                                     //<Button style={{ width: "100%", padding: "0px 2px 1px 2px", border: "none", background: "rgb(232, 65, 65)" }}>Отписаться</Button>
-                                    <button onClick={unsubscribed} className="game-unsubscribe-button">
+                                    <button onClick={unsubscribed} className="game-game-unsubscribe-button">
                                         <CiSquareMinus id="icon-image" size={30} color="red" />
                                     </button>
 
                                     :
-                                    <Button onClick={subscribed} className="game-subscribe-button">Подписаться</Button>
+                                    <Button onClick={subscribed} className="game-game-subscribe-button">Подписаться</Button>
                             }
                         </span>
                     }
                 </div>
                 <div>{game.description}</div>
-                <div style={{ fontWeight: "bolder" }}>{game.playerCount} игроков, {game.ageRating}</div>
+                <div>
+                    <span style={{ fontWeight: "bolder" }}>{game.playerCount} игроков, {game.ageRating}</span>, 
+                    {game.tags.map(tag => ' #'+tag)}
+                </div>
             </div>
         </div>
     )
