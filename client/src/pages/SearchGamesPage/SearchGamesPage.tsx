@@ -195,6 +195,10 @@ const SearchGamesPage = () => {
     useEffect(() => {
         // Обработчик прокрутки страницы
         function scrollHandler(event: Event) {
+            console.log(document.documentElement.scrollHeight)
+            console.log(document.documentElement.scrollTop)
+            console.log(window.innerHeight)
+            console.log("===")
             if (!fetching.current) {
                 // Условие: до конца полосы прокрутки меньше 100 единиц
                 if (document.documentElement.scrollHeight - document.documentElement.scrollTop - window.innerHeight < 100) {
@@ -206,9 +210,7 @@ const SearchGamesPage = () => {
 
         // Добавляем слушатель для прокрутки
         document.addEventListener("scroll", scrollHandler);
-
         return function() {
-            console.log("quit");
             document.removeEventListener("scroll", scrollHandler);
         }
     }, [getGames])
