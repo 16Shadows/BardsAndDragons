@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";
 import useApi from '../../http-common'
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
@@ -24,7 +24,7 @@ const GamePage = () => {
     const [modalMessage, setModalMessage ] = useState("Сообщение")
 
     // Состояние модального окна скрыто/открыто
-    const [modalIsShow, setModalIsShow] = useState(false)
+    const modalIsShow = useRef<boolean>(false)
 
     const [game, setGame] = useState<Game | undefined>(undefined)
 
@@ -121,26 +121,21 @@ const GamePage = () => {
         return result;
     }
 
-    // Открыть модальное окно с сообщением
-    function showModal(message: string, timeout = 5000) {
-        setModalMessage(message);
-        setModalIsShow(true);
-        modalTimeoutHandler.current = setTimeout(hideModal, timeout);
-    }
-
     // Закрыть модальное окно
-    function hideModal() {
-        setModalIsShow(state => {
-            // Действия, если окно ещё не закрыто
-            if (state) {
-                clearTimeout(modalTimeoutHandler.current);
-                return false;
-            }
-            // Если закрыто, то состояние не сменится
-            else
-                return false;
-        });
-    }
+    const hideModal = useCallback(() => {
+        if (modalIsShow.current) {
+            clearTimeout(modalTimeoutHandler.current);
+            modalIsShow.current = false;
+            setModalMessage("")
+        }
+    }, [])
+
+    // Открыть модальное окно с сообщением
+    const showModal = useCallback((message: string, timeout = 5000) => {
+        setModalMessage(message);
+        modalIsShow.current = true;
+        modalTimeoutHandler.current = setTimeout(hideModal, timeout);
+    }, [hideModal])
     
 
     // Основной компонент
@@ -199,7 +194,7 @@ const GamePage = () => {
                     <div id="item-game-game-description">{game?.description}</div>
                 </div>
                 {/* Отображение ошибок */}
-                <ModalWindowAlertError show={modalIsShow} onHide={hideModal} message={modalMessage} />
+                <ModalWindowAlertError show={modalIsShow.current} onHide={hideModal} message={modalMessage} />
             </Col>
         </Row>
     );

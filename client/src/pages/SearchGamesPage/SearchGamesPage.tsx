@@ -180,6 +180,7 @@ const SearchGamesPage = () => {
         if (modalIsShow.current) {
             clearTimeout(modalTimeoutHandler.current);
             modalIsShow.current = false;
+            setModalMessage("")
         }
     }, [])
 
