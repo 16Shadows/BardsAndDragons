@@ -27,7 +27,7 @@ function GameButtons({ game }: { game: GameData }) {
     const addGame = useCallback(async () => {
         try {
             setDisabled(true);
-            await api.post(`game/${game.id}/subscribe`);
+            await api.post(`games/${game.id}/subscribe`);
             setPlaysOnline(false);
             setJustDeleted(false);
             setDisabled(false);
@@ -38,7 +38,7 @@ function GameButtons({ game }: { game: GameData }) {
     const deleteGame = useCallback(async () => {
         try {
             setDisabled(true);
-            await api.post(`game/${game.id}/unsubscribe`);
+            await api.post(`games/${game.id}/unsubscribe`);
             setJustDeleted(true);
             setDisabled(false);
         }

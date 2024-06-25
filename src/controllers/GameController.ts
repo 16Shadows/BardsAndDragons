@@ -245,7 +245,7 @@ export class GameController extends Object {
                 playerCount: games[i].playerCount,
                 ageRating: games[i].ageRating,
                 tags: (await games[i].tags).map(tag => tag.text),
-                image: (await games[i].images).map(tag => tag.blob)[0]
+                image: (await games[i].images).map(image => image.blob)[0]
             })
         }
 

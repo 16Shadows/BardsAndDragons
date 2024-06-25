@@ -9,6 +9,7 @@ import { FaArrowLeft } from "react-icons/fa";
 import { FaArrowRight } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { getNotFoundRoute } from "../../components/routes/Navigation";
+import ModalWindowAlertError from "../../components/ModalWindowAlert/ModalWindowAlertError";
 
 const GamePage = () => {
     // ===Авторизация===
@@ -198,7 +199,7 @@ const GamePage = () => {
                     <div id="item-game-game-description">{game?.description}</div>
                 </div>
                 {/* Отображение ошибок */}
-                <ModalWindowAlert show={modalIsShow} onHide={hideModal} message={modalMessage} />
+                <ModalWindowAlertError show={modalIsShow} onHide={hideModal} message={modalMessage} />
             </Col>
         </Row>
     );
