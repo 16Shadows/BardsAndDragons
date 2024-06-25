@@ -12,7 +12,7 @@ const SearchGamesPage = () => {
     const isAuthenticated = useIsAuthenticated()
 
     // Определение запроса в зависимости от статуса авторизации
-    const gameRequestName = isAuthenticated ? 'game/games-with-subscription' : 'game/games'
+    const gameRequestName = isAuthenticated ? 'games/games-with-subscription' : 'games/games'
 
     // ===Пагинация===
     // Количество запрашиваемых за раз игр
@@ -26,7 +26,7 @@ const SearchGamesPage = () => {
 
     // Номер текущего запроса, с которого начнётся выборка из БД
     const currentRequestVersion = useRef<number>(0)
-
+    
     // Номер текущего запроса, с которого начнётся запрос количества игр
     const currentRequestNumberVersion = useRef<number>(0)
 
@@ -132,11 +132,10 @@ const SearchGamesPage = () => {
         let currentVersion = currentRequestNumberVersion.current;
 
         // Запрашиваем общее число игр из БД
-        api.get('game/games-number', { params: {name: searchQueryEvent} }).then(function (response) {
+        api.get('games/games-number', { params: {name: searchQueryEvent} }).then(function (response) {
             // Проверяем, что этот запрос ещё актуален
             if (currentVersion != currentRequestNumberVersion.current)
                 return;
-
             totalGamesNumber.current = response.data;
 
             // Очищаем список и обнуляем счётчик
@@ -155,7 +154,7 @@ const SearchGamesPage = () => {
     // Подписка на игру
     const subscribe = useCallback(async (gameId: number): Promise<boolean | undefined> => {
         let result;
-        await api.post(`game/${gameId}/subscribe`).then(function (response) {
+        await api.post(`games/${gameId}/subscribe`).then(function (response) {
             result = true;
         }).catch((error) => {
             showModal(error.response?.data?.message || "Не удалось подписаться на игру");
@@ -167,7 +166,7 @@ const SearchGamesPage = () => {
     // Отписка от игры
     const unsubscribe = useCallback(async (gameId: number): Promise<boolean | undefined> => {
         let result;
-        await api.post(`game/${gameId}/unsubscribe`).then(function (response) {
+        await api.post(`games/${gameId}/unsubscribe`).then(function (response) {
             result = true;
         }).catch((error) => {
             showModal(error.response?.data?.message || "Игра не найдена");
@@ -211,6 +210,7 @@ const SearchGamesPage = () => {
         // Добавляем слушатель для прокрутки
         document.addEventListener("scroll", scrollHandler);
         return function() {
+            console.log("quit");
             document.removeEventListener("scroll", scrollHandler);
         }
     }, [getGames])
