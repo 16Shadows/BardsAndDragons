@@ -6,9 +6,11 @@ import {Accept, Return} from "../modules/core/mimeType/decorators";
 import bcrypt from "bcryptjs";
 import {badRequest, json, notFound} from "../modules/core/routing/response";
 import { Game } from "../model/game";
-import { QueryArgument, QueryBag } from "../modules/core/routing/query";
-import { ILike, Table } from "typeorm"
+import { User } from "../model/user";
 import { UsersGame } from "../model/usersGame";
+import { QueryArgument, QueryBag } from "../modules/core/routing/query";
+import { createQueryBuilder, DataSource } from "typeorm"
+import { ILike, Table } from "typeorm"
 import { AuthMiddleware, AuthMiddlewareBag } from "../middleware/AuthMiddleware";
 import { SelectQueryBuilder } from "typeorm/browser";
 import { gameNotFound, sortTypeNotFound, subscriptionAlreadyExist, subscriptionNotExist } from "../utils/errorMessages";
@@ -42,13 +44,130 @@ type FindInList = {
     sort?: string;
 }
 
-@Controller('api/v1/game')
+// Информация об игре
+interface GameData 
+{ 
+    id: number; 
+    name: string; 
+    description: string; 
+    playerCount: string;
+    ageRating: string;
+    subscribed?: boolean; 
+}
+
+type GameInfo = {
+    id: number;
+    name: string;
+    playerCount: string;
+    ageRating: string;
+    description: string;
+    tags: string[];
+    images: string[];
+}
+
+type PlayerInfo = {
+    username: string;
+    displayName?: string;
+    playsOnline: boolean;
+}
+
+type ListQuery = {
+    start: number;
+    count: number;
+};
+
+@Controller('api/v1/games')
 export class GameController extends Object {
-    protected readonly _dbContext: ModelDataSource;
+    static readonly ListCountHardLimit: number = 100;
+
+    private _dbContext: ModelDataSource;
 
     constructor(dbContext: ModelDataSource) {
         super();
         this._dbContext = dbContext;
+    }
+
+    @GET('{game:game}')
+    @Return('application/json')
+    async getGameInfo(bag: MiddlewareBag, game: Game): Promise<GameInfo> {
+        return {
+            id: game.id,
+            name: game.name,
+            playerCount: game.playerCount,
+            ageRating: game.ageRating,
+            description: game.description,
+            tags: (await game.tags).map(x => x.text),
+            images: (await game.images).map(x => x.blob)
+        };
+    }
+
+    @GET()
+    @Return('application/json')
+    @QueryArgument('start', {
+        typeId: 'int',
+        canHaveMultipleValues: false,
+        optional: false
+    })
+    @QueryArgument('count', {
+        typeId: 'int',
+        canHaveMultipleValues: false,
+        optional: false
+    })
+    async getGamesList(bag: MiddlewareBag, query: ListQuery) {
+        if (query.count > GameController.ListCountHardLimit)
+            return badRequest([]);
+        
+        var repo = this._dbContext.getRepository(Game);
+
+        return await Promise.all((await repo.find({
+            skip: query.start,
+            take: query.count
+        })).map(async game => {
+            return {
+                id: game.id,
+                name: game.name,
+                playerCount: game.playerCount,
+                ageRating: game.ageRating,
+                description: game.description,
+                tags: (await game.tags).map(x => x.text),
+                images: (await game.images).map(x => x.blob)
+            };
+        }));
+    }
+
+    @GET('{game:game}/players')
+    @Return('application/json')
+    @QueryArgument('start', {
+        typeId: 'int',
+        canHaveMultipleValues: false,
+        optional: false
+    })
+    @QueryArgument('count', {
+        typeId: 'int',
+        canHaveMultipleValues: false,
+        optional: false
+    })
+    async getGamePlayers(bag: MiddlewareBag, game: Game, query: ListQuery) {
+        if (query.count > GameController.ListCountHardLimit)
+            return badRequest([]);
+        
+        var repo = this._dbContext.getRepository(UsersGame);
+
+        var result = await repo.createQueryBuilder('game')
+                               .innerJoinAndSelect('game.user', 'user', 'game.gameId = :id', {id: game.id})
+                               .skip(query.start)
+                               .take(query.count)
+                               .getMany();
+
+        return await Promise.all(result.map(async x => {
+            var user = await x.user;
+
+            return {
+                username: user.username,
+                displayName: user.displayName,
+                playsOnline: x.playsOnline
+            };
+        }));
     }
 
     // Получение списка игр из БД
@@ -126,7 +245,7 @@ export class GameController extends Object {
                 playerCount: games[i].playerCount,
                 ageRating: games[i].ageRating,
                 tags: (await games[i].tags).map(tag => tag.text),
-                image: (await games[i].images).map(tag => tag.blob)[0]
+                image: (await games[i].images).map(image => image.blob)[0]
             })
         }
 
@@ -184,7 +303,6 @@ export class GameController extends Object {
         //  Поиск по имени с проверкой подписки на игры
         if (query.name && query.name != "") 
                 games = games.where("game.name ilike :name", { name: `%${query.name}%` })
-
         {
         // let result = await games
         //     .leftJoinAndSelect('game.users', 'usersGame', 'usersGame.userId = :userId', {userId})
@@ -224,7 +342,6 @@ export class GameController extends Object {
         }
 
         return gamesImages;
-
         // Задержка для тестирования
         // await new Promise((resolve) => setTimeout(resolve, 3000));
     }
@@ -312,4 +429,24 @@ export class GameController extends Object {
 
         await repository.remove(obj);
     }
+
+      // Проверка подписки на игру
+      @GET('{gameId:int}/subscription')
+      @Accept('application/json', 'text/plain')
+      @Return('application/json')
+      @Middleware(AuthMiddleware)
+      async check_subscribe(bag: AuthMiddlewareBag, gameId:number) {
+          const game = new Game();
+          game.id = gameId;
+
+          // Проверка на существование игры
+          if (!await this._dbContext.getRepository(Game).existsBy({id: gameId})) {
+              return notFound({message: gameNotFound});
+          }
+
+          let repository = this._dbContext.getRepository(UsersGame);
+
+          // Проверка на существование подписки
+          return await repository.existsBy({game: game, user: bag.user})
+      }
 }
